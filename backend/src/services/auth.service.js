@@ -50,3 +50,22 @@ export const getCurrentUser = async (userId) => {
   }
   return user;
 };
+
+export const updateUserProfile = async (userId, { name, avatar }) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw ApiError.notFound('User not found');
+  }
+
+  if (name !== undefined && name !== null) {
+    user.name = name.trim();
+  }
+
+  if (avatar !== undefined && avatar !== null) {
+    user.avatar = avatar.trim();
+  }
+
+  await user.save();
+  return user;
+};
+

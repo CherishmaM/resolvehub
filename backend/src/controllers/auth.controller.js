@@ -65,3 +65,19 @@ export const getMe = async (req, res, next) => {
     next(error);
   }
 };
+
+export const updateProfile = async (req, res, next) => {
+  try {
+    const { name, avatar } = req.body;
+    const user = await authService.updateUserProfile(req.user._id, {
+      name,
+      avatar,
+    });
+    return res
+      .status(200)
+      .json(ApiResponse.success(user, 'Profile updated successfully'));
+  } catch (error) {
+    next(error);
+  }
+};
+

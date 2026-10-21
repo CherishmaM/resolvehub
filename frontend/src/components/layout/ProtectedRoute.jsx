@@ -10,7 +10,7 @@ export const ProtectedRoute = ({ children, requiredRole }) => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <LoadingSpinner size="lg" text="Authenticating FixFlow session..." />
+        <LoadingSpinner size="lg" text="Authenticating ResolveHub session..." />
       </div>
     );
   }

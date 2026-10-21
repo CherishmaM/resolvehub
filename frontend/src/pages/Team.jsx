@@ -74,7 +74,7 @@ export const Team = () => {
         <div>
           <h2 className="text-xl font-bold text-slate-900 tracking-tight">Team Directory</h2>
           <p className="text-xs text-slate-500 mt-0.5">
-            Active engineers and product teammates contributing to FixFlow
+            Active engineers and product teammates contributing to ResolveHub
           </p>
         </div>
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold">

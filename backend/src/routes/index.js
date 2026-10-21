@@ -14,10 +14,10 @@ router.get('/health', (req, res) => {
       {
         uptime: process.uptime(),
         timestamp: new Date().toISOString(),
-        service: 'FixFlow API',
+        service: 'ResolveHub API',
         version: '1.0.0',
       },
-      'FixFlow API is running smoothly'
+      'ResolveHub API is running smoothly'
     )
   );
 });

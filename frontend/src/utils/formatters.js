@@ -28,22 +28,22 @@ export const getStatusBadgeStyle = (status) => {
   switch (status) {
     case 'Open':
       return {
-        bg: 'bg-blue-50 text-blue-700 border-blue-200',
-        dot: 'bg-blue-500',
+        bg: 'bg-sky-50/90 text-sky-700 border-sky-200/80 ring-1 ring-sky-500/10',
+        dot: 'bg-sky-500 ring-2 ring-sky-200',
       };
     case 'In Progress':
       return {
-        bg: 'bg-amber-50 text-amber-700 border-amber-200',
-        dot: 'bg-amber-500',
+        bg: 'bg-amber-50/90 text-amber-700 border-amber-200/80 ring-1 ring-amber-500/10',
+        dot: 'bg-amber-500 ring-2 ring-amber-200',
       };
     case 'Resolved':
       return {
-        bg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        dot: 'bg-emerald-500',
+        bg: 'bg-emerald-50/90 text-emerald-700 border-emerald-200/80 ring-1 ring-emerald-500/10',
+        dot: 'bg-emerald-500 ring-2 ring-emerald-200',
       };
     default:
       return {
-        bg: 'bg-slate-50 text-slate-700 border-slate-200',
+        bg: 'bg-slate-50 text-slate-700 border-slate-200 ring-1 ring-slate-400/10',
         dot: 'bg-slate-400',
       };
   }
@@ -52,31 +52,31 @@ export const getStatusBadgeStyle = (status) => {
 export const getPriorityBadgeStyle = (priority) => {
   switch (priority) {
     case 'Critical':
-      return 'bg-rose-50 text-rose-700 border-rose-200 font-semibold';
+      return 'bg-rose-50 text-rose-700 border-rose-200/80 ring-1 ring-rose-500/10 font-semibold';
     case 'High':
-      return 'bg-orange-50 text-orange-700 border-orange-200';
+      return 'bg-orange-50 text-orange-700 border-orange-200/80 ring-1 ring-orange-500/10 font-medium';
     case 'Medium':
-      return 'bg-sky-50 text-sky-700 border-sky-200';
+      return 'bg-indigo-50 text-indigo-700 border-indigo-200/80 ring-1 ring-indigo-500/10 font-medium';
     case 'Low':
-      return 'bg-slate-100 text-slate-600 border-slate-200';
+      return 'bg-slate-100/90 text-slate-600 border-slate-200/80 ring-1 ring-slate-400/10 font-medium';
     default:
-      return 'bg-slate-50 text-slate-600 border-slate-200';
+      return 'bg-slate-50 text-slate-600 border-slate-200 font-medium';
   }
 };
 
 export const getCategoryBadgeStyle = (category) => {
   switch (category) {
     case 'Frontend':
-      return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      return 'bg-indigo-50/90 text-indigo-700 border-indigo-200/80 ring-1 ring-indigo-500/10 font-medium';
     case 'Backend':
-      return 'bg-violet-50 text-violet-700 border-violet-200';
+      return 'bg-violet-50/90 text-violet-700 border-violet-200/80 ring-1 ring-violet-500/10 font-medium';
     case 'Database':
-      return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+      return 'bg-cyan-50/90 text-cyan-700 border-cyan-200/80 ring-1 ring-cyan-500/10 font-medium';
     case 'UI/UX':
-      return 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200';
+      return 'bg-fuchsia-50/90 text-fuchsia-700 border-fuchsia-200/80 ring-1 ring-fuchsia-500/10 font-medium';
     case 'Feature Request':
-      return 'bg-teal-50 text-teal-700 border-teal-200';
+      return 'bg-teal-50/90 text-teal-700 border-teal-200/80 ring-1 ring-teal-500/10 font-medium';
     default:
-      return 'bg-slate-50 text-slate-600 border-slate-200';
+      return 'bg-slate-50 text-slate-600 border-slate-200 font-medium';
   }
 };

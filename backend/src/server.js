@@ -13,7 +13,7 @@ const startServer = async () => {
     // 3. Start Express server
     const server = app.listen(env.PORT, () => {
       console.log(`===============================================`);
-      console.log(`🚀 FixFlow API Server listening on port ${env.PORT}`);
+      console.log(`🚀 ResolveHub API Server listening on port ${env.PORT}`);
       console.log(`📡 Environment: ${env.NODE_ENV}`);
       console.log(`🔗 Health check: http://localhost:${env.PORT}/api/v1/health`);
       console.log(`===============================================`);

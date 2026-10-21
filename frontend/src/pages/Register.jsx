@@ -58,13 +58,13 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-indigo-500 selection:text-white">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 mb-4">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25 ring-1 ring-white/20 mb-3.5">
           <Layers className="w-6 h-6" />
         </div>
-        <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-          Create FixFlow Account
+        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+          Create ResolveHub Account
         </h2>
         <p className="mt-1 text-xs text-slate-500">
           Join your engineering team to report and resolve issues

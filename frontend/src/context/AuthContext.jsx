@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getMeApi, loginApi, registerApi, logoutApi } from '../api/auth.api';
+import { getMeApi, loginApi, registerApi, logoutApi, updateProfileApi } from '../api/auth.api';
 
 const AuthContext = createContext(null);
 
@@ -41,6 +41,13 @@ export const AuthProvider = ({ children }) => {
     return registeredUser;
   };
 
+  const updateProfile = async (profileData) => {
+    const response = await updateProfileApi(profileData);
+    const updatedUser = response.data;
+    setUser(updatedUser);
+    return updatedUser;
+  };
+
   const logout = async () => {
     try {
       await logoutApi();
@@ -58,6 +65,7 @@ export const AuthProvider = ({ children }) => {
     isAdmin: user?.role === 'admin',
     login,
     register,
+    updateProfile,
     logout,
     refreshUser: checkAuth,
   };

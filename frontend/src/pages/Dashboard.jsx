@@ -46,7 +46,7 @@ export const Dashboard = () => {
   if (loading) {
     return (
       <div className="py-16">
-        <LoadingSpinner size="lg" text="Fetching real-time FixFlow metrics..." />
+        <LoadingSpinner size="lg" text="Fetching real-time ResolveHub metrics..." />
       </div>
     );
   }
@@ -65,24 +65,32 @@ export const Dashboard = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-slate-900 to-indigo-950 p-6 rounded-2xl text-white shadow-sm">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight">System Health & Issue Velocity</h2>
-          <p className="text-xs text-slate-300 mt-1">
-            Tracking all reported bugs, database bottlenecks, and feature requests.
+      <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 bg-gradient-to-r from-slate-950 via-slate-900 to-[#0e1629] p-6 sm:p-7 rounded-2xl text-white border border-slate-800/80 shadow-card overflow-hidden">
+        {/* Subtle decorative glow */}
+        <div className="absolute -right-16 -top-16 w-56 h-56 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Live System Tracking
+            </span>
+          </div>
+          <h2 className="text-xl font-bold tracking-tight text-white">System Health & Issue Velocity</h2>
+          <p className="text-xs text-slate-300 mt-1 max-w-xl">
+            Real-time status tracking for engineering defects, infrastructure alerts, and feature requests.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="relative z-10 flex items-center gap-3 shrink-0">
           <Link
             to="/issues?assignedTo=me"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 text-xs font-semibold text-white border border-indigo-500/40 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-xs font-semibold text-slate-200 border border-slate-700/60 shadow-xs transition-all"
           >
-            <UserCheck className="w-3.5 h-3.5" />
+            <UserCheck className="w-3.5 h-3.5 text-indigo-400" />
             <span>Assigned to me: {totals.assignedToMe}</span>
           </Link>
           <Link
             to="/issues/new"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-white text-slate-900 hover:bg-slate-100 text-xs font-semibold shadow-xs transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white shadow-sm shadow-indigo-600/30 active:scale-[0.98] transition-all"
           >
             Report Issue
           </Link>

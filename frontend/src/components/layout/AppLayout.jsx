@@ -14,14 +14,14 @@ export const AppLayout = () => {
     if (pathname === '/issues/new') return 'Create New Issue';
     if (pathname.startsWith('/issues/')) return 'Issue Details';
     if (pathname === '/team') return 'Team Directory';
-    if (pathname === '/settings') return 'Account & Settings';
+    if (pathname === '/settings') return 'Profile & Settings';
     return '';
   };
 
   const title = getPageTitle(location.pathname);
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
+    <div className="flex min-h-screen bg-[#f8fafc] font-sans selection:bg-indigo-500 selection:text-white">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col min-w-0">

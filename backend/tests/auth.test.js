@@ -154,5 +154,29 @@ describe('Authentication API Tests', () => {
       const cookies = res.headers['set-cookie'];
       expect(cookies.some((c) => c.includes('fixflow_token=;'))).toBe(true);
     });
+
+    it('should allow user to update their name and profile picture avatar', async () => {
+      const newAvatar = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
+      const res = await request(app)
+        .patch('/api/v1/auth/profile')
+        .set('Cookie', authCookie)
+        .send({
+          name: 'Jane Updated Doe',
+          avatar: newAvatar,
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.name).toBe('Jane Updated Doe');
+      expect(res.body.data.avatar).toBe(newAvatar);
+
+      // Verify persistence via /auth/me
+      const meRes = await request(app)
+        .get('/api/v1/auth/me')
+        .set('Cookie', authCookie);
+
+      expect(meRes.body.data.name).toBe('Jane Updated Doe');
+      expect(meRes.body.data.avatar).toBe(newAvatar);
+    });
   });
 });
