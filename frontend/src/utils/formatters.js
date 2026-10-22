@@ -16,9 +16,12 @@ export const formatRelativeTime = (dateString) => {
   const now = new Date();
   const diffInSeconds = Math.floor((now - date) / 1000);
 
-  if (diffInSeconds < 60) return 'just now';
+  if (diffInSeconds < 45) return 'just now';
+  if (diffInSeconds < 90) return '1m ago';
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 7200) return '1h ago';
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  if (diffInSeconds < 172800) return 'yesterday';
   if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
 
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -28,22 +31,23 @@ export const getStatusBadgeStyle = (status) => {
   switch (status) {
     case 'Open':
       return {
-        bg: 'bg-sky-50/90 text-sky-700 border-sky-200/80 ring-1 ring-sky-500/10',
-        dot: 'bg-sky-500 ring-2 ring-sky-200',
+        bg: 'bg-[#f1f5f9] text-[#475569] border-slate-200/80',
+        dot: 'bg-[#64748b]',
       };
     case 'In Progress':
       return {
-        bg: 'bg-amber-50/90 text-amber-700 border-amber-200/80 ring-1 ring-amber-500/10',
-        dot: 'bg-amber-500 ring-2 ring-amber-200',
+        bg: 'bg-[#ede9fe] text-[#5b42d6] border-[#ddd6fe]',
+        dot: 'bg-[#5b42d6]',
       };
     case 'Resolved':
+    case 'Closed':
       return {
-        bg: 'bg-emerald-50/90 text-emerald-700 border-emerald-200/80 ring-1 ring-emerald-500/10',
-        dot: 'bg-emerald-500 ring-2 ring-emerald-200',
+        bg: 'bg-[#dcfce7] text-[#15803d] border-emerald-200',
+        dot: 'bg-[#16a34a]',
       };
     default:
       return {
-        bg: 'bg-slate-50 text-slate-700 border-slate-200 ring-1 ring-slate-400/10',
+        bg: 'bg-slate-100 text-slate-700 border-slate-200',
         dot: 'bg-slate-400',
       };
   }
@@ -52,30 +56,32 @@ export const getStatusBadgeStyle = (status) => {
 export const getPriorityBadgeStyle = (priority) => {
   switch (priority) {
     case 'Critical':
-      return 'bg-rose-50 text-rose-700 border-rose-200/80 ring-1 ring-rose-500/10 font-semibold';
+    case 'Urgent':
+      return 'bg-[#ffe4e6] text-[#e11d48] border-[#fecdd3] font-medium';
     case 'High':
-      return 'bg-orange-50 text-orange-700 border-orange-200/80 ring-1 ring-orange-500/10 font-medium';
+      return 'bg-[#ffedd5] text-[#c2410c] border-[#fed7aa] font-medium';
     case 'Medium':
-      return 'bg-indigo-50 text-indigo-700 border-indigo-200/80 ring-1 ring-indigo-500/10 font-medium';
+    case 'Med':
+      return 'bg-[#e0f2fe] text-[#0284c7] border-[#bae6fd] font-medium';
     case 'Low':
-      return 'bg-slate-100/90 text-slate-600 border-slate-200/80 ring-1 ring-slate-400/10 font-medium';
+      return 'bg-[#dcfce7] text-[#16a34a] border-[#bbf7d0] font-medium';
     default:
-      return 'bg-slate-50 text-slate-600 border-slate-200 font-medium';
+      return 'bg-slate-100 text-slate-600 border-slate-200 font-medium';
   }
 };
 
 export const getCategoryBadgeStyle = (category) => {
   switch (category) {
     case 'Frontend':
-      return 'bg-indigo-50/90 text-indigo-700 border-indigo-200/80 ring-1 ring-indigo-500/10 font-medium';
+      return 'bg-sky-50 text-sky-700 border-sky-200/80 font-medium';
     case 'Backend':
-      return 'bg-violet-50/90 text-violet-700 border-violet-200/80 ring-1 ring-violet-500/10 font-medium';
+      return 'bg-slate-100 text-slate-700 border-slate-200 font-medium';
     case 'Database':
-      return 'bg-cyan-50/90 text-cyan-700 border-cyan-200/80 ring-1 ring-cyan-500/10 font-medium';
+      return 'bg-teal-50 text-teal-700 border-teal-200/80 font-medium';
     case 'UI/UX':
-      return 'bg-fuchsia-50/90 text-fuchsia-700 border-fuchsia-200/80 ring-1 ring-fuchsia-500/10 font-medium';
+      return 'bg-[#f3f0ff] text-[#5b42d6] border-[#e0d9fc] font-medium';
     case 'Feature Request':
-      return 'bg-teal-50/90 text-teal-700 border-teal-200/80 ring-1 ring-teal-500/10 font-medium';
+      return 'bg-[#ede9fe] text-[#4c35c2] border-[#ddd6fe] font-medium';
     default:
       return 'bg-slate-50 text-slate-600 border-slate-200 font-medium';
   }

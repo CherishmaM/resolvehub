@@ -32,6 +32,9 @@ import {
   ShieldAlert,
   MessageSquare,
   History,
+  RotateCcw,
+  ZoomIn,
+  X,
 } from 'lucide-react';
 
 export const IssueDetails = () => {
@@ -52,6 +55,7 @@ export const IssueDetails = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('comments'); // 'comments' or 'activity'
 
   const fetchIssueData = useCallback(async () => {
@@ -79,14 +83,12 @@ export const IssueDetails = () => {
     fetchIssueData();
   }, [fetchIssueData]);
 
-  // Fetch users for assignment dropdown if admin
+  // Fetch users for assignment dropdown
   useEffect(() => {
-    if (isAdmin) {
-      getUsersApi()
-        .then((res) => setUsers(res.data || []))
-        .catch((err) => console.error('Failed to load team users:', err));
-    }
-  }, [isAdmin]);
+    getUsersApi()
+      .then((res) => setUsers(res.data || []))
+      .catch((err) => console.error('Failed to load team users:', err));
+  }, []);
 
   // Status transition handler
   const handleStatusChange = async (newStatus) => {
@@ -202,7 +204,7 @@ export const IssueDetails = () => {
         <p className="text-xs text-slate-500">The requested issue could not be found or has been deleted.</p>
         <Link
           to="/issues"
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#5b42d6] rounded-xl hover:bg-[#4c35c2]"
         >
           Return to Issues
         </Link>
@@ -213,7 +215,7 @@ export const IssueDetails = () => {
   const isCreator = issue.createdBy?._id === user?._id;
   const isAssignee = issue.assignedTo?._id === user?._id;
   const canEdit = isAdmin || isCreator;
-  const canChangeStatus = isAdmin || isCreator || isAssignee;
+  const canChangeStatus = true; // All authenticated members can update issue status or close off issues
   const categoryStyle = getCategoryBadgeStyle(issue.category);
 
   return (
@@ -229,6 +231,29 @@ export const IssueDetails = () => {
         </Link>
 
         <div className="flex items-center gap-2">
+          {/* Quick 1-click Resolve or Reopen Issue */}
+          {issue.status !== 'Resolved' ? (
+            <button
+              onClick={() => handleStatusChange('Resolved')}
+              disabled={actionLoading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-lg shadow-2xs transition-colors disabled:opacity-50"
+              title="Mark this issue as resolved"
+            >
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Mark as Resolved</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => handleStatusChange('Open')}
+              disabled={actionLoading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#5b42d6] bg-[#f3f0ff] border border-[#e0d9fc] hover:bg-[#ede9fe] rounded-lg transition-colors disabled:opacity-50"
+              title="Reopen this issue"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-[#5b42d6]" />
+              <span>Reopen Issue</span>
+            </button>
+          )}
+
           {canEdit && !isEditing && (
             <button
               onClick={() => setIsEditing(true)}
@@ -309,8 +334,8 @@ export const IssueDetails = () => {
                           disabled={actionLoading || issue.status === st}
                           className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                             issue.status === st
-                              ? 'bg-slate-800 text-white shadow-xs'
-                              : 'bg-white text-slate-700 border border-slate-200 hover:border-indigo-400'
+                              ? 'bg-slate-900 text-white shadow-xs'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:border-[#5b42d6] hover:text-[#5b42d6]'
                           } disabled:cursor-default`}
                         >
                           {st}
@@ -329,6 +354,30 @@ export const IssueDetails = () => {
                     {issue.description}
                   </div>
                 </div>
+
+                {/* Attached Screenshot / Image */}
+                {issue.imageUrl && (
+                  <div>
+                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                      Attached Image / Screenshot
+                    </h4>
+                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 inline-block max-w-full">
+                      <img
+                        src={issue.imageUrl}
+                        alt={`Attachment for ${issue.title}`}
+                        onClick={() => setIsImageModalOpen(true)}
+                        className="max-h-80 w-auto rounded-lg object-contain cursor-pointer hover:opacity-95 transition-opacity"
+                      />
+                      <div
+                        onClick={() => setIsImageModalOpen(true)}
+                        className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer text-white text-xs font-medium gap-1.5"
+                      >
+                        <ZoomIn className="w-4 h-4" />
+                        <span>Click to expand</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -340,7 +389,7 @@ export const IssueDetails = () => {
                 onClick={() => setActiveTab('comments')}
                 className={`flex items-center gap-2 py-3 px-4 text-xs font-semibold border-b-2 transition-all ${
                   activeTab === 'comments'
-                    ? 'border-indigo-600 text-indigo-600 bg-white'
+                    ? 'border-[#5b42d6] text-[#5b42d6] bg-white'
                     : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}
               >
@@ -352,7 +401,7 @@ export const IssueDetails = () => {
                 onClick={() => setActiveTab('activity')}
                 className={`flex items-center gap-2 py-3 px-4 text-xs font-semibold border-b-2 transition-all ${
                   activeTab === 'activity'
-                    ? 'border-indigo-600 text-indigo-600 bg-white'
+                    ? 'border-[#5b42d6] text-[#5b42d6] bg-white'
                     : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}
               >
@@ -396,17 +445,17 @@ export const IssueDetails = () => {
               <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">
                 Assigned Team Member
               </span>
-              {isAdmin ? (
+              {canEdit ? (
                 <select
-                  value={issue.assignedTo?._id || ''}
+                  value={issue.assignedTo?._id || (typeof issue.assignedTo === 'string' ? issue.assignedTo : '') || ''}
                   onChange={(e) => handleAssignChange(e.target.value)}
                   disabled={actionLoading}
-                  className="w-full py-2 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                  className="w-full py-2 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5b42d6] focus:border-[#5b42d6] transition-all"
                 >
                   <option value="">Unassigned</option>
                   {users.map((u) => (
                     <option key={u._id} value={u._id}>
-                      {u.name} ({u.role})
+                      {u.name} — {u.jobTitle || u.role}
                     </option>
                   ))}
                 </select>
@@ -425,7 +474,9 @@ export const IssueDetails = () => {
                       {issue.assignedTo.name}
                     </p>
                     <p className="text-[10px] text-slate-400 capitalize">
-                      {issue.assignedTo.role}
+                      {issue.assignedTo.jobTitle
+                        ? `${issue.assignedTo.jobTitle} • ${issue.assignedTo.role}`
+                        : issue.assignedTo.role}
                     </p>
                   </div>
                 </div>
@@ -453,7 +504,9 @@ export const IssueDetails = () => {
                     {issue.createdBy?.name || 'Unknown'}
                   </p>
                   <p className="text-[10px] text-slate-400 capitalize">
-                    {issue.createdBy?.role || 'member'}
+                    {issue.createdBy?.jobTitle
+                      ? `${issue.createdBy.jobTitle} • ${issue.createdBy?.role || 'member'}`
+                      : issue.createdBy?.role || 'member'}
                   </p>
                 </div>
               </div>
@@ -493,6 +546,40 @@ export const IssueDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Full-size Image Preview Modal */}
+      {isImageModalOpen && issue.imageUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setIsImageModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+              <span className="text-xs font-semibold text-slate-800 truncate pr-4">
+                {issue.title}
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsImageModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-200/50 transition-colors"
+                aria-label="Close image preview"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-4 bg-slate-950/5 flex items-center justify-center overflow-auto max-h-[78vh]">
+              <img
+                src={issue.imageUrl}
+                alt={issue.title}
+                className="max-w-full max-h-[72vh] rounded-lg object-contain shadow-md"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation Dialog for Deletion */}
       <ConfirmDialog

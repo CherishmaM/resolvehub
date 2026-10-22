@@ -1,54 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { formatDate } from '../utils/formatters';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import {
-  Shield,
   User,
-  Mail,
-  Calendar,
-  Server,
   LogOut,
   CheckCircle,
   Camera,
+  Upload,
+  Trash2,
   Save,
+  Briefcase,
   Sparkles,
-  Link as LinkIcon,
-  RotateCcw,
 } from 'lucide-react';
 
-const AVATAR_PRESETS = [
-  {
-    label: 'Lead Architect',
-    url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-  },
-  {
-    label: 'Senior Engineer',
-    url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-  },
-  {
-    label: 'Product Designer',
-    url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-  },
-  {
-    label: 'Backend Specialist',
-    url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-  },
-  {
-    label: 'DevOps / SRE',
-    url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
-  },
-  {
-    label: 'Cybersecurity',
-    url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-  },
+const COMMON_ROLES = [
+  'Frontend Engineer',
+  'Backend Engineer',
+  'Full-Stack Developer',
+  'QA / Test Engineer',
+  'DevOps / SRE',
+  'UI/UX Designer',
+  'Product Manager',
+  'Engineering Lead',
 ];
 
 export const Settings = () => {
   const { user, logout, isAdmin, updateProfile } = useAuth();
+  const fileInputRef = useRef(null);
 
   // Profile form state
   const [name, setName] = useState(user?.name || '');
+  const [jobTitle, setJobTitle] = useState(user?.jobTitle || 'Software Engineer');
   const [avatar, setAvatar] = useState(user?.avatar || '');
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -58,9 +40,46 @@ export const Settings = () => {
   useEffect(() => {
     if (user) {
       setName(user.name || '');
+      setJobTitle(user.jobTitle || 'Software Engineer');
       setAvatar(user.avatar || '');
     }
   }, [user]);
+
+  // Handle local image file upload and convert to base64 data URL
+  const handleImageFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setErrorMsg('Please select a valid image file (PNG, JPG, WebP, etc.).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMsg('Image size should be less than 5MB.');
+      return;
+    }
+
+    setErrorMsg('');
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAvatar(reader.result);
+      setSuccessMsg('Picture uploaded! Click "Save Profile Changes" to apply.');
+    };
+    reader.onerror = () => {
+      setErrorMsg('Failed to read image file. Please try another image.');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemovePhoto = () => {
+    const initialsUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || 'User')}`;
+    setAvatar(initialsUrl);
+    setSuccessMsg('Profile picture reset to initials. Click "Save Profile Changes" to save.');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
@@ -76,9 +95,10 @@ export const Settings = () => {
     try {
       await updateProfile({
         name: name.trim(),
+        jobTitle: jobTitle.trim(),
         avatar: avatar.trim(),
       });
-      setSuccessMsg('Your profile has been successfully updated!');
+      setSuccessMsg('Your profile has been successfully saved!');
     } catch (err) {
       setErrorMsg(err.message || 'Failed to update profile. Please try again.');
     } finally {
@@ -86,22 +106,16 @@ export const Settings = () => {
     }
   };
 
-  const handleSelectPreset = (url) => {
-    setAvatar(url);
-    setSuccessMsg('');
-  };
-
-  const handleResetToInitials = () => {
-    const initialsUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || 'User')}`;
-    setAvatar(initialsUrl);
-  };
+  const currentPreview =
+    avatar ||
+    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || 'User')}`;
 
   return (
     <div className="max-w-4xl space-y-6">
       <div>
         <h2 className="text-xl font-bold text-slate-900 tracking-tight">Account & Settings</h2>
         <p className="text-xs text-slate-500 mt-0.5">
-          Customize your profile identity, avatar image, and review access privileges
+          Manage your personal profile, custom profile picture, and role
         </p>
       </div>
 
@@ -113,16 +127,16 @@ export const Settings = () => {
         </div>
       )}
 
-      {/* Interactive Profile Editor Card */}
+      {/* Profile & Identity Card */}
       <div className="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-card space-y-6">
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div>
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <User className="w-4 h-4 text-indigo-600" />
-              Edit Profile & Personal Details
+              <User className="w-4 h-4 text-[#5b42d6]" />
+              Profile & Personal Details
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
-              Updates will instantly reflect across your reported issues, comments, and team activity
+              Updates reflect immediately across all your issues, comments, and team activity
             </p>
           </div>
           <button
@@ -135,85 +149,111 @@ export const Settings = () => {
         </div>
 
         <form onSubmit={handleSaveProfile} className="space-y-6">
-          {/* Avatar Section: Live Preview + Presets */}
-          <div className="flex flex-col sm:flex-row items-start gap-6 p-4 bg-slate-50/70 border border-slate-200/80 rounded-xl">
-            <div className="flex flex-col items-center gap-2 shrink-0">
-              <div className="relative group">
+          {/* Custom Picture Upload Section */}
+          <div className="p-4 sm:p-5 bg-slate-50/70 border border-slate-200/80 rounded-xl space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+              {/* Picture Preview */}
+              <div className="relative group shrink-0">
                 <img
-                  src={
-                    avatar ||
-                    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || 'User')}`
-                  }
+                  src={currentPreview}
                   alt={name}
-                  className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow-md bg-white ring-2 ring-indigo-500/20"
+                  className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow-md bg-white ring-2 ring-[#5b42d6]/20"
                 />
-                <div className="absolute inset-0 rounded-2xl bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                  <Camera className="w-5 h-5 text-white" />
-                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute inset-0 rounded-2xl bg-slate-950/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white"
+                  title="Upload new picture"
+                >
+                  <Camera className="w-5 h-5" />
+                </button>
               </div>
-              <span className="text-[10px] text-slate-400 font-medium">Live Preview</span>
-            </div>
 
-            <div className="flex-1 space-y-3 w-full">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Avatar Photo URL
-                </label>
-                <div className="relative">
-                  <LinkIcon className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              {/* Upload Controls */}
+              <div className="flex-1 space-y-2">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xs font-bold text-slate-800">Profile Picture</h4>
+                  <span className="text-[10px] text-slate-400">JPG, PNG, WebP up to 5MB</span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5">
                   <input
-                    type="url"
-                    value={avatar}
-                    onChange={(e) => setAvatar(e.target.value)}
-                    placeholder="https://example.com/avatar.jpg"
-                    className="w-full pl-8 pr-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono"
+                    type="file"
+                    ref={fileInputRef}
+                    accept="image/*"
+                    onChange={handleImageFileSelect}
+                    className="hidden"
                   />
-                </div>
-              </div>
 
-              {/* Curated Presets Picker */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[11px] font-semibold text-slate-600 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-indigo-500" /> Or pick a curated team avatar:
-                  </span>
                   <button
                     type="button"
-                    onClick={handleResetToInitials}
-                    className="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#5b42d6] hover:bg-[#4c35c2] rounded-xl shadow-2xs transition-colors"
                   >
-                    <RotateCcw className="w-2.5 h-2.5" /> Use Initials
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload Your Picture</span>
                   </button>
-                </div>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                  {AVATAR_PRESETS.map((preset, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => handleSelectPreset(preset.url)}
-                      title={preset.label}
-                      className={`relative p-1 rounded-xl border transition-all text-center flex flex-col items-center gap-1 ${
-                        avatar === preset.url
-                          ? 'border-indigo-600 bg-indigo-50/80 ring-2 ring-indigo-500/20'
-                          : 'border-slate-200 hover:border-slate-300 bg-white'
-                      }`}
-                    >
-                      <img
-                        src={preset.url}
-                        alt={preset.label}
-                        className="w-9 h-9 rounded-lg object-cover"
-                      />
-                      <span className="text-[9px] text-slate-600 font-medium truncate w-full px-0.5">
-                        {preset.label.split(' ')[0]}
-                      </span>
-                    </button>
-                  ))}
+
+                  <button
+                    type="button"
+                    onClick={handleRemovePhoto}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 rounded-lg transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Reset to Initials</span>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Form Fields: Name & Email */}
+          {/* Role / Job Title Section */}
+          <div className="p-4 sm:p-5 bg-slate-50/70 border border-slate-200/80 rounded-xl space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <Briefcase className="w-3.5 h-3.5 text-[#5b42d6]" />
+                <span>Job Title / Professional Role</span>
+                <span className="text-rose-500">*</span>
+              </label>
+              <span className="text-[10px] text-slate-400 font-medium">Displayed next to your name</span>
+            </div>
+
+            <input
+              type="text"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+              placeholder="e.g. Senior Frontend Engineer"
+              maxLength={50}
+              required
+              className="w-full px-3.5 py-2 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#5b42d6] font-medium"
+            />
+
+            {/* Quick role selection chips */}
+            <div>
+              <p className="text-[11px] font-semibold text-slate-500 mb-2 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-[#5b42d6]" />
+                Or pick a common title:
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {COMMON_ROLES.map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => setJobTitle(role)}
+                    className={`px-2.5 py-1 text-[11px] rounded-lg border transition-all ${
+                      jobTitle === role
+                        ? 'bg-[#f3f0ff] border-[#8c7cf0] text-[#5b42d6] font-semibold ring-1 ring-[#8c7cf0]/30'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    {role}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Name & Email Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
@@ -227,13 +267,13 @@ export const Settings = () => {
                 required
                 minLength={2}
                 maxLength={50}
-                className="w-full px-3.5 py-2.5 text-xs bg-slate-50/70 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
+                className="w-full px-3.5 py-2.5 text-xs bg-slate-50/70 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5b42d6] focus:border-[#5b42d6] transition-all font-medium"
               />
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Email Address (Permanent)
+                Email Address (Account ID)
               </label>
               <input
                 type="email"
@@ -244,87 +284,28 @@ export const Settings = () => {
             </div>
           </div>
 
+          {/* Form Submit */}
           <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-            <span className="text-[11px] text-slate-400">
-              Role: <strong className="text-slate-700 uppercase">{user?.role}</strong>
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-slate-400">System Role:</span>
+              <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                isAdmin
+                  ? 'bg-[#f3f0ff] text-[#5b42d6] border border-[#e0d9fc]'
+                  : 'bg-slate-100 text-slate-600 border border-slate-200'
+              }`}>
+                {user?.role}
+              </span>
+            </div>
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm shadow-indigo-600/20 active:scale-[0.98] transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#5b42d6] hover:bg-[#4c35c2] rounded-xl shadow-sm shadow-[#5b42d6]/20 active:scale-[0.98] transition-all disabled:opacity-50"
             >
               <Save className="w-3.5 h-3.5" />
               <span>{saving ? 'Saving Changes...' : 'Save Profile Changes'}</span>
             </button>
           </div>
         </form>
-      </div>
-
-      {/* Permissions Matrix */}
-      <div className="bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-card space-y-4">
-        <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-          <Shield className="w-4 h-4 text-indigo-600" />
-          <h3 className="text-sm font-bold text-slate-900">
-            Role Scope & Permissions ({user?.role?.toUpperCase()})
-          </h3>
-        </div>
-
-        <div className="space-y-3 text-xs text-slate-600">
-          <p>
-            ResolveHub enforces strict server-side role boundaries to ensure enterprise data integrity:
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-            <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80 space-y-2">
-              <span className="font-bold text-slate-800 block flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-slate-500"></span> Member Capabilities:
-              </span>
-              <ul className="list-disc list-inside space-y-1 text-slate-600">
-                <li>Create and report new issues & bugs</li>
-                <li>View team issues for transparent collaboration</li>
-                <li>Edit details of issues created by you</li>
-                <li>Update progress of assigned tickets</li>
-                <li>Add discussion comments to any issue</li>
-              </ul>
-            </div>
-
-            <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100 space-y-2">
-              <span className="font-bold text-purple-900 block flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-purple-600"></span> Admin Privileges:
-              </span>
-              <ul className="list-disc list-inside space-y-1 text-purple-800">
-                <li>Assign and reassign issues across active members</li>
-                <li>Full editing and prioritization of all issues</li>
-                <li>Permanent deletion with cascade cleanup</li>
-                <li>Promote or demote teammate system roles</li>
-                <li>Self-demotion lockout protection</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* System Status */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-card">
-        <div className="flex items-center gap-2 pb-3 border-b border-slate-100 mb-4">
-          <Server className="w-4 h-4 text-indigo-600" />
-          <h3 className="text-sm font-bold text-slate-900">API Connection & Diagnostics</h3>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-slate-400 block">Service Name</span>
-            <span className="font-semibold text-slate-800 block mt-0.5">ResolveHub v1.0.0</span>
-          </div>
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-slate-400 block">Auth Session</span>
-            <span className="font-semibold text-emerald-600 block mt-0.5">
-              HttpOnly Secure Cookie
-            </span>
-          </div>
-          <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <span className="text-slate-400 block">Environment</span>
-            <span className="font-mono text-slate-700 block mt-0.5">Development (Active)</span>
-          </div>
-        </div>
       </div>
     </div>
   );

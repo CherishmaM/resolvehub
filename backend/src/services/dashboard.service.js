@@ -24,8 +24,8 @@ export const getDashboardStats = async (currentUser) => {
     Issue.find()
       .sort({ createdAt: -1 })
       .limit(5)
-      .populate('createdBy', 'name email avatar role')
-      .populate('assignedTo', 'name email avatar role'),
+      .populate('createdBy', 'name email avatar role jobTitle')
+      .populate('assignedTo', 'name email avatar role jobTitle'),
     currentUser ? Issue.countDocuments({ assignedTo: currentUser._id, status: { $ne: 'Resolved' } }) : 0,
   ]);
 

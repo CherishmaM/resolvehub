@@ -6,6 +6,10 @@ export const ISSUE_CATEGORIES = [
   'Database',
   'UI/UX',
   'Feature Request',
+  'DevOps',
+  'QA Testing',
+  'Web Development',
+  'Backend API',
   'Other',
 ];
 
@@ -63,6 +67,10 @@ const issueSchema = new mongoose.Schema(
       ref: 'User',
       default: null,
       index: true,
+    },
+    imageUrl: {
+      type: String,
+      default: null,
     },
     resolvedAt: {
       type: Date,

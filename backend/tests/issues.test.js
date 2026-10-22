@@ -63,6 +63,7 @@ describe('Issues, Comments, & Activity API Tests', () => {
       expect(res.body.data.priority).toBe('High');
       expect(res.body.data.category).toBe('Frontend');
       expect(res.body.data.createdBy._id).toBe(memberUser._id);
+      expect(res.body.data.imageUrl).toBeNull();
 
       // Check activity log was created
       const issueId = res.body.data._id;
@@ -177,6 +178,40 @@ describe('Issues, Comments, & Activity API Tests', () => {
       expect(actions).toContain('Status Changed');
     });
 
+    it('should allow any team member to close off and reopen an issue created by someone else', async () => {
+      // Admin creates an issue
+      const adminIssueRes = await request(app)
+        .post('/api/v1/issues')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          title: 'Admin created server memory spike',
+          description: 'Investigate memory consumption on worker nodes',
+          category: 'Backend',
+          priority: 'High',
+        });
+      const adminIssueId = adminIssueRes.body.data._id;
+
+      // Regular member closes off the admin's issue
+      const closeRes = await request(app)
+        .patch(`/api/v1/issues/${adminIssueId}/status`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({ status: 'Closed' });
+
+      expect(closeRes.status).toBe(200);
+      expect(closeRes.body.data.status).toBe('Closed');
+      expect(closeRes.body.data.resolvedAt).not.toBeNull();
+
+      // Regular member reopens the issue
+      const reopenRes = await request(app)
+        .patch(`/api/v1/issues/${adminIssueId}/status`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({ status: 'Open' });
+
+      expect(reopenRes.status).toBe(200);
+      expect(reopenRes.body.data.status).toBe('Open');
+      expect(reopenRes.body.data.resolvedAt).toBeNull();
+    });
+
     it('should allow admin to assign issue and reject member from assigning', async () => {
       // Member trying to assign -> 403 Forbidden
       const memberAssignRes = await request(app)
@@ -194,6 +229,53 @@ describe('Issues, Comments, & Activity API Tests', () => {
 
       expect(adminAssignRes.status).toBe(200);
       expect(adminAssignRes.body.data.assignedTo._id).toBe(memberUser._id);
+    });
+
+    it('should save assignee changes when editing an issue via PATCH /api/v1/issues/:id', async () => {
+      // Admin edits the issue to change assignedTo to memberUser
+      const editRes = await request(app)
+        .patch(`/api/v1/issues/${issueId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          title: 'Issue for testing status workflow (Updated)',
+          assignedTo: memberUser._id,
+        });
+
+      expect(editRes.status).toBe(200);
+      expect(editRes.body.data.assignedTo).toBeDefined();
+      expect(editRes.body.data.assignedTo._id).toBe(memberUser._id);
+      expect(editRes.body.data.assignedTo.name).toBe(memberUser.name);
+
+      // Verify persistence by fetching directly from DB
+      const getRes = await request(app)
+        .get(`/api/v1/issues/${issueId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(getRes.status).toBe(200);
+      expect(getRes.body.data.assignedTo._id).toBe(memberUser._id);
+
+      // Admin edits again to unassign (null)
+      const unassignRes = await request(app)
+        .patch(`/api/v1/issues/${issueId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          assignedTo: null,
+        });
+
+      expect(unassignRes.status).toBe(200);
+      expect(unassignRes.body.data.assignedTo).toBeNull();
+
+      // Creator member edits the issue they created to set assignee
+      const creatorEditRes = await request(app)
+        .patch(`/api/v1/issues/${issueId}`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .send({
+          title: 'Issue for testing status workflow (Updated by creator)',
+          assignedTo: adminUser._id,
+        });
+
+      expect(creatorEditRes.status).toBe(200);
+      expect(creatorEditRes.body.data.assignedTo._id).toBe(adminUser._id.toString());
     });
 
     it('should forbid regular member from deleting an issue, but permit admin', async () => {

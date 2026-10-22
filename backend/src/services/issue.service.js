@@ -2,10 +2,12 @@ import { Issue } from '../models/Issue.js';
 import { User } from '../models/User.js';
 import { Comment } from '../models/Comment.js';
 import { Activity } from '../models/Activity.js';
+import { Notification } from '../models/Notification.js';
 import { ApiError } from '../utils/apiError.js';
 import { logActivity } from './activity.service.js';
+import { notifyIssueCreated, notifyTaskAssigned } from './notification.service.js';
 
-const POPULATE_FIELDS = 'name email avatar role';
+const POPULATE_FIELDS = 'name email avatar role jobTitle';
 
 export const createIssue = async ({
   title,
@@ -13,6 +15,7 @@ export const createIssue = async ({
   category,
   priority = 'Medium',
   assignedTo = null,
+  imageUrl = null,
   user,
 }) => {
   let assigneeUser = null;
@@ -31,6 +34,7 @@ export const createIssue = async ({
     status: 'Open',
     createdBy: user._id,
     assignedTo: assigneeUser ? assigneeUser._id : null,
+    imageUrl,
     resolvedAt: null,
   });
 
@@ -46,6 +50,8 @@ export const createIssue = async ({
       assignedToName: assigneeUser ? assigneeUser.name : null,
     },
   });
+
+  await notifyIssueCreated({ issue, actorId: user._id });
 
   return Issue.findById(issue._id)
     .populate('createdBy', POPULATE_FIELDS)
@@ -161,6 +167,49 @@ export const updateIssue = async ({ id, updates, user }) => {
     changes.push({ action: 'Updated', details: { field: 'category', newCategory: updates.category } });
   }
 
+  if (updates.imageUrl !== undefined && updates.imageUrl !== issue.imageUrl) {
+    issue.imageUrl = updates.imageUrl;
+    changes.push({ action: 'Updated', details: { field: 'imageUrl' } });
+  }
+
+  if (updates.assignedTo !== undefined) {
+    const targetAssigneeId = updates.assignedTo ? updates.assignedTo.toString() : null;
+    const previousAssigneeId = issue.assignedTo ? issue.assignedTo.toString() : null;
+
+    if (targetAssigneeId !== previousAssigneeId) {
+      let newAssigneeUser = null;
+      if (updates.assignedTo) {
+        newAssigneeUser = await User.findById(updates.assignedTo);
+        if (!newAssigneeUser || !newAssigneeUser.isActive) {
+          throw ApiError.badRequest('Assigned user does not exist or is inactive');
+        }
+      }
+
+      const previousAssigneeUser = issue.assignedTo
+        ? await User.findById(issue.assignedTo)
+        : null;
+
+      const newAssigneeId = newAssigneeUser ? newAssigneeUser._id.toString() : null;
+
+      issue.assignedTo = newAssigneeUser ? newAssigneeUser._id : null;
+      changes.push({
+        action: 'Assigned',
+        details: {
+          fromAssignee: previousAssigneeUser ? previousAssigneeUser.name : 'Unassigned',
+          toAssignee: newAssigneeUser ? newAssigneeUser.name : 'Unassigned',
+        },
+      });
+
+      if (newAssigneeId && newAssigneeId !== previousAssigneeId) {
+        await notifyTaskAssigned({
+          issue,
+          assigneeId: newAssigneeUser._id,
+          actorId: user._id,
+        });
+      }
+    }
+  }
+
   await issue.save();
 
   // Log all recorded changes to activity feed
@@ -182,15 +231,6 @@ export const updateStatus = async ({ id, status, user }) => {
   const issue = await Issue.findById(id);
   if (!issue) {
     throw ApiError.notFound('Issue not found');
-  }
-
-  const isAdmin = user.role === 'admin';
-  const isCreator = issue.createdBy.toString() === user._id.toString();
-  const isAssignee = issue.assignedTo && issue.assignedTo.toString() === user._id.toString();
-
-  // Allowed if admin, creator, or assigned team member
-  if (!isAdmin && !isCreator && !isAssignee) {
-    throw ApiError.forbidden('You are not authorized to change the status of this issue');
   }
 
   if (issue.status === status) {
@@ -248,6 +288,9 @@ export const assignIssue = async ({ id, assignedTo, user }) => {
     ? await User.findById(issue.assignedTo)
     : null;
 
+  const previousAssigneeId = issue.assignedTo ? issue.assignedTo.toString() : null;
+  const newAssigneeId = newAssigneeUser ? newAssigneeUser._id.toString() : null;
+
   issue.assignedTo = newAssigneeUser ? newAssigneeUser._id : null;
   await issue.save();
 
@@ -260,6 +303,15 @@ export const assignIssue = async ({ id, assignedTo, user }) => {
       toAssignee: newAssigneeUser ? newAssigneeUser.name : 'Unassigned',
     },
   });
+
+  // Notify assigned user only when assignee actually changes to them
+  if (newAssigneeId && newAssigneeId !== previousAssigneeId) {
+    await notifyTaskAssigned({
+      issue,
+      assigneeId: newAssigneeUser._id,
+      actorId: user._id,
+    });
+  }
 
   return Issue.findById(issue._id)
     .populate('createdBy', POPULATE_FIELDS)
@@ -278,10 +330,11 @@ export const deleteIssue = async ({ id, user }) => {
 
   await Issue.findByIdAndDelete(id);
 
-  // Clean up associated comments and activities
+  // Clean up associated comments, activities, and notifications
   await Promise.all([
     Comment.deleteMany({ issueId: id }),
     Activity.deleteMany({ issueId: id }),
+    Notification.deleteMany({ issueId: id }),
   ]);
 
   return { message: 'Issue and associated history deleted successfully' };

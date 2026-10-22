@@ -1,15 +1,29 @@
 import React from 'react';
-import { getStatusBadgeStyle } from '../../utils/formatters';
 
-export const StatusBadge = ({ status }) => {
-  const style = getStatusBadgeStyle(status);
+export const StatusBadge = ({ status, showOriginal = false }) => {
+  const labelMap = {
+    Open: 'To Do',
+    'In Progress': 'In Progress',
+    Resolved: 'Done',
+    Closed: 'Backlog',
+  };
+
+  const label = showOriginal ? status : (labelMap[status] || status);
+
+  const styleMap = {
+    Open: 'bg-[#f1f5f9] text-[#475569] border border-slate-200/60',
+    'In Progress': 'bg-[#f1f5f9] text-[#475569] border border-slate-200/60',
+    Resolved: 'bg-[#f1f5f9] text-[#475569] border border-slate-200/60',
+    Closed: 'bg-[#f1f5f9] text-[#475569] border border-slate-200/60',
+  };
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${style.bg}`}
+      className={`inline-flex items-center justify-center px-3 py-1 rounded-lg text-xs font-medium ${
+        styleMap[status] || 'bg-[#f1f5f9] text-[#475569]'
+      }`}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-      {status}
+      {label}
     </span>
   );
 };

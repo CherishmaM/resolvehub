@@ -45,12 +45,17 @@ export const CommentList = ({ comments = [] }) => {
                     <span
                       className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase ${
                         isAdmin
-                          ? 'bg-purple-100 text-purple-700'
+                          ? 'bg-[#f3f0ff] text-[#5b42d6] border border-[#e0d9fc]'
                           : 'bg-slate-100 text-slate-600'
                       }`}
                     >
                       {author.role || 'member'}
                     </span>
+                    {author.jobTitle && (
+                      <span className="text-[10px] text-slate-400">
+                        • {author.jobTitle}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

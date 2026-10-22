@@ -14,7 +14,8 @@ export const registerSchema = z.object({
   password: z
     .string({ required_error: 'Password is required' })
     .min(6, 'Password must be at least 6 characters long'),
-  avatar: z.string().url('Avatar must be a valid URL').optional().or(z.literal('')),
+  jobTitle: z.string().trim().max(50).optional(),
+  avatar: z.string().optional(),
 });
 
 export const loginSchema = z.object({
@@ -35,5 +36,6 @@ export const updateProfileSchema = z.object({
     .min(2, 'Name must be at least 2 characters')
     .max(50, 'Name cannot exceed 50 characters')
     .optional(),
-  avatar: z.string().url('Avatar must be a valid URL').optional().or(z.literal('')),
+  jobTitle: z.string().trim().max(50).optional(),
+  avatar: z.string().optional(),
 });

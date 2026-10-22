@@ -1,123 +1,123 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   CheckSquare,
   PlusCircle,
   Users,
-  Settings,
-  LogOut,
-  Layers,
   X,
-  Sparkles,
+  ChevronsLeft,
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { Logo } from '../ui/Logo';
 
 export const Sidebar = ({ isOpen, onClose }) => {
-  const { user, logout, isAdmin } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
+  const location = useLocation();
 
   const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'All Issues', path: '/issues', icon: CheckSquare },
-    { name: 'New Issue', path: '/issues/new', icon: PlusCircle },
-    { name: 'Team Members', path: '/team', icon: Users },
-    { name: 'Settings & Profile', path: '/settings', icon: Settings },
+    {
+      name: 'Dashboard',
+      path: '/dashboard',
+      icon: LayoutDashboard,
+    },
+    {
+      name: 'Bug Tracker',
+      path: '/issues',
+      icon: CheckSquare,
+    },
+    {
+      name: 'New Issue',
+      path: '/issues/new',
+      icon: PlusCircle,
+    },
+    {
+      name: 'Team Members',
+      path: '/team',
+      icon: Users,
+    },
   ];
 
+  const isItemActive = (path) => {
+    if (path === '/issues/new') {
+      return location.pathname === '/issues/new';
+    }
+    if (path === '/issues') {
+      return (
+        location.pathname === '/issues' ||
+        (location.pathname.startsWith('/issues/') && location.pathname !== '/issues/new')
+      );
+    }
+    if (path === '/dashboard') {
+      return location.pathname === '/dashboard' || location.pathname === '/';
+    }
+    if (path === '/team') {
+      return location.pathname === '/team' || location.pathname.startsWith('/team/');
+    }
+    return location.pathname === path;
+  };
+
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-[#0a0e1a] text-slate-300 border-r border-slate-800/80">
-      {/* Brand Header */}
-      <div className="flex items-center justify-between px-5 py-5 border-b border-slate-800/60">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/25 ring-1 ring-white/20">
-            <Layers className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-base font-bold text-white tracking-tight">ResolveHub</h1>
-              <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-            </div>
-            <p className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">
-              Issue Tracking Platform
-            </p>
-          </div>
-        </div>
+    <div className="flex flex-col h-full bg-white text-slate-700 border-r border-[#eef0f6] select-none">
+      {/* Brand Header with Theme-Matched Logo */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[#f1f2f7]">
+        <Link to="/dashboard" className="flex items-center hover:opacity-95 transition-opacity">
+          <Logo size="md" />
+        </Link>
+
         {onClose && (
           <button
             onClick={onClose}
-            className="md:hidden text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800/60 transition-colors"
+            className="md:hidden text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+            aria-label="Close sidebar"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         )}
+
+        <button
+          type="button"
+          className="hidden md:inline-flex text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+          title="Sidebar view"
+          aria-label="Sidebar view"
+        >
+          <ChevronsLeft className="w-4 h-4" />
+        </button>
       </div>
 
-      {/* Navigation Links */}
+      {/* Main Navigation Links */}
       <nav className="flex-1 px-3.5 py-5 space-y-1 overflow-y-auto">
-        <p className="px-3 pb-2 text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
-          WORKSPACE
+        <p className="px-3 pb-2 text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+          MAIN
         </p>
+
         {navItems.map((item) => {
           const Icon = item.icon;
+          const active = isItemActive(item.path);
           return (
-            <NavLink
+            <Link
               key={item.path}
               to={item.path}
               onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                  isActive
-                    ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-semibold shadow-sm shadow-indigo-600/30 border border-indigo-400/20'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                }`
-              }
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs transition-all ${
+                active
+                  ? 'bg-[#ede9fe]/90 text-[#5b42d6] font-semibold shadow-2xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-[#f8f9fc] font-medium'
+              }`}
             >
-              <Icon className="w-4 h-4 shrink-0" />
-              <span>{item.name}</span>
-            </NavLink>
+              <Icon
+                className={`w-4 h-4 shrink-0 stroke-[1.8] ${
+                  active ? 'text-[#5b42d6]' : 'text-slate-400'
+                }`}
+              />
+              <span className="truncate">{item.name}</span>
+            </Link>
           );
         })}
       </nav>
 
-      {/* User Footer Profile */}
-      <div className="p-3.5 border-t border-slate-800/80 bg-slate-900/40">
-        <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition-colors">
-          <img
-            src={
-              user?.avatar ||
-              `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user?.name || 'User')}`
-            }
-            alt={user?.name}
-            className="w-9 h-9 rounded-full object-cover border border-slate-700 bg-slate-800 shrink-0"
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-white truncate">{user?.name}</p>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span
-                className={`inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider ${
-                  isAdmin
-                    ? 'bg-purple-900/60 text-purple-300 border border-purple-700/60'
-                    : 'bg-slate-800 text-slate-300 border border-slate-700'
-                }`}
-              >
-                {user?.role}
-              </span>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            title="Sign out"
-            className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
+      {/* Minimal Footer */}
+      <div className="px-5 py-3.5 border-t border-[#f1f2f7] bg-[#fbfbfe]/50 flex items-center justify-between text-[11px] text-slate-400">
+        <span className="font-medium text-slate-500">ResolveHub</span>
+        <span className="font-mono text-[10px] text-slate-400">v1.0.0</span>
       </div>
     </div>
   );
@@ -125,7 +125,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
   return (
     <>
       {/* Desktop static sidebar */}
-      <aside className="hidden md:flex flex-col w-64 shrink-0 h-screen sticky top-0 shadow-xl z-20">
+      <aside className="hidden md:flex flex-col w-60 shrink-0 h-screen sticky top-0 shadow-xs z-20">
         {sidebarContent}
       </aside>
 
@@ -133,10 +133,10 @@ export const Sidebar = ({ isOpen, onClose }) => {
       {isOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"
             onClick={onClose}
           />
-          <div className="fixed inset-y-0 left-0 w-72 max-w-full z-10 shadow-2xl">
+          <div className="fixed inset-y-0 left-0 w-64 max-w-full z-10 shadow-2xl">
             {sidebarContent}
           </div>
         </div>

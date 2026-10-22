@@ -1,21 +1,43 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Layers, ArrowRight, Lock, Mail, User } from 'lucide-react';
+import { Logo } from '../components/ui/Logo';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
+import { AuthShowcase } from '../components/auth/AuthShowcase';
+import {
+  User,
+  Mail,
+  Lock,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Briefcase,
+} from 'lucide-react';
+
+const POPULAR_JOB_TITLES = [
+  'Frontend Engineer',
+  'Backend Engineer',
+  'Full-Stack Developer',
+  'QA Engineer',
+  'Product Manager',
+  'UI/UX Designer',
+  'DevOps / SRE',
+];
 
 export const Register = () => {
-  const { register } = useAuth();
-  const navigate = useNavigate();
-
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    jobTitle: 'Frontend Engineer',
     password: '',
-    confirmPassword: '',
   });
-  const [error, setError] = useState('');
+
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,18 +48,23 @@ export const Register = () => {
     e.preventDefault();
     setError('');
 
-    if (formData.name.trim().length < 2) {
-      setError('Name must be at least 2 characters long.');
+    if (!formData.name.trim()) {
+      setError('Full name is required.');
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setError('Work email is required.');
+      return;
+    }
+
+    if (!formData.jobTitle.trim()) {
+      setError('Please select or specify your job title.');
       return;
     }
 
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long.');
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
       return;
     }
 
@@ -47,8 +74,10 @@ export const Register = () => {
       await register({
         name: formData.name.trim(),
         email: formData.email.trim(),
+        jobTitle: formData.jobTitle.trim(),
         password: formData.password,
       });
+      window.scrollTo(0, 0);
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.message || 'Failed to create account. Please try again.');
@@ -58,123 +87,199 @@ export const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col justify-center py-12 sm:px-6 lg:px-8 selection:bg-indigo-500 selection:text-white">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25 ring-1 ring-white/20 mb-3.5">
-          <Layers className="w-6 h-6" />
+    <div className="min-h-screen bg-gradient-to-br from-[#f8f9ff] via-[#f3f4fe] to-[#ebeeff] flex flex-col justify-between font-geist selection:bg-[#6257D9] selection:text-white relative overflow-hidden">
+      {/* Background ambient gradient glow with subtle pulsing animation */}
+      <div className="absolute -bottom-28 -right-28 pointer-events-none w-[540px] h-[540px] rounded-full bg-gradient-to-tr from-[#6257D9]/20 to-[#a78bfa]/15 blur-2xl animate-pulse-glow" />
+      <div
+        className="absolute -top-32 -left-32 pointer-events-none w-[420px] h-[420px] rounded-full bg-gradient-to-br from-[#e0e7ff]/40 to-[#c7d2fe]/20 blur-3xl animate-pulse-glow"
+        style={{ animationDelay: '3.5s' }}
+      />
+
+      {/* Top Header Navigation */}
+      <header className="w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 pt-6 sm:pt-8 pb-3 flex items-center justify-between z-10">
+        <Link to="/" className="inline-flex items-center hover:opacity-90 transition-opacity">
+          <Logo size="md" />
+        </Link>
+        <div className="text-xs sm:text-sm text-slate-500 font-normal">
+          Already have an account?{' '}
+          <Link to="/login" className="font-medium text-[#6257D9] hover:text-[#5246c7] hover:underline ml-1">
+            Sign in
+          </Link>
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
-          Create ResolveHub Account
-        </h2>
-        <p className="mt-1 text-xs text-slate-500">
-          Join your engineering team to report and resolve issues
-        </p>
-      </div>
+      </header>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 sm:px-10 shadow-sm border border-slate-200/80 rounded-2xl space-y-6">
-          {error && <ErrorMessage message={error} />}
+      {/* Main Content Area */}
+      <main className="w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 pt-4 sm:pt-6 pb-12 flex-1 flex flex-col lg:flex-row items-start justify-between gap-12 xl:gap-16 z-10">
+        {/* Left Column: Form Section */}
+        <div className="w-full lg:w-[45%] xl:w-[42%] max-w-md mx-auto lg:mx-0">
+          <div className="mb-6">
+            <span className="text-[11px] font-semibold tracking-widest text-[#6257D9] uppercase">
+              CREATE ACCOUNT
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-semibold text-[#20212B] tracking-tight leading-tight mt-1.5">
+              Get started with<br />
+              Resolve<span className="text-[#6257D9]">Hub</span>.
+            </h1>
+            <p className="text-sm text-slate-500 mt-2 font-normal">
+              Join your team and start resolving issues, all in one place.
+            </p>
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="mb-4">
+              <ErrorMessage message={error} />
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             {/* Full Name */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Full Name
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-[#20212B]">
+                Full name
               </label>
-              <div className="relative">
-                <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <div className="relative rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 focus-within:border-[#6257D9] focus-within:ring-4 focus-within:ring-[#6257D9]/10 shadow-xs hover:shadow-subtle focus-within:shadow-md focus-within:shadow-[#6257D9]/10 transition-all duration-200">
+                <User className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="e.g. Jane Doe"
+                  placeholder="John Doe"
                   required
-                  className="w-full pl-9 pr-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  autoFocus
+                  className="w-full pl-11 pr-4 py-3 text-sm font-normal bg-transparent rounded-2xl text-[#20212B] placeholder:text-slate-400 focus:outline-none"
                 />
               </div>
             </div>
 
-            {/* Email */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Work Email
+            {/* Work Email */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-[#20212B]">
+                Work email
               </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <div className="relative rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 focus-within:border-[#6257D9] focus-within:ring-4 focus-within:ring-[#6257D9]/10 shadow-xs hover:shadow-subtle focus-within:shadow-md focus-within:shadow-[#6257D9]/10 transition-all duration-200">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="jane@company.com"
+                  placeholder="you@company.com"
                   required
-                  className="w-full pl-9 pr-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  className="w-full pl-11 pr-4 py-3 text-sm font-normal bg-transparent rounded-2xl text-[#20212B] placeholder:text-slate-400 focus:outline-none"
                 />
+              </div>
+            </div>
+
+            {/* Choose Job Title / Role */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-medium text-[#20212B]">
+                  Job title / Role
+                </label>
+                <span className="text-[10px] text-slate-400 font-normal">Click a chip or type below</span>
+              </div>
+              <div className="relative rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 focus-within:border-[#6257D9] focus-within:ring-4 focus-within:ring-[#6257D9]/10 shadow-xs hover:shadow-subtle focus-within:shadow-md focus-within:shadow-[#6257D9]/10 transition-all duration-200">
+                <Briefcase className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  name="jobTitle"
+                  value={formData.jobTitle}
+                  onChange={handleChange}
+                  placeholder="e.g. Frontend Engineer, Product Manager"
+                  required
+                  maxLength={50}
+                  className="w-full pl-11 pr-4 py-3 text-sm font-normal bg-transparent rounded-2xl text-[#20212B] placeholder:text-slate-400 focus:outline-none"
+                />
+              </div>
+              {/* Quick Select Chips */}
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {POPULAR_JOB_TITLES.map((title) => (
+                  <button
+                    key={title}
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, jobTitle: title }))}
+                    className={`text-[10px] px-2.5 py-1 rounded-xl transition-all duration-150 font-normal ${
+                      formData.jobTitle === title
+                        ? 'bg-[#6257D9] text-white shadow-xs font-medium'
+                        : 'bg-white hover:bg-[#eef2ff] hover:text-[#6257D9] text-slate-600 border border-slate-200/80 shadow-2xs'
+                    }`}
+                  >
+                    {title}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Password */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-[#20212B]">
                 Password
               </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <div className="relative rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 focus-within:border-[#6257D9] focus-within:ring-4 focus-within:ring-[#6257D9]/10 shadow-xs hover:shadow-subtle focus-within:shadow-md focus-within:shadow-[#6257D9]/10 transition-all duration-200">
+                <Lock className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="At least 6 characters"
+                  placeholder="Create a password (min 6 characters)"
                   required
-                  className="w-full pl-9 pr-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  className="w-full pl-11 pr-11 py-3 text-sm font-normal bg-transparent rounded-2xl text-[#20212B] placeholder:text-slate-400 focus:outline-none font-mono"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
               </div>
             </div>
 
-            {/* Confirm Password */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Repeat your password"
-                  required
-                  className="w-full pl-9 pr-3.5 py-2.5 text-sm bg-white border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm shadow-indigo-600/30 transition-all disabled:opacity-50"
-            >
-              <span>{loading ? 'Creating account...' : 'Create Account'}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
-
-          <div className="text-center pt-2 border-t border-slate-100">
-            <p className="text-xs text-slate-500">
-              Already registered?{' '}
-              <Link
-                to="/login"
-                className="font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+            {/* Primary Action Button */}
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="group w-full py-3.5 px-6 rounded-2xl font-medium text-sm text-white bg-[#6257D9] hover:bg-[#5246c7] shadow-md shadow-[#6257D9]/25 hover:shadow-xl hover:shadow-[#6257D9]/35 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                Sign in to your account
-              </Link>
-            </p>
-          </div>
+                <span>{loading ? 'Creating account...' : 'Create account'}</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+              </button>
+            </div>
+
+            {/* Bottom link */}
+            <div className="pt-3 text-center">
+              <p className="text-xs text-slate-500 font-normal">
+                Already have an account?{' '}
+                <Link
+                  to="/login"
+                  className="font-medium text-[#6257D9] hover:text-[#5246c7] hover:underline"
+                >
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </form>
         </div>
-      </div>
+
+        {/* Right Column: Visual Showcase Section */}
+        <div className="hidden lg:flex lg:w-[55%] xl:w-[58%] justify-end relative select-none">
+          <AuthShowcase />
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 py-4 flex items-center justify-between text-xs text-slate-400 font-normal z-10">
+        <span>ResolveHub &copy; {new Date().getFullYear()}</span>
+      </footer>
     </div>
   );
 };

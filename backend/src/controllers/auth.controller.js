@@ -4,11 +4,12 @@ import { setAuthCookie, clearAuthCookie } from '../utils/jwt.js';
 
 export const register = async (req, res, next) => {
   try {
-    const { name, email, password, avatar } = req.body;
+    const { name, email, password, jobTitle, avatar } = req.body;
     const { user, token } = await authService.registerUser({
       name,
       email,
       password,
+      jobTitle,
       avatar,
     });
 
@@ -68,9 +69,10 @@ export const getMe = async (req, res, next) => {
 
 export const updateProfile = async (req, res, next) => {
   try {
-    const { name, avatar } = req.body;
+    const { name, jobTitle, avatar } = req.body;
     const user = await authService.updateUserProfile(req.user._id, {
       name,
+      jobTitle,
       avatar,
     });
     return res

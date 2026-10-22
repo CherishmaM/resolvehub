@@ -2,7 +2,7 @@ import { User } from '../models/User.js';
 import { ApiError } from '../utils/apiError.js';
 import { generateToken } from '../utils/jwt.js';
 
-export const registerUser = async ({ name, email, password, avatar }) => {
+export const registerUser = async ({ name, email, password, jobTitle, avatar }) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw ApiError.conflict('An account with this email already exists');
@@ -16,6 +16,7 @@ export const registerUser = async ({ name, email, password, avatar }) => {
     email,
     passwordHash,
     role: 'member',
+    jobTitle: jobTitle || 'Software Engineer',
     avatar: avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`,
     isActive: true,
   });
@@ -51,7 +52,7 @@ export const getCurrentUser = async (userId) => {
   return user;
 };
 
-export const updateUserProfile = async (userId, { name, avatar }) => {
+export const updateUserProfile = async (userId, { name, jobTitle, avatar }) => {
   const user = await User.findById(userId);
   if (!user) {
     throw ApiError.notFound('User not found');
@@ -61,6 +62,10 @@ export const updateUserProfile = async (userId, { name, avatar }) => {
     user.name = name.trim();
   }
 
+  if (jobTitle !== undefined && jobTitle !== null) {
+    user.jobTitle = jobTitle.trim();
+  }
+
   if (avatar !== undefined && avatar !== null) {
     user.avatar = avatar.trim();
   }
@@ -68,4 +73,3 @@ export const updateUserProfile = async (userId, { name, avatar }) => {
   await user.save();
   return user;
 };
-

@@ -12,6 +12,24 @@ export const getUsers = async (req, res, next) => {
   }
 };
 
+export const createUser = async (req, res, next) => {
+  try {
+    const { name, email, role, jobTitle, password } = req.body;
+    const user = await userService.createUser({
+      name,
+      email,
+      role,
+      jobTitle,
+      password,
+    });
+    return res
+      .status(201)
+      .json(ApiResponse.created(user, 'Team member added successfully'));
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateRole = async (req, res, next) => {
   try {
     const { role } = req.body;
@@ -23,6 +41,20 @@ export const updateRole = async (req, res, next) => {
     return res
       .status(200)
       .json(ApiResponse.success(user, 'User role updated successfully'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteUser = async (req, res, next) => {
+  try {
+    const result = await userService.deleteUser({
+      targetUserId: req.params.id,
+      currentAdminUser: req.user,
+    });
+    return res
+      .status(200)
+      .json(ApiResponse.success(null, result.message));
   } catch (error) {
     next(error);
   }

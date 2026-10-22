@@ -7,7 +7,7 @@ import { Pagination } from '../components/ui/Pagination';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { EmptyState } from '../components/ui/EmptyState';
-import { Plus, CheckSquare } from 'lucide-react';
+import { CheckSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const Issues = () => {
@@ -113,21 +113,12 @@ export const Issues = () => {
 
   return (
     <div className="space-y-5">
-      {/* Header with Title and Create Action */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Issues Tracker</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Monitor, assign, and update status across all engineering tasks
-          </p>
-        </div>
-        <Link
-          to="/issues/new"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-600/30 transition-all shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Issue</span>
-        </Link>
+      {/* Header with Title matching Reference Design Image 2 */}
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Bug Tracker</h1>
+        <p className="text-xs text-slate-500 mt-1">
+          Visualize and manage your issues across engineering projects
+        </p>
       </div>
 
       {/* Filter Bar */}
@@ -160,7 +151,7 @@ export const Issues = () => {
               action={
                 <button
                   onClick={handleResetFilters}
-                  className="px-4 py-2 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+                  className="px-4 py-2 text-xs font-semibold text-[#5b42d6] bg-[#f3f0ff] hover:bg-[#ede9fe] rounded-lg transition-colors"
                 >
                   Clear Filters
                 </button>

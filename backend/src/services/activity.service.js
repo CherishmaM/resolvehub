@@ -18,5 +18,5 @@ export const logActivity = async ({ issueId, actorId, action, details = {} }) =>
 export const getIssueActivities = async (issueId) => {
   return Activity.find({ issueId })
     .sort({ createdAt: -1 })
-    .populate('actorId', 'name email avatar role');
+    .populate('actorId', 'name email avatar role jobTitle');
 };

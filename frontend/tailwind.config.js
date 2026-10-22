@@ -6,15 +6,42 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Geist', 'Inter', 'sans-serif'],
+        geist: ['Geist', 'sans-serif'],
+        jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
+      },
       colors: {
-        dark: {
-          950: '#070a12',
-          900: '#0b1120',
-          850: '#111827',
-          800: '#1e293b',
-          700: '#334155',
+        resolve: {
+          charcoal: '#20212B',
+          accent: '#6257D9',
+          'accent-hover': '#5246c7',
         },
-        brand: {
+        navy: {
+          950: '#080a14',
+          900: '#0e1222', // deep charcoal-indigo sidebar
+          850: '#13182c',
+          800: '#1e243d',
+          700: '#2d3758',
+        },
+        charcoal: {
+          950: '#0b0d14',
+          900: '#121520',
+          850: '#191d2c',
+          800: '#252b3e',
+          700: '#384059',
+          600: '#4e5875',
+          500: '#697495',
+        },
+        lavender: {
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          200: '#e9d5ff',
+          300: '#d8b4fe',
+          400: '#c084fc',
+          500: '#a855f7',
+        },
+        periwinkle: {
           50: '#eef2ff',
           100: '#e0e7ff',
           200: '#c7d2fe',
@@ -22,17 +49,29 @@ export default {
           400: '#818cf8',
           500: '#6366f1',
           600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
+        },
+        brand: {
+          50: '#fbfaff',
+          100: '#f3f0ff', // soft lavender highlight
+          200: '#e9e4fe',
+          300: '#d5cbfe',
+          400: '#a996f8',
+          500: '#7d68f2', // periwinkle
+          600: '#5b42d6', // signature Iris primary from reference design
+          700: '#4c35c2',
+          800: '#3d2a9c',
+          900: '#2d1b54', // deep plum
+          950: '#1b0e38',
         },
       },
       boxShadow: {
-        'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        'card': '0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04)',
+        '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
+        'subtle': '0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02)',
+        'card': '0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03)',
         'elevated': '0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04)',
+        'float': '0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05)',
       },
     },
   },
   plugins: [],
-}
+};

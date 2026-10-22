@@ -16,7 +16,7 @@ export const ConfirmDialog = ({
   const buttonVariantClass =
     confirmVariant === 'danger'
       ? 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500'
-      : 'bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500';
+      : 'bg-[#5b42d6] hover:bg-[#4c35c2] text-white focus:ring-[#5b42d6]';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">

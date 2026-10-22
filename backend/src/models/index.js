@@ -7,3 +7,4 @@ export {
 } from './Issue.js';
 export { Comment } from './Comment.js';
 export { Activity, ACTIVITY_ACTIONS } from './Activity.js';
+export { Notification, NOTIFICATION_TYPES } from './Notification.js';

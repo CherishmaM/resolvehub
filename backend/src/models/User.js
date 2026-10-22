@@ -31,6 +31,12 @@ const userSchema = new mongoose.Schema(
       },
       default: 'member',
     },
+    jobTitle: {
+      type: String,
+      trim: true,
+      default: 'Software Engineer',
+      maxlength: [50, 'Job title cannot exceed 50 characters'],
+    },
     avatar: {
       type: String,
       default: '',

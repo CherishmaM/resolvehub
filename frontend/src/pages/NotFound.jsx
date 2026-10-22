@@ -4,8 +4,8 @@ import { HelpCircle, Home } from 'lucide-react';
 
 export const NotFound = () => {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
-      <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl mb-4">
+    <div className="min-h-screen bg-[#f8f9fc] flex flex-col items-center justify-center p-6 text-center select-none">
+      <div className="p-4 bg-[#f3f0ff] text-[#5b42d6] border border-[#e0d9fc] rounded-2xl mb-4 shadow-sm">
         <HelpCircle className="w-12 h-12" />
       </div>
       <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">404</h1>
@@ -15,7 +15,7 @@ export const NotFound = () => {
       </p>
       <Link
         to="/dashboard"
-        className="mt-6 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-colors"
+        className="mt-6 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#5b42d6] hover:bg-[#4c35c2] rounded-xl shadow-sm shadow-[#5b42d6]/20 transition-colors"
       >
         <Home className="w-4 h-4" />
         <span>Return to Dashboard</span>

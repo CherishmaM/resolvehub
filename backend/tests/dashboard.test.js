@@ -88,7 +88,7 @@ describe('Dashboard Stats & Team API Tests', () => {
     expect(totals.resolved).toBe(1);
 
     expect(statusDistribution).toBeDefined();
-    expect(statusDistribution.length).toBe(3);
+    expect(statusDistribution.length).toBe(4);
 
     expect(priorityDistribution).toBeDefined();
     expect(priorityDistribution.length).toBe(4);

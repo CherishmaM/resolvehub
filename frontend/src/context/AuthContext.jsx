@@ -27,8 +27,12 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, [checkAuth]);
 
-  const login = async (credentials) => {
-    const response = await loginApi(credentials);
+  const login = async (credentialsOrEmail, maybePassword) => {
+    const payload =
+      typeof credentialsOrEmail === 'string'
+        ? { email: credentialsOrEmail.trim(), password: maybePassword }
+        : credentialsOrEmail;
+    const response = await loginApi(payload);
     const loggedUser = response.data.user;
     setUser(loggedUser);
     return loggedUser;

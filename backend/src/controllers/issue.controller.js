@@ -3,13 +3,14 @@ import { ApiResponse } from '../utils/apiResponse.js';
 
 export const createIssue = async (req, res, next) => {
   try {
-    const { title, description, category, priority, assignedTo } = req.body;
+    const { title, description, category, priority, assignedTo, imageUrl } = req.body;
     const issue = await issueService.createIssue({
       title,
       description,
       category,
       priority,
       assignedTo,
+      imageUrl,
       user: req.user,
     });
 

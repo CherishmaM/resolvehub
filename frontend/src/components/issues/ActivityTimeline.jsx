@@ -13,11 +13,11 @@ import { formatRelativeTime } from '../../utils/formatters';
 const getActionIcon = (action) => {
   switch (action) {
     case 'Created':
-      return { icon: PlusCircle, color: 'text-indigo-600 bg-indigo-50 border-indigo-200' };
+      return { icon: PlusCircle, color: 'text-[#5b42d6] bg-[#f3f0ff] border-[#e0d9fc]' };
     case 'Assigned':
       return { icon: UserCheck, color: 'text-purple-600 bg-purple-50 border-purple-200' };
     case 'Status Changed':
-      return { icon: RefreshCw, color: 'text-blue-600 bg-blue-50 border-blue-200' };
+      return { icon: RefreshCw, color: 'text-[#5b42d6] bg-[#f3f0ff] border-[#e0d9fc]' };
     case 'Priority Changed':
       return { icon: AlertCircle, color: 'text-amber-600 bg-amber-50 border-amber-200' };
     case 'Comment Added':

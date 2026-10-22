@@ -4,6 +4,7 @@ import { User } from '../src/models/User.js';
 import { Issue } from '../src/models/Issue.js';
 import { Comment } from '../src/models/Comment.js';
 import { Activity } from '../src/models/Activity.js';
+import { Notification } from '../src/models/Notification.js';
 
 const seedDatabase = async () => {
   // Guard: Never run in production!
@@ -17,55 +18,29 @@ const seedDatabase = async () => {
   console.log(`\n🌱 [SEED] Connecting to MongoDB: ${env.MONGODB_URI}...`);
   await mongoose.connect(env.MONGODB_URI);
 
-  console.log('🧹 [SEED] Clearing existing records for clean demo environment...');
+  console.log('🧹 [SEED] Clearing existing records for clean environment...');
   await Promise.all([
     User.deleteMany({}),
     Issue.deleteMany({}),
     Comment.deleteMany({}),
     Activity.deleteMany({}),
+    Notification.deleteMany({}),
   ]);
 
-  console.log('👤 [SEED] Creating demo users...');
+  console.log('👤 [SEED] Setting up administrator account for Cherishma...');
   const adminPasswordHash = await User.hashPassword('Admin123!');
-  const memberPasswordHash = await User.hashPassword('Member123!');
 
   const admin = await User.create({
-    name: 'Alex Rivera (Admin)',
-    email: 'admin@fixflow.dev',
+    name: 'Cherishma',
+    email: 'm.cherishma7@gmail.com',
     passwordHash: adminPasswordHash,
     role: 'admin',
+    jobTitle: 'Workspace Administrator',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     isActive: true,
   });
 
-  const member1 = await User.create({
-    name: 'Sarah Chen (Lead Dev)',
-    email: 'sarah@fixflow.dev',
-    passwordHash: memberPasswordHash,
-    role: 'member',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
-    isActive: true,
-  });
-
-  const member2 = await User.create({
-    name: 'Marcus Vance (UI/UX)',
-    email: 'marcus@fixflow.dev',
-    passwordHash: memberPasswordHash,
-    role: 'member',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    isActive: true,
-  });
-
-  const member3 = await User.create({
-    name: 'Elena Rostova (Backend)',
-    email: 'elena@fixflow.dev',
-    passwordHash: memberPasswordHash,
-    role: 'member',
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-    isActive: true,
-  });
-
-  console.log('📝 [SEED] Creating 12 varied issues across categories and priorities...');
+  console.log('📝 [SEED] Creating issues across categories and priorities...');
   const issuesData = [
     {
       title: 'Stripe webhook verification failure during checkout',
@@ -73,8 +48,8 @@ const seedDatabase = async () => {
       category: 'Backend',
       priority: 'Critical',
       status: 'Open',
-      createdBy: member1._id,
-      assignedTo: member3._id,
+      createdBy: admin._id,
+      assignedTo: null,
     },
     {
       title: 'PostgreSQL connection pool exhaustion during peak hours',
@@ -82,8 +57,8 @@ const seedDatabase = async () => {
       category: 'Database',
       priority: 'High',
       status: 'In Progress',
-      createdBy: member3._id,
-      assignedTo: member3._id,
+      createdBy: admin._id,
+      assignedTo: admin._id,
     },
     {
       title: 'Mobile navigation menu overflow on iOS Safari',
@@ -91,8 +66,8 @@ const seedDatabase = async () => {
       category: 'UI/UX',
       priority: 'Medium',
       status: 'In Progress',
-      createdBy: member2._id,
-      assignedTo: member2._id,
+      createdBy: admin._id,
+      assignedTo: null,
     },
     {
       title: 'Add CSV / PDF export feature for monthly sprint audit',
@@ -109,8 +84,8 @@ const seedDatabase = async () => {
       category: 'Backend',
       priority: 'Critical',
       status: 'In Progress',
-      createdBy: member1._id,
-      assignedTo: member1._id,
+      createdBy: admin._id,
+      assignedTo: admin._id,
     },
     {
       title: 'Contrast ratio failure on secondary buttons in dark mode',
@@ -119,8 +94,8 @@ const seedDatabase = async () => {
       priority: 'Medium',
       status: 'Resolved',
       resolvedAt: new Date(Date.now() - 86400000 * 2),
-      createdBy: member2._id,
-      assignedTo: member2._id,
+      createdBy: admin._id,
+      assignedTo: null,
     },
     {
       title: 'Slow indexing on composite queries in issues collection',
@@ -129,8 +104,8 @@ const seedDatabase = async () => {
       priority: 'High',
       status: 'Resolved',
       resolvedAt: new Date(Date.now() - 86400000 * 4),
-      createdBy: member3._id,
-      assignedTo: member3._id,
+      createdBy: admin._id,
+      assignedTo: null,
     },
     {
       title: 'OAuth2 Google sign-in redirect URL mismatch in staging',
@@ -138,7 +113,7 @@ const seedDatabase = async () => {
       category: 'Frontend',
       priority: 'High',
       status: 'Open',
-      createdBy: member1._id,
+      createdBy: admin._id,
       assignedTo: admin._id,
     },
     {
@@ -147,8 +122,8 @@ const seedDatabase = async () => {
       category: 'Feature Request',
       priority: 'Low',
       status: 'Open',
-      createdBy: member2._id,
-      assignedTo: member2._id,
+      createdBy: admin._id,
+      assignedTo: null,
     },
     {
       title: 'Missing input sanitization in comment textarea',
@@ -158,7 +133,7 @@ const seedDatabase = async () => {
       status: 'Resolved',
       resolvedAt: new Date(Date.now() - 86400000 * 1),
       createdBy: admin._id,
-      assignedTo: member1._id,
+      assignedTo: null,
     },
     {
       title: 'Deadlock during bulk status update transactions',
@@ -166,8 +141,8 @@ const seedDatabase = async () => {
       category: 'Database',
       priority: 'High',
       status: 'In Progress',
-      createdBy: member3._id,
-      assignedTo: member3._id,
+      createdBy: admin._id,
+      assignedTo: null,
     },
     {
       title: 'Upgrade Node.js dependencies to address high security CVEs',
@@ -186,7 +161,6 @@ const seedDatabase = async () => {
     const issue = await Issue.create(data);
     createdIssues.push(issue);
 
-    // Create Created activity
     await Activity.create({
       issueId: issue._id,
       actorId: issue.createdBy,
@@ -220,27 +194,17 @@ const seedDatabase = async () => {
     }
   }
 
-  console.log('💬 [SEED] Adding demo comments...');
+  console.log('💬 [SEED] Adding discussion messages...');
   const sampleComments = [
     {
       issueId: createdIssues[0]._id,
-      userId: member3._id,
-      text: 'I reviewed the Stripe logs. Looks like the webhook signing secret was rotated yesterday in Doppler.',
-    },
-    {
-      issueId: createdIssues[0]._id,
       userId: admin._id,
-      text: 'Thanks Elena! I updated the production env secret. Running a dry-run test transaction now.',
+      text: 'I checked the webhook logs. Doppler secret rotation resolved the issue.',
     },
     {
       issueId: createdIssues[1]._id,
-      userId: member1._id,
-      text: 'Good catch on the unclosed cursor in generateMonthlyReport(). I am adding an explicit finally block.',
-    },
-    {
-      issueId: createdIssues[2]._id,
-      userId: member2._id,
-      text: 'Fixed with flex-col overflow-y-auto and touch-manipulation CSS classes. Verified on physical device.',
+      userId: admin._id,
+      text: 'Adding an explicit finally block to release pooled connections immediately.',
     },
   ];
 
@@ -256,11 +220,8 @@ const seedDatabase = async () => {
 
   console.log('\n✅ [SEED COMPLETE] Successfully populated database!');
   console.log('----------------------------------------------------');
-  console.log('🔑 DEMO CREDENTIALS FOR TESTING:');
-  console.log('   Admin:  admin@fixflow.dev  /  Admin123!');
-  console.log('   Member: sarah@fixflow.dev  /  Member123!');
-  console.log('   Member: marcus@fixflow.dev /  Member123!');
-  console.log('   Member: elena@fixflow.dev  /  Member123!');
+  console.log('🔑 ADMIN CREDENTIALS:');
+  console.log('   Cherishma: m.cherishma7@gmail.com  /  Admin123!');
   console.log('----------------------------------------------------\n');
 
   await mongoose.disconnect();

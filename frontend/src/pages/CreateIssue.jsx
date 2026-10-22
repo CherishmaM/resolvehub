@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { createIssueApi } from '../api/issues.api';
 import { IssueForm } from '../components/issues/IssueForm';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
-import { ChevronLeft } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 
 export const CreateIssue = () => {
   const navigate = useNavigate();
@@ -28,28 +28,24 @@ export const CreateIssue = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-5">
-      {/* Back link */}
-      <div>
-        <Link
-          to="/issues"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Back to all issues</span>
-        </Link>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header matching App Design System */}
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-2xl bg-[#ede9fe] text-[#5b42d6] flex items-center justify-center shrink-0 shadow-2xs">
+          <PlusCircle className="w-5 h-5 stroke-[2]" />
+        </div>
         <div>
-          <h2 className="text-lg font-bold text-slate-900 tracking-tight">Create New Issue</h2>
-          <p className="text-xs text-slate-500 mt-1">
-            Fill in the details below to log a bug, UI flaw, database problem, or feature request.
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Create New Issue</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Log a new bug, report a defect, or file a feature request for your engineering team
           </p>
         </div>
+      </div>
 
-        {error && <ErrorMessage message={error} />}
+      {error && <ErrorMessage message={error} />}
 
+      {/* Main Form Container Card */}
+      <div className="bg-white rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-xs">
         <IssueForm
           onSubmit={handleSubmit}
           loading={loading}
