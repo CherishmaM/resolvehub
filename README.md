@@ -1,6 +1,6 @@
-# FixFlow - Full-Stack Smart Issue & Request Tracker
+# ResolveHub - Full-Stack Smart Issue & Request Tracker
 
-FixFlow is a production-grade, full-stack issue and request tracking platform designed with clean architecture, enterprise security, intuitive UI/UX, and end-to-end integration across MongoDB, Express, React, and Node.js.
+ResolveHub is a production-grade, full-stack issue and request tracking platform designed with clean architecture, enterprise security, intuitive UI/UX, and end-to-end integration across MongoDB, Express, React, and Node.js.
 
 Team members can report software bugs, UI problems, backend failures, database bottlenecks, and feature requests. Leads and administrators can assign tickets, update progress through a structured workflow, leave discussion comments, and audit complete activity timelines.
 
