@@ -102,6 +102,7 @@ export const Dashboard = () => {
           color="purple"
           subtitle="All projects"
           loading={loading}
+          className="animate-fade-up"
         />
         <StatCard
           title="Open Bugs"
@@ -110,6 +111,7 @@ export const Dashboard = () => {
           color="amber"
           subtitle="Need attention"
           loading={loading}
+          className="animate-fade-up [animation-delay:60ms]"
         />
         <StatCard
           title="In Progress"
@@ -118,6 +120,7 @@ export const Dashboard = () => {
           color="blue"
           subtitle="Being worked on"
           loading={loading}
+          className="animate-fade-up [animation-delay:120ms]"
         />
         <StatCard
           title="Resolved"
@@ -126,13 +129,14 @@ export const Dashboard = () => {
           color="green"
           subtitle="Fixed & resolved"
           loading={loading}
+          className="animate-fade-up [animation-delay:180ms]"
         />
       </div>
 
       {/* 3. Urgent Action Alert Banner (informational, not clickable) */}
-      <div className="bg-[#ede9fe]/80 border border-[#ddd6fe] rounded-2xl p-4 sm:p-4.5 flex items-center justify-between shadow-2xs select-none">
+      <div className="bg-[#ede9fe]/80 border border-[#ddd6fe] rounded-2xl p-4 sm:p-4.5 flex items-center justify-between shadow-2xs select-none animate-slide-down [animation-delay:220ms]">
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#5b42d6] text-white flex items-center justify-center shrink-0 shadow-2xs">
+          <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#5b42d6] text-white flex items-center justify-center shrink-0 shadow-2xs ${criticalCount > 0 ? 'animate-subtle-bounce' : ''}`}>
             <AlertTriangle className="w-4 h-4 stroke-[2.2]" />
           </div>
           <div className="min-w-0">
@@ -151,7 +155,7 @@ export const Dashboard = () => {
       </div>
 
       {/* 4. Two-Column Lower Section: Recent Activity (left) + Severity Breakdown (right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start animate-fade-up [animation-delay:260ms]">
         {/* Left Column: Recent Activity (65% width) */}
         <div className="lg:col-span-7 xl:col-span-8 bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-2xs">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">

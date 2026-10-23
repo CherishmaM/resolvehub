@@ -23,7 +23,7 @@ export const AppLayout = () => {
     <div className="flex min-h-screen bg-gradient-to-br from-[#f8f9ff] via-[#f5f6fe] to-[#ebeeff] text-slate-800 font-sans selection:bg-[#5b42d6] selection:text-white relative overflow-x-hidden">
       {/* Top-left subtle ambient glow to unify canvas behind sidebar */}
       <div
-        className="fixed -top-32 -left-32 pointer-events-none select-none z-0 overflow-hidden w-[480px] h-[480px] rounded-full bg-gradient-to-br from-[#e0e7ff]/70 to-[#ddd6fe]/30 blur-3xl opacity-75"
+        className="fixed -top-32 -left-32 pointer-events-none select-none z-0 overflow-hidden w-[480px] h-[480px] rounded-full bg-gradient-to-br from-[#e0e7ff]/70 to-[#ddd6fe]/30 blur-3xl opacity-75 animate-ambient-drift"
         aria-hidden="true"
       />
 

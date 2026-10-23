@@ -5,7 +5,7 @@ export const ErrorMessage = ({ message, errors = [], onRetry }) => {
   if (!message) return null;
 
   return (
-    <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-sm">
+    <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm animate-slide-down">
       <div className="flex items-start gap-2.5">
         <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
         <div className="flex-1">

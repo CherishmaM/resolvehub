@@ -168,7 +168,7 @@ export const Team = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* 1. Header with Member Count & Add Action */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -366,7 +366,7 @@ export const Team = () => {
           onClick={() => !addLoading && setIsAddModalOpen(false)}
         >
           <div
-            className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-100 overflow-hidden"
+            className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-100 overflow-hidden animate-modal-pop"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-[#fbfbfe]">

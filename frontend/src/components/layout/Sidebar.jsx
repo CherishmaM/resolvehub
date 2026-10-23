@@ -97,7 +97,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
               key={item.path}
               to={item.path}
               onClick={onClose}
-              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs transition-all ${
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs transition-all duration-200 active:scale-[0.98] ${
                 active
                   ? 'bg-[#ede9fe]/90 text-[#5b42d6] font-semibold shadow-2xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-[#f8f9fc] font-medium'

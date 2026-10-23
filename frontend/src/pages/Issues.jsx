@@ -112,7 +112,7 @@ export const Issues = () => {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-fade-up">
       {/* Header with Title matching Reference Design Image 2 */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Bug Tracker</h1>

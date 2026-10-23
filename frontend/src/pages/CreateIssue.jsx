@@ -28,7 +28,7 @@ export const CreateIssue = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 animate-fade-up">
       {/* Header matching App Design System */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-[#ede9fe] text-[#5b42d6] flex items-center justify-center shrink-0 shadow-2xs">

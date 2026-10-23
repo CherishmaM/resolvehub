@@ -11,6 +11,7 @@ export const StatCard = ({
   loading = false,
   to,
   onClick,
+  className = '',
 }) => {
   const themeMap = {
     purple: {
@@ -60,11 +61,11 @@ export const StatCard = ({
 
   const CardContent = (
     <div
-      className={`relative overflow-hidden bg-white rounded-2xl border border-slate-100/90 p-5 shadow-2xs transition-all flex flex-col justify-between h-full ${
+      className={`relative overflow-hidden bg-white rounded-2xl border border-slate-100/90 p-5 shadow-2xs hover:-translate-y-0.5 hover:shadow-subtle transition-all duration-200 flex flex-col justify-between h-full ${
         isClickable
-          ? 'hover:border-slate-300/80 hover:shadow-xs cursor-pointer group'
+          ? 'hover:border-slate-300/80 cursor-pointer group'
           : 'select-none'
-      }`}
+      } ${className}`}
     >
       {/* Ambient subtle color wash in top-right */}
       <div

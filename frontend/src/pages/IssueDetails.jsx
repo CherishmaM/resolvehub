@@ -219,7 +219,7 @@ export const IssueDetails = () => {
   const categoryStyle = getCategoryBadgeStyle(issue.category);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* Top Navigation & Actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <Link

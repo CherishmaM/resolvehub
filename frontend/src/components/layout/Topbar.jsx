@@ -133,7 +133,7 @@ export const Topbar = ({ onToggleSidebar }) => {
           </button>
 
           {showProfileMenu && (
-            <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl border border-slate-100 shadow-xl z-50 overflow-hidden animate-fade-in select-none">
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl border border-slate-100 shadow-xl z-50 overflow-hidden animate-dropdown select-none">
               {/* User Identity Header */}
               <div className="p-4 border-b border-slate-100 bg-[#fbfbfe]">
                 <p className="text-xs font-bold text-slate-900 truncate">{user?.name}</p>
