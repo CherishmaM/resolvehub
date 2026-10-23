@@ -6,7 +6,6 @@ import {
   PlusCircle,
   Users,
   X,
-  ChevronsLeft,
 } from 'lucide-react';
 import { Logo } from '../ui/Logo';
 
@@ -72,15 +71,6 @@ export const Sidebar = ({ isOpen, onClose }) => {
             <X className="w-4 h-4" />
           </button>
         )}
-
-        <button
-          type="button"
-          className="hidden md:inline-flex text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
-          title="Sidebar view"
-          aria-label="Sidebar view"
-        >
-          <ChevronsLeft className="w-4 h-4" />
-        </button>
       </div>
 
       {/* Main Navigation Links */}
