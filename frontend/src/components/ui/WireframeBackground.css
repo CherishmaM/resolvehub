@@ -1,0 +1,72 @@
+/* Wireframe Background Styling */
+.wireframe-bg-root {
+  background-color: transparent;
+}
+
+/* Subtle moving wireframe grid with low-opacity blue-violet lines */
+.wireframe-grid-layer {
+  background-size: 44px 44px;
+  background-image: 
+    linear-gradient(to right, rgba(98, 87, 217, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(59, 130, 246, 0.045) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.18) 70%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.18) 70%, transparent 100%);
+  animation: wireframeGridDrift 50s linear infinite;
+}
+
+@keyframes wireframeGridDrift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 44px 44px;
+  }
+}
+
+/* Ambient soft blue-violet lighting gradients */
+.wireframe-ambient-glow-1 {
+  background: radial-gradient(circle at center, rgba(98, 87, 217, 0.11) 0%, rgba(139, 92, 246, 0.04) 45%, transparent 70%);
+  filter: blur(55px);
+  animation: wireframeAmbientFloat1 18s ease-in-out infinite;
+}
+
+.wireframe-ambient-glow-2 {
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.09) 0%, rgba(99, 102, 241, 0.035) 45%, transparent 70%);
+  filter: blur(65px);
+  animation: wireframeAmbientFloat2 24s ease-in-out infinite;
+}
+
+@keyframes wireframeAmbientFloat1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translate(-20px, 25px) scale(1.08);
+    opacity: 0.95;
+  }
+}
+
+@keyframes wireframeAmbientFloat2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(25px, -20px) scale(1.1);
+    opacity: 0.9;
+  }
+}
+
+.wireframe-canvas-container {
+  opacity: 0.95;
+}
+
+/* Respect user preferences for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .wireframe-grid-layer,
+  .wireframe-ambient-glow-1,
+  .wireframe-ambient-glow-2 {
+    animation: none !important;
+  }
+}

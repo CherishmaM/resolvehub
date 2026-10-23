@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Logo } from '../components/ui/Logo';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { AuthShowcase } from '../components/auth/AuthShowcase';
+import { WireframeBackground } from '../components/ui/WireframeBackground';
 import {
   Mail,
   Lock,
@@ -56,6 +57,9 @@ export const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8f9ff] via-[#f3f4fe] to-[#ebeeff] flex flex-col justify-between font-geist selection:bg-[#6257D9] selection:text-white relative overflow-hidden">
+      {/* Subtle enterprise 3D wireframe background & ambient lighting */}
+      <WireframeBackground variant="auth" />
+
       {/* Background ambient gradient glows with gentle pulsing animation */}
       <div className="absolute -bottom-28 -right-28 pointer-events-none w-[540px] h-[540px] rounded-full bg-gradient-to-tr from-[#6257D9]/20 to-[#a78bfa]/15 blur-2xl animate-pulse-glow" />
       <div
