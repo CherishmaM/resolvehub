@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getDashboardStatsApi } from '../api/dashboard.api';
+import { getUsersApi } from '../api/users.api';
 import { StatCard } from '../components/ui/StatCard';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { formatRelativeTime } from '../utils/formatters';
@@ -16,24 +17,38 @@ import {
   TrendingUp,
   Inbox,
   Plus,
+  Users,
 } from 'lucide-react';
 
 export const Dashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
+  const [teamCount, setTeamCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [barsAnimated, setBarsAnimated] = useState(false);
+  const hasLoadedOnce = useRef(false);
 
   const fetchStats = async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await getDashboardStatsApi();
-      setStats(response.data);
+      const [statsRes, usersRes] = await Promise.all([
+        getDashboardStatsApi(),
+        getUsersApi().catch(() => ({ data: [] })),
+      ]);
+      setStats(statsRes.data);
+      setTeamCount(Array.isArray(usersRes?.data) ? usersRes.data.length : 0);
+
+      // Trigger smooth bar sweep after real data lands
+      setTimeout(() => {
+        setBarsAnimated(true);
+      }, 60);
     } catch (err) {
       setError(err.message || 'Failed to load dashboard metrics.');
     } finally {
       setLoading(false);
+      hasLoadedOnce.current = true;
     }
   };
 
@@ -76,41 +91,90 @@ export const Dashboard = () => {
     ? Math.round((totals.resolved / totals.total) * 100)
     : 0;
 
-  // Max priority count for relative bar widths
-  const maxPriorityCount = Math.max(criticalCount, highCount, mediumCount, lowCount, 1);
+  // Severity configuration with distinct pastel tokens
+  const severityConfig = [
+    {
+      id: 'Critical',
+      label: 'Critical',
+      count: criticalCount,
+      color: 'bg-[#F43F5E]',
+      track: 'bg-[#FFE4E6]/70',
+      glow: 'group-hover:shadow-[0_0_12px_rgba(244,63,94,0.45)]',
+      textAccent: 'group-hover:text-[#F43F5E]',
+      badge: 'bg-[#FFE4E6] text-[#E11D48] border border-[#FECDD3]',
+      delay: '0ms',
+    },
+    {
+      id: 'High',
+      label: 'High',
+      count: highCount,
+      color: 'bg-[#FB923C]',
+      track: 'bg-[#FFEDD5]/70',
+      glow: 'group-hover:shadow-[0_0_12px_rgba(251,146,60,0.45)]',
+      textAccent: 'group-hover:text-[#FB923C]',
+      badge: 'bg-[#FFEDD5] text-[#C2410C] border border-[#FED7AA]',
+      delay: '70ms',
+    },
+    {
+      id: 'Medium',
+      label: 'Medium',
+      count: mediumCount,
+      color: 'bg-[#F59E0B]',
+      track: 'bg-[#FEF3C7]/70',
+      glow: 'group-hover:shadow-[0_0_12px_rgba(245,158,11,0.45)]',
+      textAccent: 'group-hover:text-[#F59E0B]',
+      badge: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]',
+      delay: '140ms',
+    },
+    {
+      id: 'Low',
+      label: 'Low',
+      count: lowCount,
+      color: 'bg-[#6257D9]',
+      track: 'bg-[#EDE9FE]/70',
+      glow: 'group-hover:shadow-[0_0_12px_rgba(98,87,217,0.45)]',
+      textAccent: 'group-hover:text-[#6257D9]',
+      badge: 'bg-[#EDE9FE] text-[#5B42D6] border border-[#DDD6FE]',
+      delay: '210ms',
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* 1. Header: Title & Subtitle matching Reference Design Image 1 */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          Dashboard
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Overview of your project's bug health and progress
-        </p>
+      {/* 1. Header: Title & Subtitle with Enterprise SaaS Polish */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#272443] tracking-tight">
+            Dashboard
+          </h1>
+          <p className="text-xs sm:text-sm text-[#5E597B] mt-1 font-medium">
+            Overview of your project's bug health, activity, and team progress
+          </p>
+        </div>
       </div>
 
       {error && <ErrorMessage message={error} onRetry={fetchStats} />}
 
-      {/* 2. Four KPI Stat Cards in a row with distinct, purposeful status colors (informational) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+      {/* 2. Soft Lavender & Pastel Statistic Cards with Real Data */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-5">
         <StatCard
-          title="Total Bugs"
+          title="Bug Tracker"
           value={totals.total}
           icon={Bug}
           color="purple"
-          subtitle="All projects"
+          subtitle="All logged tickets"
           loading={loading}
+          to="/issues"
           className="animate-fade-up"
         />
         <StatCard
-          title="Open Bugs"
+          title="New Issues"
           value={totals.open}
           icon={AlertTriangle}
           color="amber"
-          subtitle="Need attention"
+          subtitle="Needs attention"
           loading={loading}
+          to="/issues?status=Open"
           className="animate-fade-up [animation-delay:60ms]"
         />
         <StatCard
@@ -118,8 +182,9 @@ export const Dashboard = () => {
           value={totals.inProgress}
           icon={Clock}
           color="blue"
-          subtitle="Being worked on"
+          subtitle="Being resolved"
           loading={loading}
+          to="/issues?status=In Progress"
           className="animate-fade-up [animation-delay:120ms]"
         />
         <StatCard
@@ -127,248 +192,288 @@ export const Dashboard = () => {
           value={totals.resolved}
           icon={Check}
           color="green"
-          subtitle="Fixed & resolved"
+          subtitle="Fixed & closed"
           loading={loading}
+          to="/issues?status=Resolved"
           className="animate-fade-up [animation-delay:180ms]"
+        />
+        <StatCard
+          title="Team Members"
+          value={teamCount}
+          icon={Users}
+          color="brand"
+          subtitle="Active contributors"
+          loading={loading}
+          to="/team"
+          className="animate-fade-up [animation-delay:240ms]"
         />
       </div>
 
-      {/* 3. Urgent Action Alert Banner (informational, not clickable) */}
-      <div className="bg-[#ede9fe]/80 border border-[#ddd6fe] rounded-2xl p-4 sm:p-4.5 flex items-center justify-between shadow-2xs select-none animate-slide-down [animation-delay:220ms]">
-        <div className="flex items-center gap-3.5 min-w-0">
-          <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#5b42d6] text-white flex items-center justify-center shrink-0 shadow-2xs ${criticalCount > 0 ? 'animate-subtle-bounce' : ''}`}>
+      {/* 3. Urgent Action Alert Banner with Lavender Pastel Aesthetics */}
+      <div className="bg-gradient-to-r from-[#F0EBFF] via-[#F7F3FF] to-[#EEF4FF] border border-[#E3D9FF] rounded-2xl p-4 sm:p-4.5 flex items-center justify-between shadow-[0_4px_16px_-4px_rgba(98,87,217,0.08)] select-none animate-slide-down [animation-delay:220ms] relative overflow-hidden">
+        <div className="flex items-center gap-3.5 min-w-0 relative z-10">
+          <div
+            className={`w-9 h-9 rounded-xl bg-[#6257D9] text-white flex items-center justify-center shrink-0 shadow-2xs ${
+              criticalCount > 0 ? 'animate-subtle-bounce' : ''
+            }`}
+          >
             <AlertTriangle className="w-4 h-4 stroke-[2.2]" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs sm:text-sm font-bold text-[#3730a3] truncate">
+            <p className="text-xs sm:text-sm font-bold text-[#272443] truncate">
               {criticalCount > 0
                 ? `${criticalCount} critical bugs require immediate attention`
                 : 'All critical bugs resolved — 0 blockers active'}
             </p>
-            <p className="text-[11px] sm:text-xs text-[#6366f1] font-medium mt-0.5 truncate">
+            <p className="text-[11px] sm:text-xs text-[#6257D9] font-medium mt-0.5 truncate">
               {criticalCount > 0
                 ? `${criticalIssueKeys.join(', ')} — review these first`
                 : 'Great job! System health is looking strong across projects.'}
             </p>
           </div>
         </div>
+
+        {/* Ambient Corner Flare */}
+        <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-gradient-to-br from-[#6257D9]/10 via-[#3B82F6]/5 to-transparent blur-xl pointer-events-none" />
       </div>
 
       {/* 4. Two-Column Lower Section: Recent Activity (left) + Severity Breakdown (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start animate-fade-up [animation-delay:260ms]">
-        {/* Left Column: Recent Activity (65% width) */}
-        <div className="lg:col-span-7 xl:col-span-8 bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-2xs">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        {/* Left Column: Recent Activity (60-65% width) */}
+        <div className="lg:col-span-7 xl:col-span-8 relative overflow-hidden bg-gradient-to-br from-[#FAF8FF] via-white to-[#F7F3FF] rounded-2xl border border-[#E3D9FF] p-5 sm:p-6 shadow-[0_4px_20px_-4px_rgba(98,87,217,0.06)]">
+          {/* Subtle Ambient Radial Glow & Watermark in Corner */}
+          <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-gradient-to-br from-[#6257D9]/10 via-[#3B82F6]/5 to-transparent blur-2xl pointer-events-none" />
+          <svg
+            className="absolute -bottom-8 -right-8 w-44 h-44 text-[#6257D9] opacity-[0.035] pointer-events-none"
+            viewBox="0 0 120 120"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.2"
+          >
+            <circle cx="60" cy="60" r="54" strokeDasharray="4 4" />
+            <circle cx="60" cy="60" r="36" />
+            <circle cx="60" cy="60" r="18" strokeDasharray="2 2" />
+            <line x1="60" y1="6" x2="60" y2="114" />
+            <line x1="6" y1="60" x2="114" y2="60" />
+          </svg>
+
+          {/* Header */}
+          <div className="flex items-center justify-between pb-4 border-b border-[#E3D9FF]/70 relative z-10">
             <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-[#5b42d6]" />
-              <h2 className="text-sm font-bold text-slate-900">Recent Activity</h2>
+              <div className="w-7 h-7 rounded-lg bg-[#EAE2FF] text-[#6257D9] flex items-center justify-center border border-[#DDD0FE] shadow-2xs">
+                <Activity className="w-3.5 h-3.5 stroke-[2.2]" />
+              </div>
+              <h2 className="text-sm font-bold text-[#272443]">Recent Activity</h2>
             </div>
             <Link
               to="/issues"
-              className="text-xs font-semibold text-[#5b42d6] hover:text-[#4338ca] flex items-center gap-1 transition-colors"
+              className="text-xs font-semibold text-[#6257D9] hover:text-[#5246c7] flex items-center gap-1 transition-colors group"
             >
               <span>View all</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-200" />
             </Link>
           </div>
 
           {loading ? (
-            <div className="py-6 space-y-4 animate-pulse">
+            <div className="py-6 space-y-4 relative z-10">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="py-3 border-b border-slate-50 space-y-2">
+                <div key={i} className="py-3 border-b border-[#E3D9FF]/40 space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <div className="h-4 w-14 bg-slate-200 rounded"></div>
-                    <div className="h-4 w-20 bg-slate-200 rounded-full"></div>
+                    <div className="h-4 w-14 rounded-md animate-shimmer-lavender"></div>
+                    <div className="h-4 w-20 rounded-full animate-shimmer-lavender"></div>
                   </div>
-                  <div className="h-4 w-3/4 bg-slate-200 rounded"></div>
+                  <div className="h-4 w-3/4 rounded-md animate-shimmer-lavender"></div>
                 </div>
               ))}
             </div>
           ) : recentIssues.length === 0 ? (
-            <div className="py-12 px-4 text-center">
-              <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center mb-3">
+            <div className="py-12 px-4 text-center relative z-10 animate-fade-in">
+              <div className="w-12 h-12 rounded-2xl bg-[#F0EBFF] text-[#6257D9] border border-[#E3D9FF] mx-auto flex items-center justify-center mb-3 shadow-2xs">
                 <Inbox className="w-5 h-5 stroke-[1.8]" />
               </div>
-              <p className="text-sm font-semibold text-slate-700">No issues reported yet</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                Your workspace will track incoming bug tickets and updates here.
+              <p className="text-sm font-semibold text-[#272443]">No issues reported yet</p>
+              <p className="text-xs text-[#5E597B] mt-1 max-w-sm mx-auto">
+                Your workspace will track incoming bug tickets, assignees, and progress updates here.
               </p>
               <Link
                 to="/issues/new"
-                className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#5b42d6] hover:bg-[#4c35c2] rounded-lg transition-colors"
+                className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#6257D9] hover:bg-[#5246c7] rounded-xl shadow-2xs hover:shadow-xs active:scale-[0.98] transition-all"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>New Issue</span>
               </Link>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100/90">
-              {recentIssues.map((issue, idx) => {
-                const keyNumber = issue._id.slice(-3).toUpperCase();
-                const keyFormatted = `BUG-${keyNumber}`;
+            <div className="relative z-10 pt-2">
+              {/* Vertical Decorative Timeline Spine Line */}
+              <div className="absolute left-[8px] top-6 bottom-6 w-[1.5px] bg-gradient-to-b from-[#E3D9FF] via-[#DDD6FE] to-[#F0EBFF] opacity-80 pointer-events-none" />
 
-                // Status pill styles matching Reference Image 1 & 2
-                const statusStyles = {
-                  Open: 'bg-[#e0e7ff] text-[#3730a3]',
-                  'In Progress': 'bg-[#ede9fe] text-[#5b42d6]',
-                  Resolved: 'bg-[#dcfce7] text-[#15803d]',
-                };
+              <div className="space-y-1">
+                {recentIssues.map((issue, idx) => {
+                  const keyNumber = issue._id.slice(-3).toUpperCase();
+                  const keyFormatted = `BUG-${keyNumber}`;
 
-                // Priority pill styles matching Image 1
-                const priorityStyles = {
-                  Critical: 'bg-[#ffe4e6] text-[#e11d48]',
-                  High: 'bg-[#ffedd5] text-[#c2410c]',
-                  Medium: 'bg-[#e0f2fe] text-[#0284c7]',
-                  Low: 'bg-[#dcfce7] text-[#16a34a]',
-                };
+                  // Distinct soft pastel status pills
+                  const statusStyles = {
+                    Open: 'bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]',
+                    'In Progress': 'bg-[#F0EBFF] text-[#6257D9] border border-[#E3D9FF]',
+                    Resolved: 'bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]',
+                  };
+
+                  // Priority pill styles
+                  const priorityStyles = {
+                    Critical: 'bg-[#FFE4E6] text-[#E11D48] border border-[#FECDD3]',
+                    High: 'bg-[#FFEDD5] text-[#C2410C] border border-[#FED7AA]',
+                    Medium: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]',
+                    Low: 'bg-[#EDE9FE] text-[#5B42D6] border border-[#DDD6FE]',
+                  };
+
+                  return (
+                    <div
+                      key={issue._id}
+                      className="relative pl-6 py-3 px-3 rounded-xl hover:bg-[#F7F3FF]/90 transition-all duration-200 group animate-fade-up border-l-2 border-transparent hover:border-[#6257D9]"
+                      style={{ animationDelay: `${idx * 60}ms` }}
+                    >
+                      {/* Left Edge Accent Bar */}
+                      <div className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#6257D9] opacity-0 group-hover:opacity-100 transition-all duration-200" />
+
+                      {/* Small circular activity timeline marker */}
+                      <div className="absolute left-[4px] top-[18px] w-2.5 h-2.5 rounded-full bg-[#6257D9] ring-4 ring-[#EDE9FE] shadow-2xs transition-all duration-200 group-hover:scale-125 group-hover:ring-[#DDD6FE]" />
+
+                      {/* Top Row: Key + Status + Priority */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] font-semibold text-[#5E597B] bg-[#EAE2FF]/60 border border-[#DDD0FE]/70 px-1.5 py-0.5 rounded group-hover:bg-[#EAE2FF] transition-colors">
+                            {keyFormatted}
+                          </span>
+                          <span
+                            className={`text-[11px] font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 transition-all duration-200 ${
+                              statusStyles[issue.status] || 'bg-slate-100 text-slate-700'
+                            }`}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
+                            <span>{issue.status}</span>
+                          </span>
+                        </div>
+
+                        <span
+                          className={`text-[11px] font-medium px-2 py-0.5 rounded-md transition-all duration-200 ${
+                            priorityStyles[issue.priority] || 'bg-slate-100 text-slate-700'
+                          }`}
+                        >
+                          {issue.priority}
+                        </span>
+                      </div>
+
+                      {/* Middle Row: Title + Relative Timestamp + Hover Arrow */}
+                      <div className="flex items-center justify-between gap-3 mt-1.5">
+                        <Link
+                          to={`/issues/${issue._id}`}
+                          className="text-xs sm:text-sm font-semibold text-[#272443] group-hover:text-[#6257D9] transition-colors duration-200 truncate block flex-1"
+                          title={issue.title}
+                        >
+                          {issue.title}
+                        </Link>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[11px] text-[#7C759A] font-medium whitespace-nowrap">
+                            {formatRelativeTime(issue.createdAt)}
+                          </span>
+                          <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#6257D9] group-hover:translate-x-1.5 transition-all duration-200" />
+                        </div>
+                      </div>
+
+                      {/* Bottom Row: Category / Component */}
+                      <div className="mt-1">
+                        <span className="text-[11px] text-[#7C759A] font-medium">
+                          {issue.category || 'General'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Severity Breakdown (35-40% width) */}
+        <div className="lg:col-span-5 xl:col-span-4 relative overflow-hidden bg-gradient-to-br from-[#FAF8FF] via-[#F7F4FD] to-[#F3EEFE] rounded-2xl border border-[#E3D9FF] p-5 sm:p-6 shadow-[0_4px_20px_-4px_rgba(98,87,217,0.08)] flex flex-col justify-between">
+          {/* Subtle Ambient Radial Glow in Top-Left & Watermark */}
+          <div className="absolute -top-12 -left-12 w-48 h-48 rounded-full bg-gradient-to-br from-[#6257D9]/10 via-[#3B82F6]/5 to-transparent blur-2xl pointer-events-none" />
+          <svg
+            className="absolute -bottom-8 -right-8 w-44 h-44 text-[#6257D9] opacity-[0.035] pointer-events-none"
+            viewBox="0 0 120 120"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.2"
+          >
+            <rect x="20" y="20" width="80" height="80" rx="16" strokeDasharray="3 3" />
+            <circle cx="60" cy="60" r="28" />
+            <circle cx="60" cy="60" r="14" strokeDasharray="2 2" />
+          </svg>
+
+          <div className="relative z-10">
+            {/* Header */}
+            <div className="flex items-center gap-2.5 pb-4 border-b border-[#E3D9FF]/70">
+              <div className="w-8 h-8 rounded-xl bg-[#EAE2FF] text-[#6257D9] flex items-center justify-center border border-[#DDD0FE] shadow-2xs shrink-0">
+                <BarChart2 className="w-4 h-4 stroke-[2]" />
+              </div>
+              <h2 className="text-sm font-bold text-[#272443]">Severity Breakdown</h2>
+            </div>
+
+            {/* Horizontal progress bars with smooth staggered sweep & hover glows */}
+            <div className="py-4 space-y-4">
+              {severityConfig.map((item) => {
+                const percentage =
+                  totals.total > 0
+                    ? Math.round((item.count / totals.total) * 100)
+                    : 0;
 
                 return (
                   <div
-                    key={issue._id}
-                    className="py-3 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-50/90 transition-all duration-150 group animate-fade-up"
-                    style={{ animationDelay: `${idx * 45}ms` }}
+                    key={item.id}
+                    className="group p-2.5 -mx-2.5 rounded-xl hover:bg-white/80 transition-all duration-200 cursor-default"
                   >
-                    {/* Top Row: Key + Status + Priority */}
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between text-xs mb-1.5">
+                      <span className="font-semibold text-[#4A4568] group-hover:text-[#272443] transition-colors duration-200">
+                        {item.label}
+                      </span>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded group-hover:bg-slate-200/80 transition-colors">
-                          {keyFormatted}
+                        <span className="text-[11px] font-medium text-[#7C759A] group-hover:text-[#4A4568] transition-colors duration-200">
+                          {percentage}%
                         </span>
                         <span
-                          className={`text-[11px] font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 transition-all ${
-                            statusStyles[issue.status] || 'bg-slate-100 text-slate-700'
-                          }`}
+                          className={`px-2 py-0.5 rounded-md text-xs font-bold transition-all duration-200 ${item.badge} ${item.textAccent}`}
                         >
-                          <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
-                          <span>{issue.status}</span>
+                          {item.count}
                         </span>
                       </div>
-
-                      <span
-                        className={`text-[11px] font-medium px-2 py-0.5 rounded-md transition-all ${
-                          priorityStyles[issue.priority] || 'bg-slate-100 text-slate-700'
-                        }`}
-                      >
-                        {issue.priority}
-                      </span>
                     </div>
-
-                    {/* Middle Row: Title + Relative Timestamp + Hover Arrow */}
-                    <div className="flex items-center justify-between gap-3 mt-1.5">
-                      <Link
-                        to={`/issues/${issue._id}`}
-                        className="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-[#5b42d6] transition-colors truncate block flex-1"
-                        title={issue.title}
-                      >
-                        {issue.title}
-                      </Link>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">
-                          {formatRelativeTime(issue.createdAt)}
-                        </span>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#5b42d6] group-hover:translate-x-1 transition-all duration-200" />
-                      </div>
-                    </div>
-
-                    {/* Bottom Row: Category / Component */}
-                    <div className="mt-1">
-                      <span className="text-[11px] text-slate-400 font-medium">
-                        {issue.category || 'General'}
-                      </span>
+                    <div
+                      className={`w-full ${item.track} rounded-full h-2.5 group-hover:h-3 transition-all duration-300 ease-out overflow-hidden`}
+                    >
+                      <div
+                        className={`h-full rounded-full ${item.color} ${item.glow} group-hover:brightness-110 transition-all duration-700 ease-out`}
+                        style={{
+                          width: barsAnimated && totals.total > 0 ? `${(item.count / totals.total) * 100}%` : '0%',
+                          transitionDelay: item.delay,
+                        }}
+                      />
                     </div>
                   </div>
                 );
               })}
             </div>
-          )}
-        </div>
-
-        {/* Right Column: Severity Breakdown (35% width) */}
-        <div className="lg:col-span-5 xl:col-span-4 bg-white rounded-2xl border border-slate-100 p-5 sm:p-6 shadow-2xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2.5 pb-4 border-b border-slate-100">
-              <div className="w-8 h-8 rounded-xl bg-[#ede9fe] text-[#5b42d6] flex items-center justify-center shrink-0">
-                <BarChart2 className="w-4 h-4 stroke-[2]" />
-              </div>
-              <h2 className="text-sm font-bold text-slate-900">Severity Breakdown</h2>
-            </div>
-
-            {/* Horizontal progress bars matching Image 1 with interactive hover & smooth animation */}
-            <div className="py-4 space-y-4">
-              {/* Critical */}
-              <div className="group p-2 -mx-2 rounded-xl hover:bg-slate-50/80 transition-colors duration-150 cursor-default">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Critical</span>
-                  <span className="font-bold text-slate-700 group-hover:text-[#f43f5e] transition-colors">{criticalCount}</span>
-                </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 group-hover:h-3 transition-all duration-300 ease-out overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[#f43f5e] transition-all duration-700 ease-out group-hover:brightness-105"
-                    style={{
-                      width: `${totals.total > 0 ? (criticalCount / totals.total) * 100 : 0}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* High */}
-              <div className="group p-2 -mx-2 rounded-xl hover:bg-slate-50/80 transition-colors duration-150 cursor-default">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-medium text-slate-600 group-hover:text-slate-900 transition-colors">High</span>
-                  <span className="font-bold text-slate-700 group-hover:text-[#f97316] transition-colors">{highCount}</span>
-                </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 group-hover:h-3 transition-all duration-300 ease-out overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[#f97316] transition-all duration-700 ease-out group-hover:brightness-105"
-                    style={{
-                      width: `${totals.total > 0 ? (highCount / totals.total) * 100 : 0}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Medium */}
-              <div className="group p-2 -mx-2 rounded-xl hover:bg-slate-50/80 transition-colors duration-150 cursor-default">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Medium</span>
-                  <span className="font-bold text-slate-700 group-hover:text-[#3b82f6] transition-colors">{mediumCount}</span>
-                </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 group-hover:h-3 transition-all duration-300 ease-out overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[#3b82f6] transition-all duration-700 ease-out group-hover:brightness-105"
-                    style={{
-                      width: `${totals.total > 0 ? (mediumCount / totals.total) * 100 : 0}%`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Low */}
-              <div className="group p-2 -mx-2 rounded-xl hover:bg-slate-50/80 transition-colors duration-150 cursor-default">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Low</span>
-                  <span className="font-bold text-slate-700 group-hover:text-[#10b981] transition-colors">{lowCount}</span>
-                </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 group-hover:h-3 transition-all duration-300 ease-out overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[#10b981] transition-all duration-700 ease-out group-hover:brightness-105"
-                    style={{
-                      width: `${totals.total > 0 ? (lowCount / totals.total) * 100 : 0}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Bottom Resolution Rate Metric */}
-          <div className="border-t border-slate-100 pt-4 mt-2 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1.5 text-slate-600">
-              <TrendingUp className="w-4 h-4 text-[#5b42d6]" />
+          <div className="relative z-10 border-t border-[#E3D9FF]/70 pt-4 mt-2 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 text-[#4A4568]">
+              <TrendingUp className="w-4 h-4 text-[#6257D9]" />
               <span className="font-medium">Resolution rate:</span>
-              <span className="font-bold text-slate-900">{resolutionRate}%</span>
+              <span className="font-bold text-[#272443]">{resolutionRate}%</span>
             </div>
-            <span className="text-[11px] text-slate-400">
+            <span className="text-[11px] text-[#7C759A] font-medium">
               {totals.resolved}/{totals.total} resolved
             </span>
           </div>

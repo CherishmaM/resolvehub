@@ -137,6 +137,15 @@
   }
 }
 
+@keyframes subtleBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -181,6 +190,12 @@
   background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
   background-size: 200% 100%;
   animation: shimmer 2.5s infinite;
+}
+
+.animate-shimmer-lavender {
+  background: linear-gradient(90deg, #F0EBFF 0%, #FAF8FF 50%, #F0EBFF 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite ease-in-out;
 }
 
 .animate-float {
