@@ -48,8 +48,9 @@ export const PriorityBarChart = ({ data = [] }) => {
             tickLine={false}
           />
           <Tooltip
-            cursor={{ fill: 'rgba(241, 245, 249, 0.7)' }}
+            cursor={{ fill: 'rgba(98, 87, 217, 0.05)', radius: [6, 6, 0, 0] }}
             formatter={(value) => [`${value} Issues`, 'Volume']}
+            animationDuration={200}
             contentStyle={{
               backgroundColor: '#ffffff',
               borderRadius: '12px',
@@ -59,11 +60,19 @@ export const PriorityBarChart = ({ data = [] }) => {
               padding: '8px 12px',
             }}
           />
-          <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={48}>
+          <Bar
+            dataKey="count"
+            radius={[6, 6, 0, 0]}
+            maxBarSize={48}
+            isAnimationActive={true}
+            animationDuration={900}
+            animationEasing="ease-out"
+          >
             {data.map((entry) => (
               <Cell
                 key={`bar-${entry.name}`}
                 fill={PRIORITY_COLORS[entry.name] || '#5b42d6'}
+                className="transition-all duration-200 hover:opacity-85 cursor-pointer"
               />
             ))}
           </Bar>

@@ -203,7 +203,7 @@ export const Dashboard = () => {
             </div>
           ) : (
             <div className="divide-y divide-slate-100/90">
-              {recentIssues.map((issue) => {
+              {recentIssues.map((issue, idx) => {
                 const keyNumber = issue._id.slice(-3).toUpperCase();
                 const keyFormatted = `BUG-${keyNumber}`;
 
@@ -223,15 +223,19 @@ export const Dashboard = () => {
                 };
 
                 return (
-                  <div key={issue._id} className="py-3.5 first:pt-3 last:pb-1 group">
+                  <div
+                    key={issue._id}
+                    className="py-3 px-2.5 -mx-2.5 rounded-xl hover:bg-slate-50/90 transition-all duration-150 group animate-fade-up"
+                    style={{ animationDelay: `${idx * 45}ms` }}
+                  >
                     {/* Top Row: Key + Status + Priority */}
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                        <span className="font-mono text-[10px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded group-hover:bg-slate-200/80 transition-colors">
                           {keyFormatted}
                         </span>
                         <span
-                          className={`text-[11px] font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                          className={`text-[11px] font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 transition-all ${
                             statusStyles[issue.status] || 'bg-slate-100 text-slate-700'
                           }`}
                         >
@@ -241,7 +245,7 @@ export const Dashboard = () => {
                       </div>
 
                       <span
-                        className={`text-[11px] font-medium px-2 py-0.5 rounded-md ${
+                        className={`text-[11px] font-medium px-2 py-0.5 rounded-md transition-all ${
                           priorityStyles[issue.priority] || 'bg-slate-100 text-slate-700'
                         }`}
                       >
@@ -249,18 +253,21 @@ export const Dashboard = () => {
                       </span>
                     </div>
 
-                    {/* Middle Row: Title + Relative Timestamp */}
-                    <div className="flex items-baseline justify-between gap-3 mt-1.5">
+                    {/* Middle Row: Title + Relative Timestamp + Hover Arrow */}
+                    <div className="flex items-center justify-between gap-3 mt-1.5">
                       <Link
                         to={`/issues/${issue._id}`}
-                        className="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-[#5b42d6] transition-colors truncate block"
+                        className="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-[#5b42d6] transition-colors truncate block flex-1"
                         title={issue.title}
                       >
                         {issue.title}
                       </Link>
-                      <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap shrink-0">
-                        {formatRelativeTime(issue.createdAt)}
-                      </span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">
+                          {formatRelativeTime(issue.createdAt)}
+                        </span>
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#5b42d6] group-hover:translate-x-1 transition-all duration-200" />
+                      </div>
                     </div>
 
                     {/* Bottom Row: Category / Component */}
@@ -286,17 +293,17 @@ export const Dashboard = () => {
               <h2 className="text-sm font-bold text-slate-900">Severity Breakdown</h2>
             </div>
 
-            {/* Horizontal progress bars matching Image 1 */}
+            {/* Horizontal progress bars matching Image 1 with interactive hover & smooth animation */}
             <div className="py-4 space-y-4">
               {/* Critical */}
-              <div>
+              <div className="group p-2 -mx-2 rounded-xl hover:bg-slate-50/80 transition-colors duration-150 cursor-default">
                 <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-medium text-slate-600">Critical</span>
-                  <span className="font-bold text-slate-700">{criticalCount}</span>
+                  <span className="font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Critical</span>
+                  <span className="font-bold text-slate-700 group-hover:text-[#f43f5e] transition-colors">{criticalCount}</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-slate-100 rounded-full h-2.5 group-hover:h-3 transition-all duration-300 ease-out overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[#f43f5e] transition-all duration-500"
+                    className="h-full rounded-full bg-[#f43f5e] transition-all duration-700 ease-out group-hover:brightness-105"
                     style={{
                       width: `${totals.total > 0 ? (criticalCount / totals.total) * 100 : 0}%`,
                     }}
@@ -305,14 +312,14 @@ export const Dashboard = () => {
               </div>
 
               {/* High */}
-              <div>
+              <div className="group p-2 -mx-2 rounded-xl hover:bg-slate-50/80 transition-colors duration-150 cursor-default">
                 <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-medium text-slate-600">High</span>
-                  <span className="font-bold text-slate-700">{highCount}</span>
+                  <span className="font-medium text-slate-600 group-hover:text-slate-900 transition-colors">High</span>
+                  <span className="font-bold text-slate-700 group-hover:text-[#f97316] transition-colors">{highCount}</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-slate-100 rounded-full h-2.5 group-hover:h-3 transition-all duration-300 ease-out overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[#f97316] transition-all duration-500"
+                    className="h-full rounded-full bg-[#f97316] transition-all duration-700 ease-out group-hover:brightness-105"
                     style={{
                       width: `${totals.total > 0 ? (highCount / totals.total) * 100 : 0}%`,
                     }}
@@ -321,14 +328,14 @@ export const Dashboard = () => {
               </div>
 
               {/* Medium */}
-              <div>
+              <div className="group p-2 -mx-2 rounded-xl hover:bg-slate-50/80 transition-colors duration-150 cursor-default">
                 <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-medium text-slate-600">Medium</span>
-                  <span className="font-bold text-slate-700">{mediumCount}</span>
+                  <span className="font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Medium</span>
+                  <span className="font-bold text-slate-700 group-hover:text-[#3b82f6] transition-colors">{mediumCount}</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-slate-100 rounded-full h-2.5 group-hover:h-3 transition-all duration-300 ease-out overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[#3b82f6] transition-all duration-500"
+                    className="h-full rounded-full bg-[#3b82f6] transition-all duration-700 ease-out group-hover:brightness-105"
                     style={{
                       width: `${totals.total > 0 ? (mediumCount / totals.total) * 100 : 0}%`,
                     }}
@@ -337,14 +344,14 @@ export const Dashboard = () => {
               </div>
 
               {/* Low */}
-              <div>
+              <div className="group p-2 -mx-2 rounded-xl hover:bg-slate-50/80 transition-colors duration-150 cursor-default">
                 <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="font-medium text-slate-600">Low</span>
-                  <span className="font-bold text-slate-700">{lowCount}</span>
+                  <span className="font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Low</span>
+                  <span className="font-bold text-slate-700 group-hover:text-[#10b981] transition-colors">{lowCount}</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-slate-100 rounded-full h-2.5 group-hover:h-3 transition-all duration-300 ease-out overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[#10b981] transition-all duration-500"
+                    className="h-full rounded-full bg-[#10b981] transition-all duration-700 ease-out group-hover:brightness-105"
                     style={{
                       width: `${totals.total > 0 ? (lowCount / totals.total) * 100 : 0}%`,
                     }}

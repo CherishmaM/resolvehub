@@ -13,6 +13,8 @@ import {
   Eye,
   EyeOff,
   Briefcase,
+  CheckCircle2,
+  Loader2,
 } from 'lucide-react';
 
 const POPULAR_JOB_TITLES = [
@@ -36,6 +38,8 @@ export const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim());
 
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -115,7 +119,7 @@ export const Register = () => {
       {/* Main Content Area */}
       <main className="w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 pt-4 sm:pt-6 pb-12 flex-1 flex flex-col lg:flex-row items-start justify-between gap-12 xl:gap-16 z-10">
         {/* Left Column: Form Section */}
-        <div className="w-full lg:w-[45%] xl:w-[42%] max-w-md mx-auto lg:mx-0">
+        <div className="w-full lg:w-[45%] xl:w-[42%] max-w-md mx-auto lg:mx-0 animate-fade-up">
           <div className="mb-6">
             <span className="text-[11px] font-semibold tracking-widest text-[#6257D9] uppercase">
               CREATE ACCOUNT
@@ -130,7 +134,7 @@ export const Register = () => {
           </div>
 
           {error && (
-            <div className="mb-4">
+            <div className="mb-4 animate-shake">
               <ErrorMessage message={error} />
             </div>
           )}
@@ -141,7 +145,7 @@ export const Register = () => {
               <label className="block text-xs font-medium text-[#20212B]">
                 Full name
               </label>
-              <div className="relative rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 focus-within:border-[#6257D9] focus-within:ring-4 focus-within:ring-[#6257D9]/10 shadow-xs hover:shadow-subtle focus-within:shadow-md focus-within:shadow-[#6257D9]/10 transition-all duration-200">
+              <div className="relative rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 focus-within:border-[#6257D9] focus-within:ring-4 focus-within:ring-[#6257D9]/15 shadow-xs hover:shadow-subtle focus-within:shadow-md focus-within:shadow-[#6257D9]/10 transition-all duration-200">
                 <User className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
@@ -161,7 +165,7 @@ export const Register = () => {
               <label className="block text-xs font-medium text-[#20212B]">
                 Work email
               </label>
-              <div className="relative rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 focus-within:border-[#6257D9] focus-within:ring-4 focus-within:ring-[#6257D9]/10 shadow-xs hover:shadow-subtle focus-within:shadow-md focus-within:shadow-[#6257D9]/10 transition-all duration-200">
+              <div className="relative rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 focus-within:border-[#6257D9] focus-within:ring-4 focus-within:ring-[#6257D9]/15 shadow-xs hover:shadow-subtle focus-within:shadow-md focus-within:shadow-[#6257D9]/10 transition-all duration-200">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="email"
@@ -170,8 +174,11 @@ export const Register = () => {
                   onChange={handleChange}
                   placeholder="you@company.com"
                   required
-                  className="w-full pl-11 pr-4 py-3 text-sm font-normal bg-transparent rounded-2xl text-[#20212B] placeholder:text-slate-400 focus:outline-none"
+                  className="w-full pl-11 pr-10 py-3 text-sm font-normal bg-transparent rounded-2xl text-[#20212B] placeholder:text-slate-400 focus:outline-none"
                 />
+                {isEmailValid && (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 absolute right-3.5 top-1/2 -translate-y-1/2 animate-scale-in pointer-events-none" />
+                )}
               </div>
             </div>
 
@@ -234,7 +241,7 @@ export const Register = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-transform duration-200 hover:scale-110 active:scale-95"
                   title={showPassword ? 'Hide password' : 'Show password'}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
@@ -252,10 +259,19 @@ export const Register = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="group w-full py-3.5 px-6 rounded-2xl font-medium text-sm text-white bg-[#6257D9] hover:bg-[#5246c7] shadow-md shadow-[#6257D9]/25 hover:shadow-xl hover:shadow-[#6257D9]/35 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                className="group w-full py-3.5 px-6 rounded-2xl font-medium text-sm text-white bg-[#6257D9] hover:bg-[#5246c7] shadow-md shadow-[#6257D9]/25 hover:shadow-xl hover:shadow-[#6257D9]/35 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <span>{loading ? 'Creating account...' : 'Create account'}</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                    <span>Creating account...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Create account</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+                  </>
+                )}
               </button>
             </div>
 

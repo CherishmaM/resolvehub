@@ -42,11 +42,15 @@ export const StatusDonutChart = ({ data = [] }) => {
             paddingAngle={3}
             strokeWidth={2}
             stroke="#ffffff"
+            isAnimationActive={true}
+            animationDuration={900}
+            animationEasing="ease-out"
           >
             {data.map((entry) => (
               <Cell
                 key={`cell-${entry.name}`}
                 fill={COLORS[entry.name] || '#94a3b8'}
+                className="transition-all duration-200 hover:opacity-85 cursor-pointer"
               />
             ))}
           </Pie>
@@ -55,6 +59,7 @@ export const StatusDonutChart = ({ data = [] }) => {
               const pct = total > 0 ? Math.round((value / total) * 100) : 0;
               return [`${value} Issues (${pct}%)`, name];
             }}
+            animationDuration={200}
             contentStyle={{
               backgroundColor: '#ffffff',
               borderRadius: '12px',

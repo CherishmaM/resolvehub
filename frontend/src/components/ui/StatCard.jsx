@@ -1,6 +1,59 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+const AnimatedNumber = ({ value }) => {
+  const target = typeof value === 'number' ? value : parseInt(value, 10) || 0;
+  const [displayValue, setDisplayValue] = useState(0);
+  const prevValueRef = useRef(0);
+
+  useEffect(() => {
+    let prefersReducedMotion = false;
+    try {
+      prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch {
+      prefersReducedMotion = false;
+    }
+
+    if (prefersReducedMotion) {
+      setDisplayValue(target);
+      return;
+    }
+
+    const start = prevValueRef.current;
+    const diff = target - start;
+    if (diff === 0) {
+      setDisplayValue(target);
+      return;
+    }
+
+    let startTime = null;
+    let animId = null;
+    const duration = 750;
+
+    const step = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      // easeOutCubic curve
+      const ease = 1 - Math.pow(1 - progress, 3);
+      setDisplayValue(Math.round(start + diff * ease));
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(step);
+      } else {
+        prevValueRef.current = target;
+      }
+    };
+
+    animId = requestAnimationFrame(step);
+
+    return () => {
+      if (animId) cancelAnimationFrame(animId);
+    };
+  }, [target]);
+
+  return <>{displayValue}</>;
+};
 
 export const StatCard = ({
   title,
@@ -61,15 +114,16 @@ export const StatCard = ({
 
   const CardContent = (
     <div
-      className={`relative overflow-hidden bg-white rounded-2xl border border-slate-100/90 p-5 shadow-2xs hover:-translate-y-0.5 hover:shadow-subtle transition-all duration-200 flex flex-col justify-between h-full ${
-        isClickable
-          ? 'hover:border-slate-300/80 cursor-pointer group'
-          : 'select-none'
+      className={`group relative overflow-hidden bg-white rounded-2xl border border-slate-100/90 p-5 shadow-2xs hover:-translate-y-1 hover:shadow-subtle hover:border-slate-200 transition-all duration-300 flex flex-col justify-between h-full select-none ${
+        isClickable ? 'cursor-pointer' : ''
       } ${className}`}
     >
+      {/* Top accent line highlight on hover */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#6257D9]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
       {/* Ambient subtle color wash in top-right */}
       <div
-        className={`absolute -top-6 -right-6 w-24 h-24 rounded-full bg-gradient-to-br ${theme.glow} blur-xl pointer-events-none`}
+        className={`absolute -top-6 -right-6 w-24 h-24 rounded-full bg-gradient-to-br ${theme.glow} blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500`}
       />
 
       {/* Top Row: Title on Left, Icon Badge on Right */}
@@ -79,7 +133,7 @@ export const StatCard = ({
         </span>
         {Icon && (
           <div
-            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${theme.badge}`}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${theme.badge} group-hover:scale-105 transition-transform duration-200`}
           >
             <Icon className="w-4 h-4 stroke-[2]" />
           </div>
@@ -88,8 +142,8 @@ export const StatCard = ({
 
       {/* Bottom: Big Bold Metric + Subtitle with status dot */}
       <div className="mt-4 relative z-10">
-        <div className="text-3xl sm:text-4xl font-extrabold text-[#20212B] tracking-tight font-geist leading-none">
-          {loading ? '…' : value}
+        <div className="text-3xl sm:text-4xl font-extrabold text-[#20212B] tracking-tight font-geist leading-none group-hover:text-[#6257D9] transition-colors duration-200">
+          {loading ? '…' : <AnimatedNumber value={value} />}
         </div>
         {subtitle && (
           <div className="flex items-center gap-1.5 mt-2.5">
@@ -103,7 +157,7 @@ export const StatCard = ({
 
       {isClickable && (
         <div className="absolute bottom-4 right-4">
-          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-600 transition-colors shrink-0" />
+          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#6257D9] group-hover:translate-x-0.5 transition-all duration-200 shrink-0" />
         </div>
       )}
     </div>

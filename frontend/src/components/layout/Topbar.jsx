@@ -78,21 +78,23 @@ export const Topbar = ({ onToggleSidebar }) => {
 
         {/* Global Issue Search Form matching Reference Design Image 1 */}
         <form onSubmit={handleSearchSubmit} className="relative w-full max-w-lg">
-          <div className="relative flex items-center">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+          <div className="relative flex items-center group">
+            <Search className="w-4 h-4 text-slate-400 group-focus-within:text-[#6257D9] absolute left-3.5 pointer-events-none transition-colors duration-200" />
             <input
               ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search issues by title, ref, or keyword..."
-              className="w-full pl-9 pr-12 py-2 bg-white border border-slate-200/80 rounded-2xl text-xs text-slate-800 placeholder:text-slate-400 shadow-2xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5b42d6]/20 focus:border-[#5b42d6] transition-all"
+              className="w-full pl-9 pr-12 py-2 bg-white border border-slate-200/80 rounded-2xl text-xs text-slate-800 placeholder:text-slate-400 shadow-2xs focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200"
             />
             {searchQuery ? (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-100 transition-all duration-150 animate-scale-in"
+                title="Clear search"
+                aria-label="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
