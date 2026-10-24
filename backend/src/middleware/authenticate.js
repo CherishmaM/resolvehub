@@ -6,16 +6,16 @@ export const authenticate = async (req, res, next) => {
   try {
     let token = null;
 
-    // 1. Try to read from HttpOnly cookie
-    if (req.cookies && req.cookies[COOKIE_NAME]) {
-      token = req.cookies[COOKIE_NAME];
-    }
-    // 2. Fallback to Authorization: Bearer <token> header for testing / external API clients
-    else if (
+    // 1. Check Authorization: Bearer <token> header first (critical for mobile Safari & cross-origin SPAs)
+    if (
       req.headers.authorization &&
       req.headers.authorization.startsWith('Bearer ')
     ) {
       token = req.headers.authorization.split(' ')[1];
+    }
+    // 2. Fallback to HttpOnly cookie
+    else if (req.cookies && req.cookies[COOKIE_NAME]) {
+      token = req.cookies[COOKIE_NAME];
     }
 
     if (!token) {
