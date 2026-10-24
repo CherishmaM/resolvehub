@@ -2,21 +2,23 @@ import { User } from '../models/User.js';
 import { ApiError } from '../utils/apiError.js';
 import { generateToken } from '../utils/jwt.js';
 
-export const registerUser = async ({ name, email, password, jobTitle, avatar }) => {
-  const existingUser = await User.findOne({ email });
+export const registerUser = async ({ name, email, password, jobTitle, avatar, role }) => {
+  const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
   if (existingUser) {
     throw ApiError.conflict('An account with this email already exists');
   }
 
   const passwordHash = await User.hashPassword(password);
 
-  // Enforce member role for self-registration: Never trust client-submitted role
+  // Allow selecting role during registration: admin (Team Lead) or member
+  const assignedRole = role === 'admin' ? 'admin' : 'member';
+
   const user = await User.create({
     name,
-    email,
+    email: email.toLowerCase().trim(),
     passwordHash,
-    role: 'member',
-    jobTitle: jobTitle || 'Software Engineer',
+    role: assignedRole,
+    jobTitle: jobTitle || (assignedRole === 'admin' ? 'Team Lead' : 'Software Engineer'),
     avatar: avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`,
     isActive: true,
   });

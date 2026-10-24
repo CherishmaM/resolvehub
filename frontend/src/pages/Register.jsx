@@ -15,9 +15,12 @@ import {
   Briefcase,
   CheckCircle2,
   Loader2,
+  ShieldCheck,
+  Users,
 } from 'lucide-react';
 
 const POPULAR_JOB_TITLES = [
+  'Team Lead',
   'Frontend Engineer',
   'Backend Engineer',
   'Full-Stack Developer',
@@ -31,6 +34,7 @@ export const Register = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    role: 'member', // 'admin' | 'member'
     jobTitle: 'Frontend Engineer',
     password: '',
   });
@@ -47,6 +51,22 @@ export const Register = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleRoleSelect = (selectedRole) => {
+    setFormData((prev) => {
+      let updatedJobTitle = prev.jobTitle;
+      if (selectedRole === 'admin' && (prev.jobTitle === 'Frontend Engineer' || !prev.jobTitle)) {
+        updatedJobTitle = 'Team Lead';
+      } else if (selectedRole === 'member' && prev.jobTitle === 'Team Lead') {
+        updatedJobTitle = 'Frontend Engineer';
+      }
+      return {
+        ...prev,
+        role: selectedRole,
+        jobTitle: updatedJobTitle,
+      };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -79,6 +99,7 @@ export const Register = () => {
       await register({
         name: formData.name.trim(),
         email: formData.email.trim(),
+        role: formData.role,
         jobTitle: formData.jobTitle.trim(),
         password: formData.password,
       });
@@ -182,11 +203,111 @@ export const Register = () => {
               </div>
             </div>
 
+            {/* Account Role Selection */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-medium text-[#20212B]">
+                  Select Role
+                </label>
+                <span className="text-[10px] text-slate-400 font-normal">
+                  {formData.role === 'admin'
+                    ? 'Can add & manage team members'
+                    : 'Standard team collaborator'}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                {/* Team Lead (Admin) */}
+                <button
+                  type="button"
+                  onClick={() => handleRoleSelect('admin')}
+                  className={`relative p-3 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between ${
+                    formData.role === 'admin'
+                      ? 'bg-white border-[#6257D9] ring-2 ring-[#6257D9]/20 shadow-xs'
+                      : 'bg-white/70 hover:bg-white border-slate-200/90 hover:border-slate-300 shadow-2xs'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full mb-1.5">
+                    <div
+                      className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
+                        formData.role === 'admin'
+                          ? 'bg-[#6257D9] text-white'
+                          : 'bg-purple-50 text-[#6257D9]'
+                      }`}
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <div
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                        formData.role === 'admin'
+                          ? 'border-[#6257D9] bg-[#6257D9]'
+                          : 'border-slate-300 bg-white'
+                      }`}
+                    >
+                      {formData.role === 'admin' && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-[#20212B] flex items-center gap-1">
+                      <span>Admin</span>
+                      <span className="text-[10px] text-[#6257D9] font-medium">(Team Lead)</span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+                      Can invite & add team members
+                    </p>
+                  </div>
+                </button>
+
+                {/* Team Member */}
+                <button
+                  type="button"
+                  onClick={() => handleRoleSelect('member')}
+                  className={`relative p-3 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between ${
+                    formData.role === 'member'
+                      ? 'bg-white border-[#6257D9] ring-2 ring-[#6257D9]/20 shadow-xs'
+                      : 'bg-white/70 hover:bg-white border-slate-200/90 hover:border-slate-300 shadow-2xs'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full mb-1.5">
+                    <div
+                      className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
+                        formData.role === 'member'
+                          ? 'bg-[#6257D9] text-white'
+                          : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <div
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                        formData.role === 'member'
+                          ? 'border-[#6257D9] bg-[#6257D9]'
+                          : 'border-slate-300 bg-white'
+                      }`}
+                    >
+                      {formData.role === 'member' && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-[#20212B]">
+                      Member
+                    </div>
+                    <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">
+                      Can track & resolve assigned issues
+                    </p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
             {/* Choose Job Title / Role */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-medium text-[#20212B]">
-                  Job title / Role
+                  Job title
                 </label>
                 <span className="text-[10px] text-slate-400 font-normal">Click a chip or type below</span>
               </div>
@@ -197,7 +318,7 @@ export const Register = () => {
                   name="jobTitle"
                   value={formData.jobTitle}
                   onChange={handleChange}
-                  placeholder="e.g. Frontend Engineer, Product Manager"
+                  placeholder="e.g. Frontend Engineer, Team Lead"
                   required
                   maxLength={50}
                   className="w-full pl-11 pr-4 py-3 text-sm font-normal bg-transparent rounded-2xl text-[#20212B] placeholder:text-slate-400 focus:outline-none"

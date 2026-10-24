@@ -14,6 +14,12 @@ export const registerSchema = z.object({
   password: z
     .string({ required_error: 'Password is required' })
     .min(6, 'Password must be at least 6 characters long'),
+  role: z
+    .enum(['admin', 'member'], {
+      invalid_type_error: "Role must be 'admin' or 'member'",
+    })
+    .optional()
+    .default('member'),
   jobTitle: z.string().trim().max(50).optional(),
   avatar: z.string().optional(),
 });

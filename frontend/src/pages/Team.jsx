@@ -85,7 +85,7 @@ export const Team = () => {
 
     try {
       await updateUserRoleApi(targetUser._id, newRole);
-      setSuccessMessage(`Successfully updated ${targetUser.name}'s role to ${newRole}.`);
+      setSuccessMessage(`Successfully updated ${targetUser.name}'s role to ${newRole === 'admin' ? 'Team Lead (Admin)' : 'Member'}.`);
       setTeam((prev) =>
         prev.map((u) => (u._id === targetUser._id ? { ...u, role: newRole } : u))
       );
@@ -179,7 +179,7 @@ export const Team = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {isAdmin && (
+          {isAdmin ? (
             <button
               type="button"
               onClick={() => setIsAddModalOpen(true)}
@@ -188,6 +188,10 @@ export const Team = () => {
               <Plus className="w-4 h-4" />
               <span>Add Teammate</span>
             </button>
+          ) : (
+            <span className="text-[11px] text-slate-500 bg-slate-100/80 border border-slate-200/80 px-3 py-1.5 rounded-xl font-medium">
+              Only Team Leads can add members
+            </span>
           )}
         </div>
       </div>
@@ -219,7 +223,7 @@ export const Team = () => {
           className="w-full sm:w-44 py-2 px-3 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5b42d6]/20 focus:border-[#5b42d6] transition-all"
         >
           <option value="">All Roles</option>
-          <option value="admin">Administrators</option>
+          <option value="admin">Team Leads (Admins)</option>
           <option value="member">Members</option>
         </select>
       </div>
@@ -308,7 +312,7 @@ export const Team = () => {
                             ) : (
                               <Shield className="w-3.5 h-3.5 text-slate-500" />
                             )}
-                            <span className="capitalize">{member.role}</span>
+                            <span>{isMemberAdmin ? 'Team Lead (Admin)' : 'Member'}</span>
                           </span>
                         </td>
 
@@ -334,7 +338,7 @@ export const Team = () => {
                                   className="py-1 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-700 hover:border-[#5b42d6] focus:outline-none focus:ring-2 focus:ring-[#5b42d6]/20 transition-all font-medium"
                                 >
                                   <option value="member">Member</option>
-                                  <option value="admin">Admin</option>
+                                  <option value="admin">Admin (Team Lead)</option>
                                 </select>
 
                                 <button
@@ -452,7 +456,7 @@ export const Team = () => {
                     className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5b42d6]/20 focus:border-[#5b42d6] transition-all"
                   >
                     <option value="member">Member</option>
-                    <option value="admin">Admin</option>
+                    <option value="admin">Admin (Team Lead)</option>
                   </select>
                 </div>
               </div>
@@ -498,7 +502,7 @@ export const Team = () => {
       <ConfirmDialog
         isOpen={!!pendingRoleChange}
         title="Confirm Role Change"
-        message={`Are you sure you want to change ${pendingRoleChange?.targetUser?.name}'s role to ${pendingRoleChange?.newRole?.toUpperCase()}? This will update their administrative privileges.`}
+        message={`Are you sure you want to change ${pendingRoleChange?.targetUser?.name}'s role to ${pendingRoleChange?.newRole === 'admin' ? 'Team Lead (Admin)' : 'Member'}? This will update their administrative privileges.`}
         confirmText="Change Role"
         confirmVariant="primary"
         loading={updating}
