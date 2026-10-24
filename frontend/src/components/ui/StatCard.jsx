@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const AnimatedNumber = ({ value }) => {
@@ -240,12 +239,6 @@ export const StatCard = ({
           </div>
         )}
       </div>
-
-      {isClickable && (
-        <div className="absolute bottom-4 right-4 relative z-10">
-          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-[#6257D9] group-hover:translate-x-0.5 transition-all duration-200 shrink-0" />
-        </div>
-      )}
     </div>
   );
 

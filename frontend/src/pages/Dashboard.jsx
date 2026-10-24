@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getDashboardStatsApi } from '../api/dashboard.api';
-import { getUsersApi } from '../api/users.api';
 import { StatCard } from '../components/ui/StatCard';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { formatRelativeTime } from '../utils/formatters';
@@ -17,13 +16,11 @@ import {
   TrendingUp,
   Inbox,
   Plus,
-  Users,
 } from 'lucide-react';
 
 export const Dashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
-  const [teamCount, setTeamCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [barsAnimated, setBarsAnimated] = useState(false);
@@ -33,12 +30,8 @@ export const Dashboard = () => {
     setLoading(true);
     setError('');
     try {
-      const [statsRes, usersRes] = await Promise.all([
-        getDashboardStatsApi(),
-        getUsersApi().catch(() => ({ data: [] })),
-      ]);
-      setStats(statsRes.data);
-      setTeamCount(Array.isArray(usersRes?.data) ? usersRes.data.length : 0);
+      const response = await getDashboardStatsApi();
+      setStats(response.data);
 
       // Trigger smooth bar sweep after real data lands
       setTimeout(() => {
@@ -156,7 +149,7 @@ export const Dashboard = () => {
       {error && <ErrorMessage message={error} onRetry={fetchStats} />}
 
       {/* 2. Soft Lavender & Pastel Statistic Cards with Real Data */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <StatCard
           title="Bug Tracker"
           value={totals.total}
@@ -164,7 +157,6 @@ export const Dashboard = () => {
           color="purple"
           subtitle="All logged tickets"
           loading={loading}
-          to="/issues"
           className="animate-fade-up"
         />
         <StatCard
@@ -174,7 +166,6 @@ export const Dashboard = () => {
           color="amber"
           subtitle="Needs attention"
           loading={loading}
-          to="/issues?status=Open"
           className="animate-fade-up [animation-delay:60ms]"
         />
         <StatCard
@@ -184,7 +175,6 @@ export const Dashboard = () => {
           color="blue"
           subtitle="Being resolved"
           loading={loading}
-          to="/issues?status=In Progress"
           className="animate-fade-up [animation-delay:120ms]"
         />
         <StatCard
@@ -194,18 +184,7 @@ export const Dashboard = () => {
           color="green"
           subtitle="Fixed & closed"
           loading={loading}
-          to="/issues?status=Resolved"
           className="animate-fade-up [animation-delay:180ms]"
-        />
-        <StatCard
-          title="Team Members"
-          value={teamCount}
-          icon={Users}
-          color="brand"
-          subtitle="Active contributors"
-          loading={loading}
-          to="/team"
-          className="animate-fade-up [animation-delay:240ms]"
         />
       </div>
 
