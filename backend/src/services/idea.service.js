@@ -188,6 +188,7 @@ export const createIdea = async ({
   category,
   impact,
   tags = [],
+  imageUrl = null,
   createdBy,
 }) => {
   const idea = await Idea.create({
@@ -196,6 +197,7 @@ export const createIdea = async ({
     category,
     impact,
     tags,
+    imageUrl: imageUrl || null,
     createdBy,
     upvotes: [createdBy], // Creator automatically upvotes their idea
   });
@@ -385,6 +387,7 @@ export const convertToIssue = async (id, user) => {
     category: 'Feature Request',
     priority,
     status: 'Open',
+    imageUrl: idea.imageUrl || null,
     createdBy: user._id,
   });
 

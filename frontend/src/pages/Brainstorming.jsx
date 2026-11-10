@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -31,7 +31,13 @@ import {
   Flame,
   CheckSquare,
   Sparkles,
+  Upload,
+  ZoomIn,
+  Image as ImageIcon,
 } from 'lucide-react';
+
+const ALLOWED_MIME_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
 const CATEGORIES = [
   'All',
@@ -85,7 +91,11 @@ export const Brainstorming = () => {
     impact: 'Medium',
     description: '',
     tagsInput: '',
+    imageUrl: '',
   });
+  const fileInputRef = useRef(null);
+  const [imageValidationError, setImageValidationError] = useState('');
+  const [viewingImage, setViewingImage] = useState(null); // { url, title } for lightbox
 
   // Action confirmation states
   const [pendingDeleteIdea, setPendingDeleteIdea] = useState(null);
@@ -133,6 +143,40 @@ export const Brainstorming = () => {
     fetchIdeas();
   }, [fetchIdeas]);
 
+  // Handle optional image file change
+  const handleImageFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageValidationError('');
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      setImageValidationError('Please upload a valid image file (PNG, JPG, WebP, or GIF).');
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      setImageValidationError('Image size exceeds 5MB. Please choose a smaller image.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setIdeaForm((prev) => ({ ...prev, imageUrl: reader.result }));
+    };
+    reader.onerror = () => {
+      setImageValidationError('Failed to read image file. Please try another image.');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setIdeaForm((prev) => ({ ...prev, imageUrl: '' }));
+    setImageValidationError('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   // Handle Create Idea via Inline Composer
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
@@ -154,6 +198,7 @@ export const Brainstorming = () => {
         category: ideaForm.category,
         impact: ideaForm.impact,
         tags,
+        imageUrl: ideaForm.imageUrl ? ideaForm.imageUrl : null,
       });
 
       setIdeaForm({
@@ -162,7 +207,12 @@ export const Brainstorming = () => {
         impact: 'Medium',
         description: '',
         tagsInput: '',
+        imageUrl: '',
       });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      setImageValidationError('');
       setIsComposerOpen(false);
 
       setSuccessMessage('💡 Your idea has been added to the brainstorming board!');
@@ -541,6 +591,75 @@ export const Brainstorming = () => {
               />
             </div>
 
+            {/* Optional Image / Mockup Attachment */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-[#6257D9]" />
+                <span>Visual Mockup / Diagram</span>
+                <span className="text-slate-400 font-normal lowercase">(optional)</span>
+              </label>
+
+              {imageValidationError && (
+                <p className="text-xs text-rose-500 mb-1.5 font-medium">{imageValidationError}</p>
+              )}
+
+              {ideaForm.imageUrl ? (
+                <div className="flex items-center gap-3.5 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
+                  <img
+                    src={ideaForm.imageUrl}
+                    alt="Concept preview"
+                    className="w-14 h-14 rounded-lg object-cover border border-slate-200 shrink-0 shadow-2xs"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-slate-800">Visual attached</p>
+                    <p className="text-[11px] text-slate-400 truncate">
+                      Attached diagram or mockup will be displayed on this idea card
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
+                    >
+                      Replace
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="p-1.5 text-rose-600 hover:bg-rose-50 border border-rose-200 rounded-lg transition-colors"
+                      title="Remove image"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-[#ddd6fe] hover:border-[#6257D9] rounded-xl p-4 text-center cursor-pointer transition-all bg-[#faf9fe] hover:bg-[#f5f3ff] group"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-[#ede9fe] text-[#6257D9] group-hover:bg-[#6257D9] group-hover:text-white mx-auto flex items-center justify-center mb-1.5 transition-colors shadow-2xs">
+                    <Upload className="w-4 h-4 stroke-[2]" />
+                  </div>
+                  <p className="text-xs font-medium text-slate-700">
+                    <span className="text-[#6257D9] font-bold">Click to upload</span> a mockup, sketch, or screenshot
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    PNG, JPG, WebP, or GIF up to 5MB (optional)
+                  </p>
+                </div>
+              )}
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+                onChange={handleImageFileChange}
+                className="hidden"
+              />
+            </div>
+
             <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
               <button
                 type="button"
@@ -806,6 +925,37 @@ export const Brainstorming = () => {
                       </div>
                     )}
 
+                    {/* Optional Attached Image / Mockup */}
+                    {idea.imageUrl && (
+                      <div className="pt-2">
+                        <div className="relative group rounded-2xl overflow-hidden border border-slate-200/90 bg-slate-50/60 inline-block max-w-full">
+                          <img
+                            src={idea.imageUrl}
+                            alt={`Visual attachment for ${idea.title}`}
+                            onClick={() =>
+                              setViewingImage({
+                                url: idea.imageUrl,
+                                title: idea.title,
+                              })
+                            }
+                            className="max-h-64 sm:max-h-72 w-auto rounded-xl object-contain cursor-pointer hover:opacity-95 transition-opacity"
+                          />
+                          <div
+                            onClick={() =>
+                              setViewingImage({
+                                url: idea.imageUrl,
+                                title: idea.title,
+                              })
+                            }
+                            className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer text-white text-xs font-medium gap-1.5 rounded-xl"
+                          >
+                            <ZoomIn className="w-4 h-4" />
+                            <span>Click to enlarge</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Footer Row: Author & Action Buttons */}
                     <div className="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
                       {/* Author Info */}
@@ -1030,6 +1180,40 @@ export const Brainstorming = () => {
         onConfirm={confirmConvert}
         onClose={() => setPendingConvertIdea(null)}
       />
+
+      {/* Full-size Image Lightbox Modal */}
+      {viewingImage && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setViewingImage(null)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+              <span className="text-xs font-semibold text-slate-800 truncate pr-4">
+                {viewingImage.title}
+              </span>
+              <button
+                type="button"
+                onClick={() => setViewingImage(null)}
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-200/50 transition-colors"
+                aria-label="Close image preview"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-4 bg-slate-950/5 flex items-center justify-center overflow-auto max-h-[78vh]">
+              <img
+                src={viewingImage.url}
+                alt={viewingImage.title}
+                className="max-w-full max-h-[72vh] rounded-lg object-contain shadow-md"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

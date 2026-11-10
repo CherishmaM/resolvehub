@@ -35,13 +35,14 @@ export const getIdeaStats = async (req, res, next) => {
 
 export const createIdea = async (req, res, next) => {
   try {
-    const { title, description, category, impact, tags } = req.body;
+    const { title, description, category, impact, tags, imageUrl } = req.body;
     const idea = await ideaService.createIdea({
       title,
       description,
       category,
       impact,
       tags,
+      imageUrl,
       createdBy: req.user._id,
     });
 

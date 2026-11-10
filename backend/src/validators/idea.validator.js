@@ -31,6 +31,7 @@ export const createIdeaSchema = z.object({
     .max(8, 'Maximum 8 tags allowed')
     .optional()
     .default([]),
+  imageUrl: z.string().nullable().optional(),
 });
 
 export const updateIdeaSchema = z.object({
@@ -50,6 +51,7 @@ export const updateIdeaSchema = z.object({
   impact: z.enum(IDEA_IMPACTS).optional(),
   stage: z.enum(IDEA_STAGES).optional(),
   tags: z.array(z.string().trim().max(30)).max(8).optional(),
+  imageUrl: z.string().nullable().optional(),
 });
 
 export const updateStageSchema = z.object({

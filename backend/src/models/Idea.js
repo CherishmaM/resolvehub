@@ -100,6 +100,10 @@ const ideaSchema = new mongoose.Schema(
       index: true,
     },
     comments: [ideaCommentSchema],
+    imageUrl: {
+      type: String,
+      default: null,
+    },
     convertedIssueId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Issue',
