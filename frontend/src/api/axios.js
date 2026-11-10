@@ -35,12 +35,19 @@ api.interceptors.response.use(
       } catch (e) {}
       window.dispatchEvent(new Event('auth:unauthorized'));
     }
+    const rawErrors = error.response?.data?.errors;
+    const formattedErrorMessages =
+      Array.isArray(rawErrors) && rawErrors.length > 0
+        ? rawErrors.map((e) => e.message || e.msg || e).filter(Boolean).join('. ')
+        : null;
+
     const errorPayload = {
       message:
+        formattedErrorMessages ||
         error.response?.data?.message ||
         error.message ||
         'A network or server error occurred.',
-      errors: error.response?.data?.errors || [],
+      errors: Array.isArray(rawErrors) ? rawErrors : [],
       statusCode: error.response?.status || 500,
     };
     return Promise.reject(errorPayload);

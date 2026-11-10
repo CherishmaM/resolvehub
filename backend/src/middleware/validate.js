@@ -12,7 +12,9 @@ export const validate = (schema, source = 'body') => {
           field: e.path.join('.'),
           message: e.message,
         }));
-        return next(ApiError.badRequest('Validation failed', formattedErrors));
+        const detailedMessage =
+          formattedErrors.map((e) => e.message).join('. ') || 'Validation failed';
+        return next(ApiError.badRequest(detailedMessage, formattedErrors));
       }
       next(err);
     }

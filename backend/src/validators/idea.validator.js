@@ -9,12 +9,12 @@ export const createIdeaSchema = z.object({
   title: z
     .string({ required_error: 'Title is required' })
     .trim()
-    .min(3, 'Title must be at least 3 characters long')
+    .min(2, 'Title must be at least 2 characters long')
     .max(140, 'Title cannot exceed 140 characters'),
   description: z
     .string({ required_error: 'Description is required' })
     .trim()
-    .min(10, 'Description must be at least 10 characters long')
+    .min(3, 'Description must be at least 3 characters long')
     .max(4000, 'Description cannot exceed 4000 characters'),
   category: z
     .enum(IDEA_CATEGORIES, {
@@ -27,31 +27,50 @@ export const createIdeaSchema = z.object({
     })
     .default('Medium'),
   tags: z
-    .array(z.string().trim().max(30))
-    .max(8, 'Maximum 8 tags allowed')
+    .union([
+      z.array(z.string().trim().max(50)),
+      z.string().transform((val) =>
+        val ? val.split(',').map((t) => t.trim().replace(/^#/, '')).filter(Boolean) : []
+      ),
+    ])
     .optional()
     .default([]),
-  imageUrl: z.string().nullable().optional(),
+  imageUrl: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => val || null),
 });
 
 export const updateIdeaSchema = z.object({
   title: z
     .string()
     .trim()
-    .min(3, 'Title must be at least 3 characters long')
+    .min(2, 'Title must be at least 2 characters long')
     .max(140, 'Title cannot exceed 140 characters')
     .optional(),
   description: z
     .string()
     .trim()
-    .min(10, 'Description must be at least 10 characters long')
+    .min(3, 'Description must be at least 3 characters long')
     .max(4000, 'Description cannot exceed 4000 characters')
     .optional(),
   category: z.enum(IDEA_CATEGORIES).optional(),
   impact: z.enum(IDEA_IMPACTS).optional(),
   stage: z.enum(IDEA_STAGES).optional(),
-  tags: z.array(z.string().trim().max(30)).max(8).optional(),
-  imageUrl: z.string().nullable().optional(),
+  tags: z
+    .union([
+      z.array(z.string().trim().max(50)),
+      z.string().transform((val) =>
+        val ? val.split(',').map((t) => t.trim().replace(/^#/, '')).filter(Boolean) : []
+      ),
+    ])
+    .optional(),
+  imageUrl: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => val || null),
 });
 
 export const updateStageSchema = z.object({

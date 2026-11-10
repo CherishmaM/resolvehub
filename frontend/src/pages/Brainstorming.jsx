@@ -180,8 +180,17 @@ export const Brainstorming = () => {
   // Handle Create Idea via Inline Composer
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
-    if (!ideaForm.title.trim()) return;
-    if (!ideaForm.description.trim()) return;
+    const cleanTitle = ideaForm.title.trim();
+    const cleanDesc = ideaForm.description.trim();
+
+    if (!cleanTitle || cleanTitle.length < 2) {
+      setError('Please provide an idea title (at least 2 characters).');
+      return;
+    }
+    if (!cleanDesc || cleanDesc.length < 3) {
+      setError('Please provide a description (at least 3 characters).');
+      return;
+    }
 
     setSubmittingIdea(true);
     setError('');
@@ -193,8 +202,8 @@ export const Brainstorming = () => {
         .filter(Boolean);
 
       await createIdeaApi({
-        title: ideaForm.title.trim(),
-        description: ideaForm.description.trim(),
+        title: cleanTitle,
+        description: cleanDesc,
         category: ideaForm.category,
         impact: ideaForm.impact,
         tags,
@@ -219,7 +228,11 @@ export const Brainstorming = () => {
       setTimeout(() => setSuccessMessage(''), 4000);
       fetchIdeas();
     } catch (err) {
-      setError(err.message || 'Failed to add idea. Please check fields.');
+      const msg =
+        (err.errors && Array.isArray(err.errors) && err.errors.map((e) => e.message).join('. ')) ||
+        err.message ||
+        'Failed to add idea. Please check fields.';
+      setError(msg);
     } finally {
       setSubmittingIdea(false);
     }
@@ -494,17 +507,22 @@ export const Brainstorming = () => {
 
           <form onSubmit={handleCreateSubmit} className="space-y-3.5">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Title <span className="text-rose-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-slate-700">
+                  Idea Title <span className="text-rose-500">*</span>
+                </label>
+                <span className="text-[11px] text-slate-400 font-normal">Min 2 characters</span>
+              </div>
               <input
                 type="text"
                 value={ideaForm.title}
-                onChange={(e) =>
-                  setIdeaForm((prev) => ({ ...prev, title: e.target.value }))
-                }
+                onChange={(e) => {
+                  setError('');
+                  setIdeaForm((prev) => ({ ...prev, title: e.target.value }));
+                }}
                 placeholder="e.g. Unified real-time dashboard notification stream"
                 required
+                minLength={2}
                 maxLength={140}
                 className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
               />
@@ -572,20 +590,25 @@ export const Brainstorming = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Description / Concept <span className="text-rose-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-semibold text-slate-700">
+                  Description / Concept <span className="text-rose-500">*</span>
+                </label>
+                <span className="text-[11px] text-slate-400 font-normal">Min 3 characters</span>
+              </div>
               <textarea
                 rows={3}
                 value={ideaForm.description}
-                onChange={(e) =>
+                onChange={(e) => {
+                  setError('');
                   setIdeaForm((prev) => ({
                     ...prev,
                     description: e.target.value,
-                  }))
-                }
+                  }));
+                }}
                 placeholder="Explain the idea. What challenge does this address? What should it look like?"
                 required
+                minLength={3}
                 maxLength={4000}
                 className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all resize-none"
               />
