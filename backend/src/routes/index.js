@@ -4,6 +4,7 @@ import issueRoutes from './issue.routes.js';
 import dashboardRoutes from './dashboard.routes.js';
 import userRoutes from './user.routes.js';
 import notificationRoutes from './notification.routes.js';
+import ideaRoutes from './idea.routes.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 
 const router = Router();
@@ -26,6 +27,7 @@ router.get('/health', (req, res) => {
 // Mounted feature routers
 router.use('/auth', authRoutes);
 router.use('/issues', issueRoutes);
+router.use('/ideas', ideaRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/users', userRoutes);
 router.use('/notifications', notificationRoutes);

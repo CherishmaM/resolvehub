@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   CheckSquare,
+  Lightbulb,
   PlusCircle,
   Users,
   X,
@@ -24,6 +25,11 @@ export const Sidebar = ({ isOpen, onClose }) => {
       icon: CheckSquare,
     },
     {
+      name: 'Brainstorming',
+      path: '/ideas',
+      icon: Lightbulb,
+    },
+    {
       name: 'New Issue',
       path: '/issues/new',
       icon: PlusCircle,
@@ -43,6 +49,13 @@ export const Sidebar = ({ isOpen, onClose }) => {
       return (
         location.pathname === '/issues' ||
         (location.pathname.startsWith('/issues/') && location.pathname !== '/issues/new')
+      );
+    }
+    if (path === '/ideas') {
+      return (
+        location.pathname === '/ideas' ||
+        location.pathname.startsWith('/ideas/') ||
+        location.pathname === '/brainstorm'
       );
     }
     if (path === '/dashboard') {

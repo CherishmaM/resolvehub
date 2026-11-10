@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createIssueApi } from '../api/issues.api';
 import { IssueForm } from '../components/issues/IssueForm';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Lightbulb } from 'lucide-react';
 
 export const CreateIssue = () => {
   const navigate = useNavigate();
@@ -40,6 +40,29 @@ export const CreateIssue = () => {
             Log a new bug, report a defect, or file a feature request for your engineering team
           </p>
         </div>
+      </div>
+
+      {/* Distinction callout for ideas vs bugs */}
+      <div className="bg-[#FAF9FF] border border-[#E3D9FF] rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 shadow-2xs">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#F0EBFF] text-[#6257D9] flex items-center justify-center shrink-0">
+            <Lightbulb className="w-4 h-4 stroke-[2]" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-[#272443]">
+              Have a feature proposal or design suggestion rather than a bug?
+            </p>
+            <p className="text-[11px] text-slate-500">
+              Ideas aren’t defects! Use our team brainstorming space to vote and discuss concepts.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/ideas"
+          className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-[#F0EBFF] text-[#6257D9] border border-[#E3D9FF] transition-all"
+        >
+          Go to Brainstorming ➔
+        </Link>
       </div>
 
       {error && <ErrorMessage message={error} />}

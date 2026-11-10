@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Inbox,
   Plus,
+  Lightbulb,
 } from 'lucide-react';
 
 export const Dashboard = () => {
@@ -143,6 +144,22 @@ export const Dashboard = () => {
           <p className="text-xs sm:text-sm text-[#5E597B] mt-1 font-medium">
             Overview of your project's bug health, activity, and team progress
           </p>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <Link
+            to="/ideas"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white hover:bg-[#F0EBFF] text-[#6257D9] border border-[#E3D9FF] text-xs font-semibold shadow-2xs hover:shadow-subtle transition-all active:scale-[0.98]"
+          >
+            <Lightbulb className="w-3.5 h-3.5" />
+            <span>Brainstorm Ideas</span>
+          </Link>
+          <Link
+            to="/issues/new"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-[#6257D9] hover:bg-[#5246c7] text-white text-xs font-semibold shadow-xs transition-all active:scale-[0.98]"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Issue</span>
+          </Link>
         </div>
       </div>
 

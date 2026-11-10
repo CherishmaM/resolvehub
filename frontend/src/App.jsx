@@ -10,6 +10,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Issues } from './pages/Issues';
 import { CreateIssue } from './pages/CreateIssue';
 import { IssueDetails } from './pages/IssueDetails';
+import { Brainstorming } from './pages/Brainstorming';
 import { Team } from './pages/Team';
 import { Settings } from './pages/Settings';
 import { NotFound } from './pages/NotFound';
@@ -51,6 +52,8 @@ export const App = () => {
             <Route path="/issues" element={<Issues />} />
             <Route path="/issues/new" element={<CreateIssue />} />
             <Route path="/issues/:id" element={<IssueDetails />} />
+            <Route path="/ideas" element={<Brainstorming />} />
+            <Route path="/brainstorm" element={<Navigate to="/ideas" replace />} />
             <Route path="/team" element={<Team />} />
             <Route path="/settings" element={<Settings />} />
           </Route>
