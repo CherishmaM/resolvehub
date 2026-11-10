@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   getIdeasApi,
   getIdeaStatsApi,
-  createIdeaApi,
   deleteIdeaApi,
   toggleUpvoteApi,
   updateStageApi,
@@ -19,23 +18,15 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { formatRelativeTime } from '../utils/formatters';
 import {
   Lightbulb,
-  Plus,
   ArrowBigUp,
   MessageSquare,
-  Sparkles,
   Search,
-  Filter,
   CheckCircle2,
   Trash2,
   Send,
-  ExternalLink,
-  ChevronDown,
-  ChevronUp,
   X,
   Rocket,
   Flame,
-  Clock,
-  ThumbsUp,
   CheckSquare,
 } from 'lucide-react';
 
@@ -58,8 +49,6 @@ const STAGES = [
   'Archived',
 ];
 
-const IMPACTS = ['Low', 'Medium', 'High', 'Moonshot'];
-
 export const Brainstorming = () => {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -81,17 +70,6 @@ export const Brainstorming = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedStage, setSelectedStage] = useState('All');
   const [sortBy, setSortBy] = useState('popular'); // 'popular' | 'recent' | 'discussed'
-
-  // Modal states
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [submittingIdea, setSubmittingIdea] = useState(false);
-  const [createForm, setCreateForm] = useState({
-    title: '',
-    category: 'Feature Proposal',
-    impact: 'Medium',
-    description: '',
-    tagsInput: '',
-  });
 
   // Action confirmation states
   const [pendingDeleteIdea, setPendingDeleteIdea] = useState(null);
@@ -189,48 +167,6 @@ export const Brainstorming = () => {
       getIdeaStatsApi().then((r) => r.data && setStats(r.data));
     } catch (err) {
       setError(err.message || 'Failed to update idea stage.');
-    }
-  };
-
-  // Handle Create Idea
-  const handleCreateSubmit = async (e) => {
-    e.preventDefault();
-    if (!createForm.title.trim()) return;
-    if (!createForm.description.trim()) return;
-
-    setSubmittingIdea(true);
-    setError('');
-
-    try {
-      const tags = createForm.tagsInput
-        .split(',')
-        .map((t) => t.trim().replace(/^#/, ''))
-        .filter(Boolean);
-
-      await createIdeaApi({
-        title: createForm.title.trim(),
-        description: createForm.description.trim(),
-        category: createForm.category,
-        impact: createForm.impact,
-        tags,
-      });
-
-      setIsCreateModalOpen(false);
-      setCreateForm({
-        title: '',
-        category: 'Feature Proposal',
-        impact: 'Medium',
-        description: '',
-        tagsInput: '',
-      });
-
-      setSuccessMessage('💡 Your idea has been shared with the team!');
-      setTimeout(() => setSuccessMessage(''), 4000);
-      fetchIdeas();
-    } catch (err) {
-      setError(err.message || 'Failed to create idea. Please check fields.');
-    } finally {
-      setSubmittingIdea(false);
     }
   };
 
@@ -387,20 +323,11 @@ export const Brainstorming = () => {
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Propose creative thoughts, vote on upcoming features, and brainstorm before filing issues
+                Explore creative thoughts, vote on upcoming features, and brainstorm before filing issues
               </p>
             </div>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#6257D9] hover:bg-[#5246c7] text-white text-xs font-semibold shadow-md shadow-[#6257D9]/20 hover:shadow-lg hover:shadow-[#6257D9]/30 transition-all active:scale-[0.98]"
-        >
-          <Sparkles className="w-4 h-4" />
-          <span>Propose Idea</span>
-        </button>
       </div>
 
       {/* Notifications */}
@@ -540,16 +467,8 @@ export const Brainstorming = () => {
           <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
             {searchQuery || selectedCategory !== 'All' || selectedStage !== 'All'
               ? 'Try adjusting your search criteria or category filter.'
-              : 'Be the first to share a creative suggestion or feature idea with your team! Ideas help us innovate without creating bug clutter.'}
+              : 'No brainstorming ideas recorded yet. Ideas shared by team members will appear here.'}
           </p>
-          <button
-            type="button"
-            onClick={() => setIsCreateModalOpen(true)}
-            className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#6257D9] hover:bg-[#5246c7] text-white text-xs font-semibold shadow-xs transition-all"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Propose the First Idea</span>
-          </button>
         </div>
       ) : (
         <div className="space-y-4">
@@ -724,7 +643,7 @@ export const Brainstorming = () => {
                           </select>
                         )}
 
-                        {/* Convert to Issue (Admin or Author) */}
+                        {/* Convert to Issue (Admin) */}
                         {isAdmin && !idea.convertedIssueId && (
                           <button
                             type="button"
@@ -862,177 +781,6 @@ export const Brainstorming = () => {
               </div>
             );
           })}
-        </div>
-      )}
-
-      {/* 6. "Propose a New Idea" Modal */}
-      {isCreateModalOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => !submittingIdea && setIsCreateModalOpen(false)}
-        >
-          <div
-            className="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-slate-100 overflow-hidden animate-modal-pop"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-[#fbfbfe]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#6257D9]/20 to-[#a78bfa]/25 text-[#6257D9] flex items-center justify-center shadow-xs">
-                  <Lightbulb className="w-5 h-5 stroke-[2.2]" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">
-                    Propose a Brainstorming Idea
-                  </h3>
-                  <p className="text-xs text-slate-400">
-                    Share a creative concept, experiment, or new feature suggestion
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsCreateModalOpen(false)}
-                disabled={submittingIdea}
-                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <form onSubmit={handleCreateSubmit} className="p-6 space-y-4">
-              {/* Informative distinction banner */}
-              <div className="p-3 bg-[#F0EBFF] border border-[#E3D9FF] rounded-2xl text-xs text-[#4A4568] flex items-start gap-2.5">
-                <Sparkles className="w-4 h-4 text-[#6257D9] shrink-0 mt-0.5" />
-                <span>
-                  <strong>Ideas aren’t bugs!</strong> This proposal won’t generate a defect ticket. It enters the team brainstorming pool for open discussion and upvotes.
-                </span>
-              </div>
-
-              {/* Title */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Idea Title <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={createForm.title}
-                  onChange={(e) =>
-                    setCreateForm((prev) => ({ ...prev, title: e.target.value }))
-                  }
-                  placeholder="e.g. Unified real-time dashboard notification stream"
-                  required
-                  maxLength={140}
-                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
-                />
-              </div>
-
-              {/* Category & Impact Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Category
-                  </label>
-                  <select
-                    value={createForm.category}
-                    onChange={(e) =>
-                      setCreateForm((prev) => ({
-                        ...prev,
-                        category: e.target.value,
-                      }))
-                    }
-                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
-                  >
-                    {CATEGORIES.filter((c) => c !== 'All').map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Estimated Impact
-                  </label>
-                  <select
-                    value={createForm.impact}
-                    onChange={(e) =>
-                      setCreateForm((prev) => ({
-                        ...prev,
-                        impact: e.target.value,
-                      }))
-                    }
-                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
-                  >
-                    {IMPACTS.map((imp) => (
-                      <option key={imp} value={imp}>
-                        {imp === 'Moonshot' ? '🚀 Moonshot (Game Changer)' : `${imp} Impact`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Tags */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Tags <span className="text-slate-400 font-normal lowercase">(comma-separated)</span>
-                </label>
-                <input
-                  type="text"
-                  value={createForm.tagsInput}
-                  onChange={(e) =>
-                    setCreateForm((prev) => ({ ...prev, tagsInput: e.target.value }))
-                  }
-                  placeholder="e.g. notifications, ux, real-time"
-                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Description / Concept Proposal <span className="text-rose-500">*</span>
-                </label>
-                <textarea
-                  rows={4}
-                  value={createForm.description}
-                  onChange={(e) =>
-                    setCreateForm((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  placeholder="Explain the idea. What challenge does this address? What does a great implementation look like?"
-                  required
-                  maxLength={4000}
-                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all resize-none"
-                />
-              </div>
-
-              {/* Modal Actions */}
-              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsCreateModalOpen(false)}
-                  disabled={submittingIdea}
-                  className="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submittingIdea}
-                  className="px-5 py-2.5 text-xs font-semibold text-white bg-[#6257D9] hover:bg-[#5246c7] rounded-xl shadow-md shadow-[#6257D9]/25 hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{submittingIdea ? 'Submitting...' : 'Post Idea'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
       )}
 
