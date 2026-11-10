@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   getIdeasApi,
   getIdeaStatsApi,
+  createIdeaApi,
   deleteIdeaApi,
   toggleUpvoteApi,
   updateStageApi,
@@ -25,9 +26,11 @@ import {
   Trash2,
   Send,
   X,
+  Plus,
   Rocket,
   Flame,
   CheckSquare,
+  Sparkles,
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -48,6 +51,8 @@ const STAGES = [
   'Converted',
   'Archived',
 ];
+
+const IMPACTS = ['Low', 'Medium', 'High', 'Moonshot'];
 
 export const Brainstorming = () => {
   const { user, isAdmin } = useAuth();
@@ -70,6 +75,17 @@ export const Brainstorming = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedStage, setSelectedStage] = useState('All');
   const [sortBy, setSortBy] = useState('popular'); // 'popular' | 'recent' | 'discussed'
+
+  // Inline Idea Composer State (no popup, no dark shadow backdrop)
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [submittingIdea, setSubmittingIdea] = useState(false);
+  const [ideaForm, setIdeaForm] = useState({
+    title: '',
+    category: 'Feature Proposal',
+    impact: 'Medium',
+    description: '',
+    tagsInput: '',
+  });
 
   // Action confirmation states
   const [pendingDeleteIdea, setPendingDeleteIdea] = useState(null);
@@ -116,6 +132,48 @@ export const Brainstorming = () => {
   useEffect(() => {
     fetchIdeas();
   }, [fetchIdeas]);
+
+  // Handle Create Idea via Inline Composer
+  const handleCreateSubmit = async (e) => {
+    e.preventDefault();
+    if (!ideaForm.title.trim()) return;
+    if (!ideaForm.description.trim()) return;
+
+    setSubmittingIdea(true);
+    setError('');
+
+    try {
+      const tags = ideaForm.tagsInput
+        .split(',')
+        .map((t) => t.trim().replace(/^#/, ''))
+        .filter(Boolean);
+
+      await createIdeaApi({
+        title: ideaForm.title.trim(),
+        description: ideaForm.description.trim(),
+        category: ideaForm.category,
+        impact: ideaForm.impact,
+        tags,
+      });
+
+      setIdeaForm({
+        title: '',
+        category: 'Feature Proposal',
+        impact: 'Medium',
+        description: '',
+        tagsInput: '',
+      });
+      setIsComposerOpen(false);
+
+      setSuccessMessage('💡 Your idea has been added to the brainstorming board!');
+      setTimeout(() => setSuccessMessage(''), 4000);
+      fetchIdeas();
+    } catch (err) {
+      setError(err.message || 'Failed to add idea. Please check fields.');
+    } finally {
+      setSubmittingIdea(false);
+    }
+  };
 
   // Handle Upvoting with optimistic state
   const handleToggleUpvote = async (ideaId) => {
@@ -328,6 +386,25 @@ export const Brainstorming = () => {
             </div>
           </div>
         </div>
+
+        {/* Clean "+ Add Idea" button that opens an inline card directly on the page (no popup, no dark shadow) */}
+        <button
+          type="button"
+          onClick={() => setIsComposerOpen((prev) => !prev)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#6257D9] hover:bg-[#5246c7] text-white text-xs font-semibold shadow-xs transition-all active:scale-[0.98]"
+        >
+          {isComposerOpen ? (
+            <>
+              <X className="w-4 h-4" />
+              <span>Cancel</span>
+            </>
+          ) : (
+            <>
+              <Plus className="w-4 h-4" />
+              <span>Share an Idea</span>
+            </>
+          )}
+        </button>
       </div>
 
       {/* Notifications */}
@@ -339,7 +416,153 @@ export const Brainstorming = () => {
         </div>
       )}
 
-      {/* 2. Quick Metrics Row */}
+      {/* 2. Inline Idea Composer Card (Directly in page flow - NO popup, NO dark backdrop) */}
+      {isComposerOpen && (
+        <div className="bg-white rounded-3xl border border-[#E3D9FF] p-5 sm:p-6 shadow-xs animate-fade-in space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#F0EBFF] text-[#6257D9] flex items-center justify-center">
+                <Lightbulb className="w-4 h-4 stroke-[2]" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">
+                  Share a Brainstorming Idea
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  Post a suggestion or concept for your team to discuss and upvote
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsComposerOpen(false)}
+              className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <form onSubmit={handleCreateSubmit} className="space-y-3.5">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Title <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={ideaForm.title}
+                onChange={(e) =>
+                  setIdeaForm((prev) => ({ ...prev, title: e.target.value }))
+                }
+                placeholder="e.g. Unified real-time dashboard notification stream"
+                required
+                maxLength={140}
+                className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Category
+                </label>
+                <select
+                  value={ideaForm.category}
+                  onChange={(e) =>
+                    setIdeaForm((prev) => ({
+                      ...prev,
+                      category: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
+                >
+                  {CATEGORIES.filter((c) => c !== 'All').map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Estimated Impact
+                </label>
+                <select
+                  value={ideaForm.impact}
+                  onChange={(e) =>
+                    setIdeaForm((prev) => ({
+                      ...prev,
+                      impact: e.target.value,
+                    }))
+                  }
+                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
+                >
+                  {IMPACTS.map((imp) => (
+                    <option key={imp} value={imp}>
+                      {imp === 'Moonshot' ? '🚀 Moonshot (Game Changer)' : `${imp} Impact`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Tags <span className="text-slate-400 font-normal">(comma-separated)</span>
+              </label>
+              <input
+                type="text"
+                value={ideaForm.tagsInput}
+                onChange={(e) =>
+                  setIdeaForm((prev) => ({ ...prev, tagsInput: e.target.value }))
+                }
+                placeholder="e.g. notifications, ux, real-time"
+                className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Description / Concept <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                rows={3}
+                value={ideaForm.description}
+                onChange={(e) =>
+                  setIdeaForm((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                placeholder="Explain the idea. What challenge does this address? What should it look like?"
+                required
+                maxLength={4000}
+                className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all resize-none"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsComposerOpen(false)}
+                className="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submittingIdea}
+                className="px-4 py-2 text-xs font-semibold text-white bg-[#6257D9] hover:bg-[#5246c7] rounded-xl shadow-xs transition-all disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>{submittingIdea ? 'Adding...' : 'Add Idea'}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* 3. Quick Metrics Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4">
         <div className="bg-white rounded-2xl p-4 border border-[#EAE5F7] shadow-2xs hover:shadow-subtle transition-all">
           <div className="flex items-center justify-between text-slate-400 mb-2">
@@ -378,7 +601,7 @@ export const Brainstorming = () => {
         </div>
       </div>
 
-      {/* 3. Search & Filter Bar */}
+      {/* 4. Search & Filter Bar */}
       <div className="bg-white p-3.5 sm:p-4 rounded-3xl border border-[#EAE5F7] shadow-2xs space-y-3">
         <div className="flex flex-col sm:flex-row items-center gap-3">
           {/* Search Input */}
@@ -453,7 +676,7 @@ export const Brainstorming = () => {
         </div>
       </div>
 
-      {/* 4. Idea Cards List */}
+      {/* 5. Idea Cards List */}
       {loading ? (
         <div className="py-20">
           <LoadingSpinner size="lg" text="Loading brainstorming ideas..." />
@@ -467,7 +690,7 @@ export const Brainstorming = () => {
           <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
             {searchQuery || selectedCategory !== 'All' || selectedStage !== 'All'
               ? 'Try adjusting your search criteria or category filter.'
-              : 'No brainstorming ideas recorded yet. Ideas shared by team members will appear here.'}
+              : 'No brainstorming ideas recorded yet. Click "+ Share an Idea" above to share one!'}
           </p>
         </div>
       ) : (
@@ -672,7 +895,7 @@ export const Brainstorming = () => {
                   </div>
                 </div>
 
-                {/* 5. Inline Discussion Thread */}
+                {/* Inline Discussion Thread */}
                 {isDiscussionOpen && (
                   <div className="bg-[#FAF9FF] border-t border-[#EAE5F7] p-5 sm:p-6 space-y-4 animate-fade-in">
                     <div className="flex items-center justify-between">
