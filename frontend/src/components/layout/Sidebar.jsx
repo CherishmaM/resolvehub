@@ -267,7 +267,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
         onMouseLeave={() => setIsHovered(false)}
       >
         <aside
-          className={`fixed left-0 top-0 h-screen flex flex-col transition-all duration-300 ease-in-out border-r border-[#D9D0F2]/80 ${
+          className={`fixed left-0 top-0 h-screen flex flex-col transition-all duration-300 ease-in-out border-r border-[#D0C4EC] ${
             isHovered
               ? 'w-64 bg-[#EDE8FA]/85 backdrop-blur-md shadow-2xl shadow-[#6257D9]/15'
               : 'w-[70px] bg-[#EDE8FA]/40 backdrop-blur-[1px] shadow-xs'

@@ -18,17 +18,17 @@ export const IssueFilters = ({
   const hasActiveFilters = search || status || priority || category || projectId;
 
   return (
-    <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-100 shadow-2xs space-y-3">
+    <div className="bg-white/95 p-3.5 sm:p-4 rounded-2xl border border-[#E2DBF7] shadow-xs space-y-3">
       <div className={`grid grid-cols-1 sm:grid-cols-2 ${projects.length > 0 ? 'lg:grid-cols-6' : 'lg:grid-cols-5'} gap-3`}>
-        {/* Search Input matching Image 2 */}
+        {/* Search Input */}
         <div className="lg:col-span-2 relative group">
           <Search className="w-4 h-4 text-slate-400 group-focus-within:text-[#6257D9] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200" />
           <input
             type="text"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search issues..."
-            className="w-full pl-9 pr-8 py-2 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200"
+            placeholder="Search issues by title or keyword..."
+            className="w-full pl-9 pr-8 py-2 text-xs bg-[#FAF9FF] border border-[#E2DBF7] rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200"
           />
           {search && (
             <button
@@ -42,7 +42,7 @@ export const IssueFilters = ({
           )}
         </div>
 
-        {/* Project Filter (if available) */}
+        {/* Project Filter */}
         {projects.length > 0 && (
           <div>
             <select
@@ -50,8 +50,8 @@ export const IssueFilters = ({
               onChange={(e) => onProjectChange?.(e.target.value)}
               className={`w-full py-2 px-3 text-xs rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200 ${
                 projectId
-                  ? 'bg-[#ede9fe]/40 border border-[#6257D9] text-[#6257D9] font-medium'
-                  : 'bg-slate-50 border border-slate-200/80 text-slate-700'
+                  ? 'bg-[#F0EBFF] border border-[#6257D9] text-[#6257D9] font-bold'
+                  : 'bg-[#FAF9FF] border border-[#E2DBF7] text-slate-700'
               }`}
             >
               <option value="">All Projects</option>
@@ -71,14 +71,15 @@ export const IssueFilters = ({
             onChange={(e) => onStatusChange(e.target.value)}
             className={`w-full py-2 px-3 text-xs rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200 ${
               status
-                ? 'bg-[#ede9fe]/40 border border-[#6257D9] text-[#6257D9] font-medium'
-                : 'bg-slate-50 border border-slate-200/80 text-slate-700'
+                ? 'bg-[#F0EBFF] border border-[#6257D9] text-[#6257D9] font-bold'
+                : 'bg-[#FAF9FF] border border-[#E2DBF7] text-slate-700'
             }`}
           >
             <option value="">All Statuses</option>
-            <option value="Open">Open</option>
+            <option value="Open">To Do</option>
             <option value="In Progress">In Progress</option>
-            <option value="Resolved">Resolved</option>
+            <option value="Resolved">Done</option>
+            <option value="Closed">Closed</option>
           </select>
         </div>
 
@@ -89,8 +90,8 @@ export const IssueFilters = ({
             onChange={(e) => onPriorityChange(e.target.value)}
             className={`w-full py-2 px-3 text-xs rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200 ${
               priority
-                ? 'bg-[#ede9fe]/40 border border-[#6257D9] text-[#6257D9] font-medium'
-                : 'bg-slate-50 border border-slate-200/80 text-slate-700'
+                ? 'bg-[#F0EBFF] border border-[#6257D9] text-[#6257D9] font-bold'
+                : 'bg-[#FAF9FF] border border-[#E2DBF7] text-slate-700'
             }`}
           >
             <option value="">All Priorities</option>
@@ -108,8 +109,8 @@ export const IssueFilters = ({
             onChange={(e) => onCategoryChange(e.target.value)}
             className={`w-full py-2 px-3 text-xs rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200 ${
               category
-                ? 'bg-[#ede9fe]/40 border border-[#6257D9] text-[#6257D9] font-medium'
-                : 'bg-slate-50 border border-slate-200/80 text-slate-700'
+                ? 'bg-[#F0EBFF] border border-[#6257D9] text-[#6257D9] font-bold'
+                : 'bg-[#FAF9FF] border border-[#E2DBF7] text-slate-700'
             }`}
           >
             <option value="">All Categories</option>
@@ -125,7 +126,7 @@ export const IssueFilters = ({
             <button
               onClick={onReset}
               title="Reset all filters"
-              className="group p-2 text-slate-500 hover:text-[#6257D9] bg-slate-100 hover:bg-[#ede9fe]/60 rounded-xl shrink-0 transition-all duration-150 animate-scale-in"
+              className="group p-2 text-[#6257D9] bg-[#F0EBFF] hover:bg-[#E3D9FF] border border-[#DDD3FA] rounded-xl shrink-0 transition-all duration-150 animate-scale-in"
             >
               <RotateCcw className="w-3.5 h-3.5 group-hover:-rotate-90 transition-transform duration-300" />
             </button>
