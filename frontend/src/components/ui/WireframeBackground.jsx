@@ -93,7 +93,7 @@ export const WireframeBackground = ({
     const outerIcoMat = new LineBasicMaterial({
       color: COLOR_IRIS,
       transparent: true,
-      opacity: isAuth ? 0.28 : 0.22,
+      opacity: isAuth ? 0.45 : 0.40,
     });
     const outerIcoMesh = new LineSegments(outerIcoWire, outerIcoMat);
     icosphereGroup.add(outerIcoMesh);
@@ -103,51 +103,51 @@ export const WireframeBackground = ({
     const innerIcoMat = new LineBasicMaterial({
       color: COLOR_BLUE,
       transparent: true,
-      opacity: isAuth ? 0.30 : 0.25,
+      opacity: isAuth ? 0.50 : 0.45,
     });
     const innerIcoMesh = new LineSegments(innerIcoWire, innerIcoMat);
     icosphereGroup.add(innerIcoMesh);
 
     sceneGroup.add(icosphereGroup);
 
-    // 5. Object B: Wireframe Torus Ring (Lower Left Perimeter)
-    const torusGeom = new TorusGeometry(5.8, 1.6, 10, 24);
+    // 5. Object B: Wireframe Torus Ring (Upper Left Corner - Behind Sidebar Header & Topbar Left)
+    const torusGeom = new TorusGeometry(5.8, 1.6, 12, 28);
     const torusWire = new WireframeGeometry(torusGeom);
     const torusMat = new LineBasicMaterial({
       color: COLOR_BLUE,
       transparent: true,
-      opacity: isAuth ? 0.26 : 0.20,
+      opacity: isAuth ? 0.45 : 0.40,
     });
     const torusMesh = new LineSegments(torusWire, torusMat);
     sceneGroup.add(torusMesh);
 
-    // 6. Object C: Floating Wireframe Octahedron (Far Right / Margin Perimeter)
-    const octaGeom = new OctahedronGeometry(4.5, 0);
+    // 6. Object C: Floating Wireframe Octahedron (Lower Left - Behind Sidebar Lower Rail)
+    const octaGeom = new OctahedronGeometry(5.0, 0);
     const octaWire = new WireframeGeometry(octaGeom);
     const octaMat = new LineBasicMaterial({
       color: COLOR_VIOLET,
       transparent: true,
-      opacity: isAuth ? 0.28 : 0.22,
+      opacity: isAuth ? 0.48 : 0.42,
     });
     const octaMesh = new LineSegments(octaWire, octaMat);
     sceneGroup.add(octaMesh);
 
     // 7. Connected Technical Network (Issues / Graph Connections)
-    const NODE_COUNT = width < 768 ? 20 : 36;
-    const MAX_DISTANCE = 12;
+    const NODE_COUNT = width < 768 ? 24 : 44;
+    const MAX_DISTANCE = 13;
     const nodePositions = [];
     const nodeVelocities = [];
 
     for (let i = 0; i < NODE_COUNT; i++) {
       nodePositions.push(
-        (Math.random() - 0.5) * 64,
-        (Math.random() - 0.5) * 38,
-        (Math.random() - 0.5) * 12
+        (Math.random() - 0.5) * 68,
+        (Math.random() - 0.5) * 42,
+        (Math.random() - 0.5) * 14
       );
       nodeVelocities.push({
-        x: (Math.random() - 0.5) * 0.016,
-        y: (Math.random() - 0.5) * 0.016,
-        z: (Math.random() - 0.5) * 0.008,
+        x: (Math.random() - 0.5) * 0.018,
+        y: (Math.random() - 0.5) * 0.018,
+        z: (Math.random() - 0.5) * 0.009,
       });
     }
 
@@ -157,9 +157,9 @@ export const WireframeBackground = ({
 
     const nodesMat = new PointsMaterial({
       color: COLOR_IRIS,
-      size: 3.2,
+      size: 4.2,
       transparent: true,
-      opacity: isAuth ? 0.45 : 0.38,
+      opacity: isAuth ? 0.70 : 0.65,
     });
     const nodesMesh = new Points(nodesGeom, nodesMat);
     sceneGroup.add(nodesMesh);
@@ -176,7 +176,7 @@ export const WireframeBackground = ({
     const linesMat = new LineBasicMaterial({
       color: COLOR_IRIS,
       transparent: true,
-      opacity: isAuth ? 0.22 : 0.18,
+      opacity: isAuth ? 0.35 : 0.30,
     });
     const linesMesh = new LineSegments(linesGeom, linesMat);
     sceneGroup.add(linesMesh);
@@ -193,24 +193,27 @@ export const WireframeBackground = ({
 
       if (curW < 768) {
         // Mobile layout: scale down and push to corners
-        icosphereGroup.position.set(vWidth * 0.38, vHeight * 0.38, 0);
-        icosphereGroup.scale.setScalar(0.62);
+        icosphereGroup.position.set(vWidth * 0.36, vHeight * 0.36, 0);
+        icosphereGroup.scale.setScalar(0.65);
 
-        torusMesh.position.set(-vWidth * 0.36, -vHeight * 0.36, -4);
+        torusMesh.position.set(-vWidth * 0.36, vHeight * 0.32, -2);
         torusMesh.scale.setScalar(0.55);
 
-        octaMesh.position.set(vWidth * 0.35, -vHeight * 0.22, -2);
-        octaMesh.scale.setScalar(0.52);
+        octaMesh.position.set(-vWidth * 0.34, -vHeight * 0.28, -2);
+        octaMesh.scale.setScalar(0.55);
       } else {
-        // Desktop / Laptop layout: position around perimeter margins
-        icosphereGroup.position.set(vWidth * 0.36, vHeight * 0.32, 0);
-        icosphereGroup.scale.setScalar(1.0);
+        // Desktop layout: position directly behind Topbar and Sidebar
+        // 1. Icosphere at Topbar Right (behind user profile & search)
+        icosphereGroup.position.set(vWidth * 0.35, vHeight * 0.34, 0);
+        icosphereGroup.scale.setScalar(1.05);
 
-        torusMesh.position.set(-vWidth * 0.38, -vHeight * 0.30, -5);
+        // 2. Torus at Upper-Left Junction (directly behind Topbar Left & Sidebar Header/Logo)
+        torusMesh.position.set(-vWidth * 0.40, vHeight * 0.32, -1);
         torusMesh.scale.setScalar(1.0);
 
-        octaMesh.position.set(vWidth * 0.40, -vHeight * 0.12, -2);
-        octaMesh.scale.setScalar(0.9);
+        // 3. Octahedron at Lower-Left (directly behind Sidebar Projects & Lower Links)
+        octaMesh.position.set(-vWidth * 0.41, -vHeight * 0.18, -1);
+        octaMesh.scale.setScalar(1.0);
       }
     };
 

@@ -3,13 +3,13 @@
   background-color: transparent;
 }
 
-/* Moving wireframe grid that flows across the entire screen, including behind sidebar and topbar */
+/* Moving technical wireframe grid with high clarity and continuous drift */
 .wireframe-grid-layer {
-  background-size: 40px 40px;
+  background-size: 38px 38px;
   background-image: 
-    linear-gradient(to right, rgba(98, 87, 217, 0.075) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(59, 130, 246, 0.075) 1px, transparent 1px);
-  animation: wireframeGridDrift 35s linear infinite;
+    linear-gradient(to right, rgba(98, 87, 217, 0.20) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(59, 130, 246, 0.18) 1px, transparent 1px);
+  animation: wireframeGridDrift 28s linear infinite;
 }
 
 @keyframes wireframeGridDrift {
@@ -17,43 +17,43 @@
     background-position: 0 0;
   }
   100% {
-    background-position: 40px 40px;
+    background-position: 38px 38px;
   }
 }
 
 /* Ambient soft blue-violet lighting gradients */
 .wireframe-ambient-glow-1 {
-  background: radial-gradient(circle at center, rgba(98, 87, 217, 0.16) 0%, rgba(139, 92, 246, 0.06) 45%, transparent 70%);
+  background: radial-gradient(circle at center, rgba(98, 87, 217, 0.22) 0%, rgba(139, 92, 246, 0.09) 45%, transparent 70%);
   filter: blur(55px);
   animation: wireframeAmbientFloat1 18s ease-in-out infinite;
 }
 
 .wireframe-ambient-glow-2 {
-  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.14) 0%, rgba(99, 102, 241, 0.05) 45%, transparent 70%);
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.20) 0%, rgba(99, 102, 241, 0.08) 45%, transparent 70%);
   filter: blur(65px);
   animation: wireframeAmbientFloat2 24s ease-in-out infinite;
 }
 
 /* Ambient glow active directly behind topbar and sidebar rail */
 .wireframe-ambient-topbar-glow {
-  background: radial-gradient(ellipse 700px 180px at 200px 0px, rgba(98, 87, 217, 0.22) 0%, rgba(139, 92, 246, 0.09) 50%, transparent 100%);
-  filter: blur(45px);
-  animation: topbarGlowDrift 14s ease-in-out infinite;
+  background: radial-gradient(ellipse 800px 220px at 300px 0px, rgba(98, 87, 217, 0.30) 0%, rgba(139, 92, 246, 0.14) 50%, transparent 100%);
+  filter: blur(40px);
+  animation: topbarGlowDrift 12s ease-in-out infinite;
 }
 
 .wireframe-ambient-sidebar-glow {
-  background: radial-gradient(ellipse 200px 800px at 30px 400px, rgba(98, 87, 217, 0.18) 0%, rgba(59, 130, 246, 0.08) 50%, transparent 100%);
-  filter: blur(45px);
-  animation: sidebarGlowDrift 16s ease-in-out infinite;
+  background: radial-gradient(ellipse 260px 900px at 35px 350px, rgba(98, 87, 217, 0.26) 0%, rgba(59, 130, 246, 0.12) 50%, transparent 100%);
+  filter: blur(40px);
+  animation: sidebarGlowDrift 14s ease-in-out infinite;
 }
 
 @keyframes topbarGlowDrift {
   0%, 100% {
     transform: translateX(0px);
-    opacity: 0.85;
+    opacity: 0.9;
   }
   50% {
-    transform: translateX(60px);
+    transform: translateX(70px);
     opacity: 1;
   }
 }
@@ -61,10 +61,10 @@
 @keyframes sidebarGlowDrift {
   0%, 100% {
     transform: translateY(0px);
-    opacity: 0.85;
+    opacity: 0.9;
   }
   50% {
-    transform: translateY(40px);
+    transform: translateY(50px);
     opacity: 1;
   }
 }
@@ -72,7 +72,7 @@
 @keyframes wireframeAmbientFloat1 {
   0%, 100% {
     transform: translate(0, 0) scale(1);
-    opacity: 0.8;
+    opacity: 0.85;
   }
   50% {
     transform: translate(-20px, 25px) scale(1.08);
@@ -83,11 +83,11 @@
 @keyframes wireframeAmbientFloat2 {
   0%, 100% {
     transform: translate(0, 0) scale(1);
-    opacity: 0.75;
+    opacity: 0.8;
   }
   50% {
     transform: translate(25px, -20px) scale(1.1);
-    opacity: 0.95;
+    opacity: 1;
   }
 }
 

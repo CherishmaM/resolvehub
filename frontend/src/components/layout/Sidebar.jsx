@@ -267,10 +267,10 @@ export const Sidebar = ({ isOpen, onClose }) => {
         onMouseLeave={() => setIsHovered(false)}
       >
         <aside
-          className={`fixed left-0 top-0 h-screen flex flex-col transition-all duration-300 ease-in-out border-r border-[#D9D0F2] ${
+          className={`fixed left-0 top-0 h-screen flex flex-col transition-all duration-300 ease-in-out border-r border-[#D9D0F2]/80 ${
             isHovered
-              ? 'w-64 bg-[#F2EDFC]/85 backdrop-blur-md shadow-2xl shadow-[#6257D9]/15'
-              : 'w-[70px] bg-[#EDE8FA]/60 backdrop-blur-md shadow-xs'
+              ? 'w-64 bg-[#EDE8FA]/85 backdrop-blur-md shadow-2xl shadow-[#6257D9]/15'
+              : 'w-[70px] bg-[#EDE8FA]/40 backdrop-blur-[1px] shadow-xs'
           }`}
         >
           {renderContent(isHovered)}
@@ -284,7 +284,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
             className="fixed inset-0 bg-[#272443]/30 transition-opacity"
             onClick={onClose}
           />
-          <div className="fixed inset-y-0 left-0 w-64 max-w-full z-10 shadow-xl bg-[#F2EDFC]/90 backdrop-blur-md border-r border-[#D9D0F2]">
+          <div className="fixed inset-y-0 left-0 w-64 max-w-full z-10 shadow-xl bg-[#EDE8FA]/90 backdrop-blur-md border-r border-[#D9D0F2]">
             {renderContent(true)}
           </div>
         </div>
