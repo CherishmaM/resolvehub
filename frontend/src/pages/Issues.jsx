@@ -9,9 +9,11 @@ import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { EmptyState } from '../components/ui/EmptyState';
 import { CheckSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useProject } from '../context/ProjectContext';
 
 export const Issues = () => {
   const { user } = useAuth();
+  const { projects } = useProject();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Parse filters from URL query parameters or default
@@ -21,6 +23,7 @@ export const Issues = () => {
   const priorityParam = searchParams.get('priority') || '';
   const categoryParam = searchParams.get('category') || '';
   const assignedToParam = searchParams.get('assignedTo') || '';
+  const projectIdParam = searchParams.get('projectId') || '';
 
   const [issues, setIssues] = useState([]);
   const [pagination, setPagination] = useState({
@@ -44,6 +47,7 @@ export const Issues = () => {
         status: statusParam || undefined,
         priority: priorityParam || undefined,
         category: categoryParam || undefined,
+        projectId: projectIdParam || undefined,
         assignedTo:
           assignedToParam === 'me' && user?._id
             ? user._id
@@ -67,6 +71,7 @@ export const Issues = () => {
     priorityParam,
     categoryParam,
     assignedToParam,
+    projectIdParam,
     user?._id,
   ]);
 
@@ -103,6 +108,10 @@ export const Issues = () => {
     updateParams({ category: val, page: 1 });
   };
 
+  const handleProjectChange = (val) => {
+    updateParams({ projectId: val, page: 1 });
+  };
+
   const handleResetFilters = () => {
     setSearchParams({});
   };
@@ -131,6 +140,9 @@ export const Issues = () => {
         onPriorityChange={handlePriorityChange}
         category={categoryParam}
         onCategoryChange={handleCategoryChange}
+        projectId={projectIdParam}
+        onProjectChange={handleProjectChange}
+        projects={projects}
         onReset={handleResetFilters}
       />
 

@@ -3,11 +3,17 @@ import { Issue } from '../models/Issue.js';
 import { ApiError } from '../utils/apiError.js';
 import { logActivity } from './activity.service.js';
 import { notifyDiscussionAdded } from './notification.service.js';
+import { hasProjectAccess } from './project.service.js';
 
-export const addComment = async ({ issueId, userId, text }) => {
-  const issue = await Issue.findById(issueId);
+export const addComment = async ({ issueId, userId, text, user }) => {
+  const issue = await Issue.findById(issueId).populate('projectId');
   if (!issue) {
     throw ApiError.notFound('Issue not found');
+  }
+
+  // Enforce project membership
+  if (user && issue.projectId && !hasProjectAccess(issue.projectId, user)) {
+    throw ApiError.forbidden('Access denied. You are not a member of this project.');
   }
 
   const comment = await Comment.create({
@@ -30,10 +36,15 @@ export const addComment = async ({ issueId, userId, text }) => {
   return comment.populate('userId', 'name email avatar role jobTitle');
 };
 
-export const getCommentsByIssue = async (issueId) => {
-  const issue = await Issue.findById(issueId);
+export const getCommentsByIssue = async (issueId, user) => {
+  const issue = await Issue.findById(issueId).populate('projectId');
   if (!issue) {
     throw ApiError.notFound('Issue not found');
+  }
+
+  // Enforce project membership
+  if (user && issue.projectId && !hasProjectAccess(issue.projectId, user)) {
+    throw ApiError.forbidden('Access denied. You are not a member of this project.');
   }
 
   return Comment.find({ issueId })

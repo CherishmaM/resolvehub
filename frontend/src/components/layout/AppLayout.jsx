@@ -10,9 +10,12 @@ export const AppLayout = () => {
 
   const getPageTitle = (pathname) => {
     if (pathname === '/dashboard') return 'Dashboard';
+    if (pathname === '/projects') return 'Projects & Workspaces';
+    if (pathname.startsWith('/projects/')) return 'Project Workspace';
     if (pathname === '/issues') return 'Bug Tracker';
     if (pathname === '/issues/new') return 'New Issue';
     if (pathname.startsWith('/issues/')) return 'Issue Details';
+    if (pathname === '/ideas' || pathname === '/brainstorm') return 'Brainstorming Ideas';
     if (pathname === '/team') return 'Team Directory';
     if (pathname === '/settings') return 'Settings';
     return '';

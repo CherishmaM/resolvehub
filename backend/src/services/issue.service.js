@@ -1,13 +1,16 @@
 import { Issue } from '../models/Issue.js';
 import { User } from '../models/User.js';
+import { Project } from '../models/Project.js';
 import { Comment } from '../models/Comment.js';
 import { Activity } from '../models/Activity.js';
 import { Notification } from '../models/Notification.js';
 import { ApiError } from '../utils/apiError.js';
 import { logActivity } from './activity.service.js';
 import { notifyIssueCreated, notifyTaskAssigned } from './notification.service.js';
+import { hasProjectAccess, hasProjectAdminAccess } from './project.service.js';
 
 const POPULATE_FIELDS = 'name email avatar role jobTitle';
+const POPULATE_PROJECT = 'name key status';
 
 export const createIssue = async ({
   title,
@@ -16,13 +19,40 @@ export const createIssue = async ({
   priority = 'Medium',
   assignedTo = null,
   imageUrl = null,
+  projectId = null,
   user,
 }) => {
+  // 1. Resolve target project
+  let targetProjectId = projectId;
+  if (!targetProjectId) {
+    const defaultProject =
+      (await Project.findOne(user.role === 'admin' ? {} : { 'members.user': user._id })) ||
+      (await Project.findOne());
+    if (!defaultProject) {
+      throw ApiError.badRequest('No project available to assign this issue to.');
+    }
+    targetProjectId = defaultProject._id;
+  }
+
+  const project = await Project.findById(targetProjectId);
+  if (!project) {
+    throw ApiError.notFound('Project not found');
+  }
+
+  // Access check: User must be assigned to this project (or organization admin)
+  if (!hasProjectAccess(project, user)) {
+    throw ApiError.forbidden('Access denied. You are not a member of this project.');
+  }
+
   let assigneeUser = null;
   if (assignedTo) {
     assigneeUser = await User.findById(assignedTo);
     if (!assigneeUser || !assigneeUser.isActive) {
       throw ApiError.badRequest('Assigned user does not exist or is inactive');
+    }
+    // Verify assignee is also a member of this project (or organization admin)
+    if (!hasProjectAccess(project, assigneeUser)) {
+      throw ApiError.badRequest(`User '${assigneeUser.name}' is not assigned to project '${project.name}'.`);
     }
   }
 
@@ -32,6 +62,7 @@ export const createIssue = async ({
     category,
     priority,
     status: 'Open',
+    projectId: project._id,
     createdBy: user._id,
     assignedTo: assigneeUser ? assigneeUser._id : null,
     imageUrl,
@@ -47,6 +78,8 @@ export const createIssue = async ({
       category: issue.category,
       priority: issue.priority,
       status: issue.status,
+      projectName: project.name,
+      projectKey: project.key,
       assignedToName: assigneeUser ? assigneeUser.name : null,
     },
   });
@@ -54,6 +87,7 @@ export const createIssue = async ({
   await notifyIssueCreated({ issue, actorId: user._id });
 
   return Issue.findById(issue._id)
+    .populate('projectId', POPULATE_PROJECT)
     .populate('createdBy', POPULATE_FIELDS)
     .populate('assignedTo', POPULATE_FIELDS);
 };
@@ -66,10 +100,30 @@ export const getIssues = async ({
   priority,
   category,
   assignedTo,
+  projectId,
   sortBy = 'createdAt',
   sortOrder = 'desc',
+  user,
 }) => {
   const filter = {};
+
+  // Project-based access control enforcement
+  if (user && user.role !== 'admin') {
+    const userProjects = await Project.find({ 'members.user': user._id }, { _id: 1 });
+    const userProjectIds = userProjects.map((p) => p._id);
+
+    if (projectId) {
+      const isMember = userProjectIds.some((pId) => pId.toString() === projectId.toString());
+      if (!isMember) {
+        throw ApiError.forbidden('Access denied. You are not a member of this project.');
+      }
+      filter.projectId = projectId;
+    } else {
+      filter.projectId = { $in: userProjectIds };
+    }
+  } else if (projectId) {
+    filter.projectId = projectId;
+  }
 
   if (status) filter.status = status;
   if (priority) filter.priority = priority;
@@ -99,6 +153,7 @@ export const getIssues = async ({
       .sort(sort)
       .skip(skip)
       .limit(limit)
+      .populate('projectId', POPULATE_PROJECT)
       .populate('createdBy', POPULATE_FIELDS)
       .populate('assignedTo', POPULATE_FIELDS),
     Issue.countDocuments(filter),
@@ -119,8 +174,9 @@ export const getIssues = async ({
   };
 };
 
-export const getIssueById = async (id) => {
+export const getIssueById = async (id, user) => {
   const issue = await Issue.findById(id)
+    .populate('projectId', 'name key status description members createdBy')
     .populate('createdBy', POPULATE_FIELDS)
     .populate('assignedTo', POPULATE_FIELDS);
 
@@ -128,19 +184,33 @@ export const getIssueById = async (id) => {
     throw ApiError.notFound('Issue not found');
   }
 
+  // Access control: verify user has access to issue's project
+  if (user && issue.projectId) {
+    const project = issue.projectId;
+    if (!hasProjectAccess(project, user)) {
+      throw ApiError.forbidden('Access denied. You are not a member of this project.');
+    }
+  }
+
   return issue;
 };
 
 export const updateIssue = async ({ id, updates, user }) => {
-  const issue = await Issue.findById(id);
+  const issue = await Issue.findById(id).populate('projectId');
   if (!issue) {
     throw ApiError.notFound('Issue not found');
   }
 
-  // Authorization: Only Admin or the Issue Creator can edit issue details
-  const isAdmin = user.role === 'admin';
+  const project = issue.projectId;
+  if (project && !hasProjectAccess(project, user)) {
+    throw ApiError.forbidden('Access denied. You are not a member of this project.');
+  }
+
+  const isOrgAdmin = user.role === 'admin';
+  const isProjAdmin = project ? hasProjectAdminAccess(project, user) : false;
   const isCreator = issue.createdBy.toString() === user._id.toString();
-  if (!isAdmin && !isCreator) {
+
+  if (!isOrgAdmin && !isProjAdmin && !isCreator) {
     throw ApiError.forbidden('You do not have permission to edit this issue');
   }
 
@@ -172,6 +242,25 @@ export const updateIssue = async ({ id, updates, user }) => {
     changes.push({ action: 'Updated', details: { field: 'imageUrl' } });
   }
 
+  // Optional project transfer (Org Admin or Project Admin only)
+  if (updates.projectId && updates.projectId.toString() !== (project?._id || '').toString()) {
+    if (!isOrgAdmin && !isProjAdmin) {
+      throw ApiError.forbidden('Only administrators can move an issue to another project.');
+    }
+    const newProject = await Project.findById(updates.projectId);
+    if (!newProject) {
+      throw ApiError.notFound('Target destination project not found');
+    }
+    if (!hasProjectAccess(newProject, user)) {
+      throw ApiError.forbidden('Access denied to destination project.');
+    }
+    issue.projectId = newProject._id;
+    changes.push({
+      action: 'Updated',
+      details: { field: 'project', fromProject: project?.name, toProject: newProject.name },
+    });
+  }
+
   if (updates.assignedTo !== undefined) {
     const targetAssigneeId = updates.assignedTo ? updates.assignedTo.toString() : null;
     const previousAssigneeId = issue.assignedTo ? issue.assignedTo.toString() : null;
@@ -182,6 +271,11 @@ export const updateIssue = async ({ id, updates, user }) => {
         newAssigneeUser = await User.findById(updates.assignedTo);
         if (!newAssigneeUser || !newAssigneeUser.isActive) {
           throw ApiError.badRequest('Assigned user does not exist or is inactive');
+        }
+        // Verify assignee is member of project
+        const currentProj = updates.projectId ? await Project.findById(updates.projectId) : project;
+        if (currentProj && !hasProjectAccess(currentProj, newAssigneeUser)) {
+          throw ApiError.badRequest(`User '${newAssigneeUser.name}' is not assigned to this project.`);
         }
       }
 
@@ -223,18 +317,25 @@ export const updateIssue = async ({ id, updates, user }) => {
   }
 
   return Issue.findById(issue._id)
+    .populate('projectId', POPULATE_PROJECT)
     .populate('createdBy', POPULATE_FIELDS)
     .populate('assignedTo', POPULATE_FIELDS);
 };
 
 export const updateStatus = async ({ id, status, user }) => {
-  const issue = await Issue.findById(id);
+  const issue = await Issue.findById(id).populate('projectId');
   if (!issue) {
     throw ApiError.notFound('Issue not found');
   }
 
+  const project = issue.projectId;
+  if (project && !hasProjectAccess(project, user)) {
+    throw ApiError.forbidden('Access denied. You are not a member of this project.');
+  }
+
   if (issue.status === status) {
     return Issue.findById(issue._id)
+      .populate('projectId', POPULATE_PROJECT)
       .populate('createdBy', POPULATE_FIELDS)
       .populate('assignedTo', POPULATE_FIELDS);
   }
@@ -261,18 +362,26 @@ export const updateStatus = async ({ id, status, user }) => {
   });
 
   return Issue.findById(issue._id)
+    .populate('projectId', POPULATE_PROJECT)
     .populate('createdBy', POPULATE_FIELDS)
     .populate('assignedTo', POPULATE_FIELDS);
 };
 
 export const assignIssue = async ({ id, assignedTo, user }) => {
-  const issue = await Issue.findById(id);
+  const issue = await Issue.findById(id).populate('projectId');
   if (!issue) {
     throw ApiError.notFound('Issue not found');
   }
 
-  // Only Admin is authorized to assign or reassign issues
-  if (user.role !== 'admin') {
+  const project = issue.projectId;
+  if (project && !hasProjectAccess(project, user)) {
+    throw ApiError.forbidden('Access denied. You are not a member of this project.');
+  }
+
+  const isOrgAdmin = user.role === 'admin';
+  const isProjAdmin = project ? hasProjectAdminAccess(project, user) : false;
+
+  if (!isOrgAdmin && !isProjAdmin) {
     throw ApiError.forbidden('Only administrators can assign issues');
   }
 
@@ -281,6 +390,9 @@ export const assignIssue = async ({ id, assignedTo, user }) => {
     newAssigneeUser = await User.findById(assignedTo);
     if (!newAssigneeUser || !newAssigneeUser.isActive) {
       throw ApiError.badRequest('Assigned user does not exist or is inactive');
+    }
+    if (project && !hasProjectAccess(project, newAssigneeUser)) {
+      throw ApiError.badRequest(`User '${newAssigneeUser.name}' is not assigned to project '${project.name}'.`);
     }
   }
 
@@ -304,7 +416,6 @@ export const assignIssue = async ({ id, assignedTo, user }) => {
     },
   });
 
-  // Notify assigned user only when assignee actually changes to them
   if (newAssigneeId && newAssigneeId !== previousAssigneeId) {
     await notifyTaskAssigned({
       issue,
@@ -314,17 +425,26 @@ export const assignIssue = async ({ id, assignedTo, user }) => {
   }
 
   return Issue.findById(issue._id)
+    .populate('projectId', POPULATE_PROJECT)
     .populate('createdBy', POPULATE_FIELDS)
     .populate('assignedTo', POPULATE_FIELDS);
 };
 
 export const deleteIssue = async ({ id, user }) => {
-  const issue = await Issue.findById(id);
+  const issue = await Issue.findById(id).populate('projectId');
   if (!issue) {
     throw ApiError.notFound('Issue not found');
   }
 
-  if (user.role !== 'admin') {
+  const project = issue.projectId;
+  if (project && !hasProjectAccess(project, user)) {
+    throw ApiError.forbidden('Access denied. You are not a member of this project.');
+  }
+
+  const isOrgAdmin = user.role === 'admin';
+  const isProjAdmin = project ? hasProjectAdminAccess(project, user) : false;
+
+  if (!isOrgAdmin && !isProjAdmin) {
     throw ApiError.forbidden('Only administrators are allowed to delete issues');
   }
 

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Idea } from '../models/Idea.js';
 import { Issue } from '../models/Issue.js';
+import { Project } from '../models/Project.js';
 import { Activity } from '../models/Activity.js';
 import { ApiError } from '../utils/apiError.js';
 
@@ -380,6 +381,10 @@ export const convertToIssue = async (id, user) => {
     priority = 'Low';
   }
 
+  const defaultProject =
+    (await Project.findOne(user.role === 'admin' ? {} : { 'members.user': user._id })) ||
+    (await Project.findOne());
+
   // Create issue in Bug Tracker
   const issue = await Issue.create({
     title: idea.title,
@@ -387,6 +392,7 @@ export const convertToIssue = async (id, user) => {
     category: 'Feature Request',
     priority,
     status: 'Open',
+    projectId: defaultProject?._id,
     imageUrl: idea.imageUrl || null,
     createdBy: user._id,
   });

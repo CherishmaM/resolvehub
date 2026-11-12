@@ -10,13 +10,16 @@ export const IssueFilters = ({
   onPriorityChange,
   category,
   onCategoryChange,
+  projectId = '',
+  onProjectChange,
+  projects = [],
   onReset,
 }) => {
-  const hasActiveFilters = search || status || priority || category;
+  const hasActiveFilters = search || status || priority || category || projectId;
 
   return (
     <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-100 shadow-2xs space-y-3">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${projects.length > 0 ? 'lg:grid-cols-6' : 'lg:grid-cols-5'} gap-3`}>
         {/* Search Input matching Image 2 */}
         <div className="lg:col-span-2 relative group">
           <Search className="w-4 h-4 text-slate-400 group-focus-within:text-[#6257D9] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200" />
@@ -38,6 +41,28 @@ export const IssueFilters = ({
             </button>
           )}
         </div>
+
+        {/* Project Filter (if available) */}
+        {projects.length > 0 && (
+          <div>
+            <select
+              value={projectId}
+              onChange={(e) => onProjectChange?.(e.target.value)}
+              className={`w-full py-2 px-3 text-xs rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200 ${
+                projectId
+                  ? 'bg-[#ede9fe]/40 border border-[#6257D9] text-[#6257D9] font-medium'
+                  : 'bg-slate-50 border border-slate-200/80 text-slate-700'
+              }`}
+            >
+              <option value="">All Projects</option>
+              {projects.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.name} ({p.key})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Status Filter */}
         <div>

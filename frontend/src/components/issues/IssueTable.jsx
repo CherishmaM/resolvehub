@@ -35,7 +35,8 @@ export const IssueTable = ({ issues = [] }) => {
           </thead>
           <tbody className="divide-y divide-slate-100/80 text-xs">
             {issues.map((issue, idx) => {
-              const keyFormatted = `TF-${issue._id.slice(-4).toUpperCase()}`;
+              const projectKey = issue.projectId?.key || 'TF';
+              const keyFormatted = `${projectKey}-${issue._id.slice(-4).toUpperCase()}`;
 
               return (
                 <tr
@@ -44,8 +45,10 @@ export const IssueTable = ({ issues = [] }) => {
                   className="hover:bg-slate-50/80 transition-all duration-150 group animate-fade-in"
                 >
                   {/* Key */}
-                  <td className="py-4 px-5 font-medium text-slate-500 whitespace-nowrap">
-                    {keyFormatted}
+                  <td className="py-4 px-5 font-mono text-[11px] font-semibold text-slate-600 whitespace-nowrap">
+                    <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200/60">
+                      {keyFormatted}
+                    </span>
                   </td>
 
                   {/* Title & Attachment Preview */}
@@ -67,13 +70,20 @@ export const IssueTable = ({ issues = [] }) => {
                         </button>
                       )}
 
-                      <Link
-                        to={`/issues/${issue._id}`}
-                        className="font-semibold text-slate-900 group-hover:text-[#6257D9] transition-all duration-150 group-hover:translate-x-0.5 truncate block"
-                        title={issue.title}
-                      >
-                        {issue.title}
-                      </Link>
+                      <div className="min-w-0">
+                        <Link
+                          to={`/issues/${issue._id}`}
+                          className="font-semibold text-slate-900 group-hover:text-[#6257D9] transition-all duration-150 group-hover:translate-x-0.5 truncate block"
+                          title={issue.title}
+                        >
+                          {issue.title}
+                        </Link>
+                        {issue.projectId?.name && (
+                          <span className="text-[10px] text-slate-400 font-normal">
+                            Project: {issue.projectId.name}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </td>
 

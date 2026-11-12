@@ -56,6 +56,12 @@ const issueSchema = new mongoose.Schema(
       },
       default: 'Open',
     },
+    projectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Project',
+      required: [true, 'Project reference is required'],
+      index: true,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -89,6 +95,8 @@ const issueSchema = new mongoose.Schema(
 );
 
 // Compound and lookup indexes
+issueSchema.index({ projectId: 1, createdAt: -1 });
+issueSchema.index({ projectId: 1, status: 1, priority: 1 });
 issueSchema.index({ status: 1, priority: 1 });
 issueSchema.index({ createdAt: -1 });
 issueSchema.index({ title: 'text', description: 'text' });

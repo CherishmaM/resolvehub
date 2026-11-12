@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { createIssueApi } from '../api/issues.api';
 import { IssueForm } from '../components/issues/IssueForm';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
@@ -7,6 +7,9 @@ import { PlusCircle, Lightbulb } from 'lucide-react';
 
 export const CreateIssue = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const preselectedProjectId = searchParams.get('project');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -70,6 +73,7 @@ export const CreateIssue = () => {
       {/* Main Form Container Card */}
       <div className="bg-white rounded-3xl border border-slate-100 p-6 sm:p-8 shadow-xs">
         <IssueForm
+          initialValues={{ projectId: preselectedProjectId || undefined }}
           onSubmit={handleSubmit}
           loading={loading}
           onCancel={() => navigate('/issues')}

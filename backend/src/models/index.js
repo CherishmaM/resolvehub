@@ -1,5 +1,10 @@
 export { User } from './User.js';
 export {
+  Project,
+  PROJECT_STATUSES,
+  PROJECT_MEMBER_ROLES,
+} from './Project.js';
+export {
   Issue,
   ISSUE_CATEGORIES,
   ISSUE_PRIORITIES,

@@ -1,6 +1,7 @@
 import app from './app.js';
 import { env, validateEnv } from './config/env.js';
 import { connectDB, disconnectDB } from './config/db.js';
+import { initializeProjects } from './utils/initProjects.js';
 
 const startServer = async () => {
   try {
@@ -9,6 +10,9 @@ const startServer = async () => {
 
     // 2. Connect to database
     await connectDB();
+
+    // 2b. Initialize default projects and backfill legacy records
+    await initializeProjects();
 
     // 3. Start Express server
     const server = app.listen(env.PORT, () => {

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authRoutes from './auth.routes.js';
+import projectRoutes from './project.routes.js';
 import issueRoutes from './issue.routes.js';
 import dashboardRoutes from './dashboard.routes.js';
 import userRoutes from './user.routes.js';
@@ -26,6 +27,7 @@ router.get('/health', (req, res) => {
 
 // Mounted feature routers
 router.use('/auth', authRoutes);
+router.use('/projects', projectRoutes);
 router.use('/issues', issueRoutes);
 router.use('/ideas', ideaRoutes);
 router.use('/dashboard', dashboardRoutes);

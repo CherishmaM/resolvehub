@@ -30,6 +30,7 @@ export const createIssueSchema = z.object({
     errorMap: () => ({ message: `Priority must be one of: ${ISSUE_PRIORITIES.join(', ')}` }),
   }).optional().default('Medium'),
   assignedTo: objectIdValidator.nullable().optional(),
+  projectId: objectIdValidator.optional(),
   imageUrl: z.string().nullable().optional(),
 });
 
@@ -39,6 +40,7 @@ export const updateIssueSchema = z.object({
   category: z.enum(ISSUE_CATEGORIES).optional(),
   priority: z.enum(ISSUE_PRIORITIES).optional(),
   assignedTo: objectIdValidator.nullable().optional(),
+  projectId: objectIdValidator.optional(),
   imageUrl: z.string().nullable().optional(),
 });
 
@@ -60,6 +62,7 @@ export const issueQuerySchema = z.object({
   priority: z.enum(ISSUE_PRIORITIES).optional(),
   category: z.enum(ISSUE_CATEGORIES).optional(),
   assignedTo: z.string().optional(),
+  projectId: z.string().optional(),
   sortBy: z.enum(['createdAt', 'updatedAt', 'title', 'priority', 'status']).default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });

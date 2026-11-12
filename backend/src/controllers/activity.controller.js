@@ -3,7 +3,7 @@ import { ApiResponse } from '../utils/apiResponse.js';
 
 export const getActivities = async (req, res, next) => {
   try {
-    const activities = await activityService.getIssueActivities(req.params.id);
+    const activities = await activityService.getIssueActivities(req.params.id, req.user);
     return res
       .status(200)
       .json(ApiResponse.success(activities, 'Issue activities retrieved'));

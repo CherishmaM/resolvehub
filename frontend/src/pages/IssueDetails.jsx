@@ -35,6 +35,8 @@ import {
   RotateCcw,
   ZoomIn,
   X,
+  FolderKanban,
+  ExternalLink,
 } from 'lucide-react';
 
 export const IssueDetails = () => {
@@ -198,16 +200,39 @@ export const IssueDetails = () => {
   }
 
   if (!issue) {
+    const isAccessForbidden =
+      error &&
+      (error.toLowerCase().includes('access denied') ||
+        error.toLowerCase().includes('forbidden') ||
+        error.toLowerCase().includes('member'));
+
     return (
-      <div className="py-12 text-center space-y-4">
-        <h2 className="text-xl font-bold text-slate-800">Issue Not Found</h2>
-        <p className="text-xs text-slate-500">The requested issue could not be found or has been deleted.</p>
-        <Link
-          to="/issues"
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#5b42d6] rounded-xl hover:bg-[#4c35c2]"
-        >
-          Return to Issues
-        </Link>
+      <div className="max-w-md mx-auto py-16 text-center space-y-4">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-xs">
+          <ShieldAlert className="w-7 h-7 stroke-[2]" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900">
+          {isAccessForbidden ? 'Project Access Restricted' : 'Issue Not Found'}
+        </h2>
+        <p className="text-xs text-slate-500 leading-relaxed">
+          {isAccessForbidden
+            ? 'This issue belongs to a project you are not assigned to. ResolveHub isolates tickets, discussions, and attachments to assigned project members.'
+            : 'The requested issue could not be found or has been deleted.'}
+        </p>
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <Link
+            to="/projects"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#6257D9] rounded-xl hover:bg-[#5246c7] transition-colors"
+          >
+            My Projects
+          </Link>
+          <Link
+            to="/issues"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+          >
+            Return to Issues
+          </Link>
+        </div>
       </div>
     );
   }
@@ -304,6 +329,17 @@ export const IssueDetails = () => {
             ) : (
               <>
                 <div className="flex flex-wrap items-center gap-2">
+                  {issue.projectId && (
+                    <Link
+                      to={`/projects/${issue.projectId._id}`}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-[#6257D9]/10 text-[#6257D9] hover:bg-[#6257D9]/20 border border-[#6257D9]/20 transition-colors"
+                      title={`Project: ${issue.projectId.name}`}
+                    >
+                      <FolderKanban className="w-3.5 h-3.5" />
+                      <span>{issue.projectId.name}</span>
+                      <span className="text-[10px] opacity-75 font-mono">({issue.projectId.key})</span>
+                    </Link>
+                  )}
                   <span
                     className={`px-2 py-0.5 rounded text-xs font-medium border ${categoryStyle}`}
                   >
@@ -312,7 +348,7 @@ export const IssueDetails = () => {
                   <PriorityBadge priority={issue.priority} />
                   <StatusBadge status={issue.status} />
                   <span className="text-xs text-slate-400 font-mono">
-                    #{issue._id.slice(-6).toUpperCase()}
+                    {issue.projectId?.key ? `${issue.projectId.key}-${issue._id.slice(-4).toUpperCase()}` : `#${issue._id.slice(-6).toUpperCase()}`}
                   </span>
                 </div>
 
@@ -439,6 +475,34 @@ export const IssueDetails = () => {
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-3">
               Issue Properties
             </h3>
+
+            {/* Project Workspace Section */}
+            <div className="pb-4 border-b border-slate-100">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+                Project Workspace
+              </span>
+              {issue.projectId ? (
+                <Link
+                  to={`/projects/${issue.projectId._id}`}
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 hover:bg-[#6257D9]/5 border border-slate-200/80 hover:border-[#6257D9]/30 transition-all group"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-7 h-7 rounded-lg bg-[#6257D9]/10 text-[#6257D9] flex items-center justify-center font-bold text-xs shrink-0">
+                      {issue.projectId.key || 'PRJ'}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-slate-800 group-hover:text-[#6257D9] truncate">
+                        {issue.projectId.name}
+                      </p>
+                      <span className="text-[10px] text-slate-400">View project details</span>
+                    </div>
+                  </div>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#6257D9] shrink-0" />
+                </Link>
+              ) : (
+                <span className="text-xs text-slate-400 italic">Core Organization</span>
+              )}
+            </div>
 
             {/* Assignee Section */}
             <div>

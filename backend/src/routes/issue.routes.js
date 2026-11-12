@@ -40,14 +40,12 @@ router.patch(
 );
 router.patch(
   '/:id/assign',
-  authorize('admin'),
   validate(issueIdParamSchema, 'params'),
   validate(assignIssueSchema, 'body'),
   issueController.assignIssue
 );
 router.delete(
   '/:id',
-  authorize('admin'),
   validate(issueIdParamSchema, 'params'),
   issueController.deleteIssue
 );

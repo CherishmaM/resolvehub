@@ -3,7 +3,7 @@ import { ApiResponse } from '../utils/apiResponse.js';
 
 export const createIssue = async (req, res, next) => {
   try {
-    const { title, description, category, priority, assignedTo, imageUrl } = req.body;
+    const { title, description, category, priority, assignedTo, imageUrl, projectId } = req.body;
     const issue = await issueService.createIssue({
       title,
       description,
@@ -11,6 +11,7 @@ export const createIssue = async (req, res, next) => {
       priority,
       assignedTo,
       imageUrl,
+      projectId,
       user: req.user,
     });
 
@@ -24,7 +25,7 @@ export const createIssue = async (req, res, next) => {
 
 export const getIssues = async (req, res, next) => {
   try {
-    const result = await issueService.getIssues(req.query);
+    const result = await issueService.getIssues({ ...req.query, user: req.user });
     return res
       .status(200)
       .json(ApiResponse.paginated(result.issues, result.pagination, 'Issues retrieved'));
@@ -35,7 +36,7 @@ export const getIssues = async (req, res, next) => {
 
 export const getIssueById = async (req, res, next) => {
   try {
-    const issue = await issueService.getIssueById(req.params.id);
+    const issue = await issueService.getIssueById(req.params.id, req.user);
     return res
       .status(200)
       .json(ApiResponse.success(issue, 'Issue details retrieved'));

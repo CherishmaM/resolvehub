@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getUsersApi } from '../../api/users.api';
+import { useProject } from '../../context/ProjectContext';
+import { useAuth } from '../../context/AuthContext';
 import { ErrorMessage } from '../ui/ErrorMessage';
-import { Image as ImageIcon, Upload, Trash2, CheckCircle2 } from 'lucide-react';
+import { Image as ImageIcon, Upload, Trash2, CheckCircle2, FolderKanban } from 'lucide-react';
 
 const CATEGORIES = [
   'Frontend',
@@ -29,6 +31,8 @@ export const IssueForm = ({
   isEdit = false,
   onCancel,
 }) => {
+  const { projects, currentProjectId } = useProject();
+  const { isAdmin } = useAuth();
   const [users, setUsers] = useState([]);
   const fileInputRef = useRef(null);
 
@@ -37,6 +41,11 @@ export const IssueForm = ({
     description: initialValues.description || '',
     category: initialValues.category || 'Frontend',
     priority: initialValues.priority || 'Medium',
+    projectId:
+      initialValues.projectId?._id ||
+      initialValues.projectId ||
+      currentProjectId ||
+      (projects[0]?._id || ''),
     assignedTo: initialValues.assignedTo?._id || initialValues.assignedTo || '',
     imageUrl: initialValues.imageUrl || '',
   });
@@ -50,6 +59,11 @@ export const IssueForm = ({
         description: initialValues.description || '',
         category: initialValues.category || 'Frontend',
         priority: initialValues.priority || 'Medium',
+        projectId:
+          initialValues.projectId?._id ||
+          initialValues.projectId ||
+          currentProjectId ||
+          (projects[0]?._id || ''),
         assignedTo:
           initialValues.assignedTo?._id ||
           (typeof initialValues.assignedTo === 'string' ? initialValues.assignedTo : '') ||
@@ -57,7 +71,7 @@ export const IssueForm = ({
         imageUrl: initialValues.imageUrl || '',
       });
     }
-  }, [isEdit, initialValues?._id]);
+  }, [isEdit, initialValues?._id, currentProjectId, projects]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -71,13 +85,24 @@ export const IssueForm = ({
     fetchUsers();
   }, []);
 
+  // Filter assignees to members of the selected project (or all users if org admin)
+  const selectedProject = projects.find((p) => p._id === formData.projectId);
+  const eligibleAssignees = users.filter((u) => {
+    if (isAdmin) return true;
+    if (!selectedProject || !selectedProject.members) return true;
+    return selectedProject.members.some(
+      (m) => (m.user?._id || m.user).toString() === u._id.toString()
+    );
+  });
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (validationError) setValidationError('');
   };
 
-  const handlePrioritySelect = (priId) => {
-    setFormData((prev) => ({ ...prev, priority: priId }));
+  const handlePrioritySelect = (priorityId) => {
+    setFormData((prev) => ({ ...prev, priority: priorityId }));
   };
 
   const handleImageFileChange = (e) => {
@@ -96,7 +121,7 @@ export const IssueForm = ({
 
     setValidationError('');
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onloadend = () => {
       setFormData((prev) => ({ ...prev, imageUrl: reader.result }));
     };
     reader.onerror = () => {
@@ -131,6 +156,7 @@ export const IssueForm = ({
       description: formData.description.trim(),
       category: formData.category,
       priority: formData.priority,
+      projectId: formData.projectId || currentProjectId || projects[0]?._id,
       assignedTo: formData.assignedTo ? formData.assignedTo : null,
       imageUrl: formData.imageUrl ? formData.imageUrl : null,
     };
@@ -142,28 +168,48 @@ export const IssueForm = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       {validationError && <ErrorMessage message={validationError} />}
 
-      {/* 1. Title */}
-      <div>
-        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-          Issue Title <span className="text-rose-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          placeholder="e.g. Authentication token expiration causing infinite reload loop"
-          maxLength={120}
-          required
-          className="w-full px-4 py-3 text-sm bg-slate-50/70 border border-slate-200 rounded-2xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5b42d6]/20 focus:border-[#5b42d6] transition-all"
-        />
-        <div className="flex justify-between items-center text-[11px] text-slate-400 mt-1.5 px-1">
-          <span>Be concise and specific about the observed problem</span>
-          <span>{formData.title.length}/120</span>
+      {/* 1. Project & Title Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Project Selector */}
+        <div>
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <FolderKanban className="w-3.5 h-3.5 text-[#5b42d6]" />
+            <span>Project</span> <span className="text-rose-500">*</span>
+          </label>
+          <select
+            name="projectId"
+            value={formData.projectId}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-3 text-xs sm:text-sm bg-slate-50/70 border border-slate-200 rounded-2xl text-slate-800 font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5b42d6]/20 focus:border-[#5b42d6] transition-all"
+          >
+            {projects.map((p) => (
+              <option key={p._id} value={p._id}>
+                [{p.key}] {p.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Title */}
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            Issue Title <span className="text-rose-500">*</span>
+          </label>
+          <input
+            type="text"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            placeholder="e.g. Authentication token expiration causing infinite reload loop"
+            maxLength={120}
+            required
+            className="w-full px-4 py-3 text-sm bg-slate-50/70 border border-slate-200 rounded-2xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5b42d6]/20 focus:border-[#5b42d6] transition-all"
+          />
         </div>
       </div>
 
-      {/* 2. Priority Selection with Visual Chips matching Reference Theme */}
+      {/* 2. Priority Selection with Visual Chips */}
       <div>
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
           Priority Level <span className="text-rose-500">*</span>
@@ -219,7 +265,7 @@ export const IssueForm = ({
         {/* Assignee */}
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-            Assign Teammate <span className="text-slate-400 font-normal lowercase">(optional)</span>
+            Assign Teammate <span className="text-slate-400 font-normal lowercase">(project members)</span>
           </label>
           <select
             name="assignedTo"
@@ -228,7 +274,7 @@ export const IssueForm = ({
             className="w-full px-4 py-3 text-xs sm:text-sm bg-slate-50/70 border border-slate-200 rounded-2xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5b42d6]/20 focus:border-[#5b42d6] transition-all"
           >
             <option value="">Unassigned (Default)</option>
-            {users.map((u) => (
+            {eligibleAssignees.map((u) => (
               <option key={u._id} value={u._id}>
                 {u.name} {u.jobTitle ? `(${u.jobTitle})` : ''}
               </option>
@@ -312,25 +358,25 @@ export const IssueForm = ({
           rows={5}
           value={formData.description}
           onChange={handleChange}
-          placeholder="Describe steps to reproduce, expected vs actual behavior, error traces, or console warnings..."
+          placeholder="Steps to reproduce:&#10;1. Navigate to...&#10;2. Click on...&#10;3. Observe unexpected behaviour..."
           maxLength={2000}
           required
-          className="w-full px-4 py-3 text-xs sm:text-sm bg-slate-50/70 border border-slate-200 rounded-2xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5b42d6]/20 focus:border-[#5b42d6] transition-all font-sans"
+          className="w-full px-4 py-3 text-sm bg-slate-50/70 border border-slate-200 rounded-2xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5b42d6]/20 focus:border-[#5b42d6] transition-all resize-none"
         />
-        <div className="flex justify-between items-center text-[11px] text-slate-400 mt-1.5 px-1">
-          <span>Markdown syntax supported</span>
+        <div className="flex justify-between items-center text-[11px] text-slate-400 mt-1 px-1">
+          <span>Include exact reproduction steps and browser / system environment</span>
           <span>{formData.description.length}/2000</span>
         </div>
       </div>
 
-      {/* 6. Form Footer Action Buttons */}
+      {/* 6. Form Footer Actions */}
       <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
             disabled={loading}
-            className="px-5 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+            className="px-5 py-2.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-colors"
           >
             Cancel
           </button>
@@ -338,9 +384,9 @@ export const IssueForm = ({
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2.5 text-xs font-semibold text-white bg-[#5b42d6] hover:bg-[#4c35c2] rounded-xl shadow-2xs hover:shadow-xs active:scale-[0.98] transition-all disabled:opacity-50"
+          className="px-6 py-2.5 text-xs font-semibold text-white bg-[#5b42d6] hover:bg-[#4d37b8] rounded-2xl shadow-sm hover:shadow transition-all disabled:opacity-50"
         >
-          {loading ? 'Saving Issue...' : isEdit ? 'Update Issue' : 'Create Issue'}
+          {loading ? 'Submitting...' : isEdit ? 'Save Changes' : 'Create Issue Ticket'}
         </button>
       </div>
     </form>

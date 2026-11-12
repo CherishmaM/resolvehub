@@ -8,6 +8,7 @@ export const addComment = async (req, res, next) => {
       issueId: req.params.id,
       userId: req.user._id,
       text,
+      user: req.user,
     });
     return res
       .status(201)
@@ -19,7 +20,7 @@ export const addComment = async (req, res, next) => {
 
 export const getComments = async (req, res, next) => {
   try {
-    const comments = await commentService.getCommentsByIssue(req.params.id);
+    const comments = await commentService.getCommentsByIssue(req.params.id, req.user);
     return res
       .status(200)
       .json(ApiResponse.success(comments, 'Comments retrieved'));
