@@ -93,7 +93,7 @@ export const WireframeBackground = ({
     const outerIcoMat = new LineBasicMaterial({
       color: COLOR_IRIS,
       transparent: true,
-      opacity: isAuth ? 0.22 : 0.17,
+      opacity: isAuth ? 0.28 : 0.22,
     });
     const outerIcoMesh = new LineSegments(outerIcoWire, outerIcoMat);
     icosphereGroup.add(outerIcoMesh);
@@ -103,7 +103,7 @@ export const WireframeBackground = ({
     const innerIcoMat = new LineBasicMaterial({
       color: COLOR_BLUE,
       transparent: true,
-      opacity: isAuth ? 0.25 : 0.20,
+      opacity: isAuth ? 0.30 : 0.25,
     });
     const innerIcoMesh = new LineSegments(innerIcoWire, innerIcoMat);
     icosphereGroup.add(innerIcoMesh);
@@ -116,7 +116,7 @@ export const WireframeBackground = ({
     const torusMat = new LineBasicMaterial({
       color: COLOR_BLUE,
       transparent: true,
-      opacity: isAuth ? 0.20 : 0.15,
+      opacity: isAuth ? 0.26 : 0.20,
     });
     const torusMesh = new LineSegments(torusWire, torusMat);
     sceneGroup.add(torusMesh);
@@ -127,21 +127,21 @@ export const WireframeBackground = ({
     const octaMat = new LineBasicMaterial({
       color: COLOR_VIOLET,
       transparent: true,
-      opacity: isAuth ? 0.22 : 0.16,
+      opacity: isAuth ? 0.28 : 0.22,
     });
     const octaMesh = new LineSegments(octaWire, octaMat);
     sceneGroup.add(octaMesh);
 
     // 7. Connected Technical Network (Issues / Graph Connections)
-    const NODE_COUNT = width < 768 ? 16 : 28;
-    const MAX_DISTANCE = 11;
+    const NODE_COUNT = width < 768 ? 20 : 36;
+    const MAX_DISTANCE = 12;
     const nodePositions = [];
     const nodeVelocities = [];
 
     for (let i = 0; i < NODE_COUNT; i++) {
       nodePositions.push(
-        (Math.random() - 0.5) * 58,
-        (Math.random() - 0.5) * 34,
+        (Math.random() - 0.5) * 64,
+        (Math.random() - 0.5) * 38,
         (Math.random() - 0.5) * 12
       );
       nodeVelocities.push({
@@ -157,9 +157,9 @@ export const WireframeBackground = ({
 
     const nodesMat = new PointsMaterial({
       color: COLOR_IRIS,
-      size: 2.5,
+      size: 3.2,
       transparent: true,
-      opacity: isAuth ? 0.38 : 0.28,
+      opacity: isAuth ? 0.45 : 0.38,
     });
     const nodesMesh = new Points(nodesGeom, nodesMat);
     sceneGroup.add(nodesMesh);
@@ -176,7 +176,7 @@ export const WireframeBackground = ({
     const linesMat = new LineBasicMaterial({
       color: COLOR_IRIS,
       transparent: true,
-      opacity: isAuth ? 0.15 : 0.12,
+      opacity: isAuth ? 0.22 : 0.18,
     });
     const linesMesh = new LineSegments(linesGeom, linesMat);
     sceneGroup.add(linesMesh);
@@ -366,6 +366,9 @@ export const WireframeBackground = ({
         <>
           <div className="wireframe-ambient-glow-1 absolute -top-24 -right-24 w-[520px] h-[520px] rounded-full pointer-events-none" />
           <div className="wireframe-ambient-glow-2 absolute -bottom-28 -left-28 w-[560px] h-[560px] rounded-full pointer-events-none" />
+          {/* Dedicated animated glows specifically bathing the topbar and sidebar areas */}
+          <div className="wireframe-ambient-topbar-glow absolute -top-8 left-0 right-0 h-44 pointer-events-none" />
+          <div className="wireframe-ambient-sidebar-glow absolute top-0 bottom-0 left-0 w-48 pointer-events-none" />
         </>
       )}
 
