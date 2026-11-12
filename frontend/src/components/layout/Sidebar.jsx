@@ -85,7 +85,11 @@ export const Sidebar = ({ isOpen, onClose }) => {
   const renderContent = (isExpanded) => (
     <div className="relative flex flex-col h-full text-[#302D46] select-none overflow-hidden">
       {/* Brand Header */}
-      <div className={`flex items-center ${isExpanded ? 'justify-between px-5' : 'justify-center px-2'} py-4 border-b border-[#EAE5F7]/70 shrink-0 h-[65px] transition-all duration-200`}>
+      <div
+        className={`flex items-center ${
+          isExpanded ? 'justify-between px-5' : 'justify-center px-2'
+        } py-4 border-b border-[#DCD4F2] shrink-0 h-[65px] transition-all duration-200`}
+      >
         <Link
           to="/dashboard"
           className="flex items-center hover:opacity-90 transition-opacity"
@@ -101,7 +105,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
         {onClose && isExpanded && (
           <button
             onClick={onClose}
-            className="md:hidden text-[#85819C] hover:text-[#302D46] p-1.5 rounded-lg hover:bg-[#6257D9]/10 transition-colors"
+            className="md:hidden text-[#6E678E] hover:text-[#282442] p-1.5 rounded-lg hover:bg-white/60 transition-colors"
             aria-label="Close sidebar"
           >
             <X className="w-4 h-4" />
@@ -112,7 +116,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
       {/* Main Navigation Links */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
         {isExpanded && (
-          <p className="px-3 pb-2 text-[10px] font-bold tracking-wider text-[#85819C] uppercase animate-fade-in">
+          <p className="px-3 pb-2 text-[10px] font-bold tracking-wider text-[#7A7398] uppercase animate-fade-in">
             MAIN
           </p>
         )}
@@ -134,20 +138,20 @@ export const Sidebar = ({ isOpen, onClose }) => {
                 !isExpanded ? 'justify-center px-0' : ''
               } ${
                 active
-                  ? 'bg-[#6257D9]/10 text-[#6257D9] font-semibold border border-[#6257D9]/20 shadow-2xs'
-                  : 'text-[#302D46] hover:text-[#272443] hover:bg-[#6257D9]/[0.06] font-medium'
+                  ? 'bg-white text-[#5446C9] font-bold border border-[#D9CEF3] shadow-xs'
+                  : 'text-[#3A3554] hover:text-[#1E1938] hover:bg-white/60 font-medium'
               }`}
             >
               {/* Active left indicator */}
               {active && (
-                <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-[#6257D9] shadow-[0_0_8px_rgba(98,87,217,0.5)]" />
+                <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-[#6257D9] shadow-[0_0_8px_rgba(98,87,217,0.4)]" />
               )}
 
               <Icon
                 className={`w-4 h-4 shrink-0 transition-colors duration-200 ${
                   active
                     ? 'text-[#6257D9] stroke-[2.2]'
-                    : 'text-[#6257D9]/70 group-hover:text-[#6257D9] stroke-[1.8]'
+                    : 'text-[#6257D9]/80 group-hover:text-[#6257D9] stroke-[1.8]'
                 }`}
               />
 
@@ -166,7 +170,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
             {isExpanded ? (
               <>
                 <div className="flex items-center justify-between px-3 pb-1.5">
-                  <p className="text-[10px] font-bold tracking-wider text-[#85819C] uppercase">
+                  <p className="text-[10px] font-bold tracking-wider text-[#7A7398] uppercase">
                     YOUR PROJECTS
                   </p>
                   <Link
@@ -195,12 +199,12 @@ export const Sidebar = ({ isOpen, onClose }) => {
                         }}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all text-left ${
                           isCurrent
-                            ? 'bg-[#6257D9]/10 text-[#6257D9] font-bold border border-[#6257D9]/20 shadow-2xs'
-                            : 'text-[#302D46] hover:bg-[#6257D9]/[0.06] font-medium'
+                            ? 'bg-white text-[#5446C9] font-bold border border-[#D9CEF3] shadow-xs'
+                            : 'text-[#3A3554] hover:bg-white/60 font-medium'
                         }`}
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#F0EBFF] text-[#6257D9] border border-[#E3D9FF] shrink-0">
+                          <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#EDE7F9] text-[#6257D9] border border-[#DDD3F5] shrink-0">
                             {proj.key}
                           </span>
                           <span className="truncate text-xs">{proj.name}</span>
@@ -214,17 +218,17 @@ export const Sidebar = ({ isOpen, onClose }) => {
                 </div>
               </>
             ) : (
-              <div className="pt-2 border-t border-[#EAE5F7]/70 flex flex-col items-center gap-1.5">
+              <div className="pt-2 border-t border-[#DCD4F2] flex flex-col items-center gap-1.5">
                 <Link
                   to="/projects"
                   title="View Projects"
-                  className="p-1.5 rounded-xl hover:bg-[#6257D9]/10 text-slate-400 hover:text-[#6257D9] transition-colors"
+                  className="p-1.5 rounded-xl hover:bg-white/60 text-[#6E678E] hover:text-[#6257D9] transition-colors"
                 >
                   <FolderKanban className="w-4 h-4" />
                 </Link>
                 {currentProject && (
                   <span
-                    className="font-mono text-[8px] font-bold px-1 py-0.5 rounded bg-[#F0EBFF] text-[#6257D9] border border-[#E3D9FF]"
+                    className="font-mono text-[8px] font-bold px-1 py-0.5 rounded bg-white text-[#6257D9] border border-[#DDD3F5]"
                     title={`Active: ${currentProject.name}`}
                   >
                     {currentProject.key.slice(0, 3)}
@@ -237,14 +241,18 @@ export const Sidebar = ({ isOpen, onClose }) => {
       </nav>
 
       {/* Footer */}
-      <div className={`px-4 py-3 border-t border-[#EAE5F7]/50 flex items-center ${isExpanded ? 'justify-between' : 'justify-center'} text-[11px] text-[#85819C]/70 shrink-0 h-[45px] transition-all duration-200`}>
+      <div
+        className={`px-4 py-3 border-t border-[#DCD4F2] flex items-center ${
+          isExpanded ? 'justify-between' : 'justify-center'
+        } text-[11px] text-[#7A7398] shrink-0 h-[45px] transition-all duration-200`}
+      >
         {isExpanded ? (
           <>
-            <span className="font-medium text-[#4A4568]">ResolveHub</span>
-            <span className="font-mono text-[10px] text-[#85819C]/60">v1.1.0</span>
+            <span className="font-medium text-[#484263]">ResolveHub</span>
+            <span className="font-mono text-[10px] text-[#7A7398]/80">v1.1.0</span>
           </>
         ) : (
-          <span className="font-mono text-[9px] text-[#85819C]/60">v1.1</span>
+          <span className="font-mono text-[9px] text-[#7A7398]/80">v1.1</span>
         )}
       </div>
     </div>
@@ -259,10 +267,10 @@ export const Sidebar = ({ isOpen, onClose }) => {
         onMouseLeave={() => setIsHovered(false)}
       >
         <aside
-          className={`fixed left-0 top-0 h-screen flex flex-col transition-all duration-300 ease-in-out border-r border-[#EAE5F7]/80 ${
+          className={`fixed left-0 top-0 h-screen flex flex-col transition-all duration-300 ease-in-out border-r border-[#D9D0F2] ${
             isHovered
-              ? 'w-64 bg-white/98 backdrop-blur-md shadow-2xl shadow-[#6257D9]/15'
-              : 'w-[70px] bg-white/80 backdrop-blur-sm shadow-xs'
+              ? 'w-64 bg-[#F2EDFC]/98 backdrop-blur-md shadow-2xl shadow-[#6257D9]/15'
+              : 'w-[70px] bg-[#EDE8FA]/95 backdrop-blur-sm shadow-xs'
           }`}
         >
           {renderContent(isHovered)}
@@ -276,7 +284,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
             className="fixed inset-0 bg-[#272443]/30 transition-opacity"
             onClick={onClose}
           />
-          <div className="fixed inset-y-0 left-0 w-64 max-w-full z-10 shadow-xl bg-white">
+          <div className="fixed inset-y-0 left-0 w-64 max-w-full z-10 shadow-xl bg-[#F2EDFC] border-r border-[#D9D0F2]">
             {renderContent(true)}
           </div>
         </div>
