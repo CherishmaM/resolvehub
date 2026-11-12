@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useProject } from '../context/ProjectContext';
-import { getProjectsApi, createProjectApi, deleteProjectApi } from '../api/projects.api';
+import {
+  getProjectsApi,
+  createProjectApi,
+  updateProjectApi,
+  deleteProjectApi,
+} from '../api/projects.api';
 import { getUsersApi } from '../api/users.api';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
@@ -23,6 +28,8 @@ import {
   Search,
   ExternalLink,
   Lock,
+  Edit2,
+  UserPlus,
 } from 'lucide-react';
 
 export const Projects = () => {
@@ -46,6 +53,16 @@ export const Projects = () => {
     description: '',
     status: 'Active',
     initialMemberIds: [],
+  });
+
+  // Edit Project State
+  const [editingProject, setEditingProject] = useState(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    status: 'Active',
   });
 
   // Delete Confirmation State
@@ -123,6 +140,43 @@ export const Projects = () => {
       setError(err.message || 'Failed to delete project.');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleOpenEdit = (project, e) => {
+    if (e) e.stopPropagation();
+    setEditingProject(project);
+    setEditForm({
+      name: project.name,
+      description: project.description || '',
+      status: project.status || 'Active',
+    });
+    setIsEditOpen(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingProject || !editForm.name.trim()) return;
+
+    setUpdating(true);
+    setError('');
+    try {
+      const res = await updateProjectApi(editingProject._id, {
+        name: editForm.name.trim(),
+        description: editForm.description.trim(),
+        status: editForm.status,
+      });
+
+      setSuccessMessage(`Project "${res.data.name}" updated successfully!`);
+      setTimeout(() => setSuccessMessage(''), 4000);
+      setIsEditOpen(false);
+      setEditingProject(null);
+      await fetchProjectsData();
+      await refreshProjects();
+    } catch (err) {
+      setError(err.message || 'Failed to update project.');
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -236,7 +290,12 @@ export const Projects = () => {
           {filteredProjects.map((project) => {
             const stats = project.issueStats || { total: 0, open: 0, inProgress: 0, resolved: 0 };
             const members = project.members || [];
-            const canManage = isAdmin || project.currentUserRole === 'project_admin';
+            const canManage = Boolean(
+              isAdmin ||
+              user?.role === 'admin' ||
+              project.currentUserRole === 'project_admin' ||
+              project.isProjectAdmin
+            );
 
             return (
               <div
@@ -258,8 +317,8 @@ export const Projects = () => {
                   <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-500 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-200/70">
                     <Shield className="w-3 h-3 text-[#6257D9]" />
                     <span>
-                      {project.currentUserRole === 'org_admin'
-                        ? 'Org Admin'
+                      {project.currentUserRole === 'org_admin' || user?.role === 'admin'
+                        ? 'Team Lead'
                         : project.currentUserRole === 'project_admin'
                         ? 'Project Lead'
                         : 'Member'}
@@ -312,9 +371,21 @@ export const Projects = () => {
                         </div>
                       )}
                     </div>
-                    <span className="text-[11px] text-slate-400 font-medium">
-                      {members.length} {members.length === 1 ? 'member' : 'members'}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-slate-400 font-medium">
+                        {members.length} {members.length === 1 ? 'member' : 'members'}
+                      </span>
+                      {canManage && (
+                        <Link
+                          to={`/projects/${project._id}?tab=members`}
+                          className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#6257D9] hover:underline"
+                          title="Manage team members"
+                        >
+                          <UserPlus className="w-3 h-3" />
+                          <span>Roster</span>
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -328,6 +399,17 @@ export const Projects = () => {
                     <span>Open Workspace</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
+
+                  {canManage && (
+                    <button
+                      type="button"
+                      onClick={(e) => handleOpenEdit(project, e)}
+                      className="p-2 text-slate-500 hover:text-[#6257D9] hover:bg-[#F0EBFF] rounded-xl transition-colors"
+                      title="Edit project name & configuration"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  )}
 
                   {isAdmin && (
                     <button
@@ -519,6 +601,124 @@ export const Projects = () => {
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>{creating ? 'Creating...' : 'Create Workspace'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Project Modal */}
+      {isEditOpen && editingProject && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => {
+            setIsEditOpen(false);
+            setEditingProject(null);
+          }}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-[#EAE5F7] space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-[#F0EBFF] text-[#6257D9] flex items-center justify-center">
+                  <Edit2 className="w-4 h-4 stroke-[2]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Edit Project Details</h3>
+                  <p className="text-[11px] text-slate-400">Update project name, description, and status</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditOpen(false);
+                  setEditingProject(null);
+                }}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Project Name <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
+                  required
+                  autoFocus
+                  maxLength={60}
+                  placeholder="e.g. Mobile App Redesign"
+                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Project Key <span className="text-slate-400 font-normal">(Permanent Identifier)</span>
+                </label>
+                <input
+                  type="text"
+                  value={editingProject.key}
+                  disabled
+                  className="w-full px-3.5 py-2.5 text-xs font-mono font-bold bg-slate-100 border border-slate-200 rounded-xl text-slate-400 cursor-not-allowed uppercase"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={3}
+                  value={editForm.description}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
+                  maxLength={500}
+                  placeholder="Briefly describe this project workspace and goals"
+                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Workspace Status
+                </label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, status: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
+                >
+                  <option value="Active">Active</option>
+                  <option value="On Hold">On Hold</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Archived">Archived</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditOpen(false);
+                    setEditingProject(null);
+                  }}
+                  className="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updating || !editForm.name.trim()}
+                  className="px-4 py-2 text-xs font-semibold text-white bg-[#6257D9] hover:bg-[#5246c7] rounded-xl shadow-xs transition-all disabled:opacity-50"
+                >
+                  {updating ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>

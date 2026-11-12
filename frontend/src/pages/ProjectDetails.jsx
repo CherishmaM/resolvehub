@@ -34,6 +34,7 @@ import {
   Lock,
   UserPlus,
   Sparkles,
+  Edit2,
 } from 'lucide-react';
 
 export const ProjectDetails = () => {
@@ -59,13 +60,14 @@ export const ProjectDetails = () => {
   const [selectedMemberRole, setSelectedMemberRole] = useState('project_member');
   const [addingMember, setAddingMember] = useState(false);
 
-  // Settings Edit State
+  // Settings & Edit Project State
   const [editForm, setEditForm] = useState({
     name: '',
     description: '',
     status: 'Active',
   });
   const [savingSettings, setSavingSettings] = useState(false);
+  const [isEditProjectOpen, setIsEditProjectOpen] = useState(false);
 
   // Member Action State
   const [pendingRemoveMember, setPendingRemoveMember] = useState(null);
@@ -108,8 +110,12 @@ export const ProjectDetails = () => {
     fetchProjectData();
   }, [fetchProjectData]);
 
+  // Team Lead has full manage rights (both Org Admin and Project Admin)
   const canManage = Boolean(
-    isAdmin || (project && project.currentUserRole === 'project_admin')
+    isAdmin ||
+    user?.role === 'admin' ||
+    project?.isProjectAdmin ||
+    project?.currentUserRole === 'project_admin'
   );
 
   const handleAddMember = async (e) => {
@@ -168,13 +174,24 @@ export const ProjectDetails = () => {
   };
 
   const handleSaveSettings = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    if (!editForm.name.trim()) {
+      setError('Project name cannot be empty.');
+      return;
+    }
+
     setSavingSettings(true);
     setError('');
     try {
-      await updateProjectApi(id, editForm);
-      setSuccessMessage('Project settings saved successfully.');
+      const res = await updateProjectApi(id, {
+        name: editForm.name.trim(),
+        description: editForm.description.trim(),
+        status: editForm.status,
+      });
+      setProject(res.data);
+      setSuccessMessage(`Project "${res.data.name}" updated successfully.`);
       setTimeout(() => setSuccessMessage(''), 4000);
+      setIsEditProjectOpen(false);
       await fetchProjectData();
       await refreshProjects();
     } catch (err) {
@@ -282,7 +299,7 @@ export const ProjectDetails = () => {
       <div className="bg-white rounded-3xl border border-[#EAE5F7] p-6 shadow-2xs space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 flex-wrap">
               <span className="font-mono text-xs font-bold px-3 py-1 rounded-xl bg-[#F0EBFF] text-[#6257D9] border border-[#E3D9FF]">
                 {project.key}
               </span>
@@ -292,13 +309,61 @@ export const ProjectDetails = () => {
               <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg border ${getStatusBadge(project.status)}`}>
                 {project.status}
               </span>
+
+              {canManage && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditForm({
+                      name: project.name,
+                      description: project.description || '',
+                      status: project.status || 'Active',
+                    });
+                    setIsEditProjectOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-[#6257D9] hover:text-[#5246c7] bg-[#F0EBFF] hover:bg-[#E4DCFF] rounded-xl transition-all shadow-2xs"
+                  title="Edit project name and parameters"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                  <span>Edit Name</span>
+                </button>
+              )}
             </div>
             <p className="text-xs sm:text-sm text-slate-500 max-w-2xl">
               {project.description || 'Dedicated project workspace for team issues and collaboration.'}
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {canManage && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditForm({
+                      name: project.name,
+                      description: project.description || '',
+                      status: project.status || 'Active',
+                    });
+                    setIsEditProjectOpen(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold shadow-2xs transition-all"
+                  title="Edit project name and details"
+                >
+                  <Edit2 className="w-3.5 h-3.5 text-[#6257D9]" />
+                  <span>Edit Project</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsAddMemberOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-[#F0EBFF] hover:bg-[#E4DCFF] text-[#6257D9] text-xs font-semibold transition-all shadow-2xs"
+                  title="Add member to project"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>Add Member</span>
+                </button>
+              </>
+            )}
             <Link
               to={`/issues/new?project=${project._id}`}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#6257D9] hover:bg-[#5246c7] text-white text-xs font-semibold shadow-xs transition-all active:scale-[0.98]"
@@ -414,7 +479,7 @@ export const ProjectDetails = () => {
               </p>
             </div>
 
-            {canManage && eligibleUsers.length > 0 && (
+            {canManage && (
               <button
                 type="button"
                 onClick={() => setIsAddMemberOpen(true)}
@@ -627,54 +692,189 @@ export const ProjectDetails = () => {
               </button>
             </div>
 
-            <form onSubmit={handleAddMember} className="space-y-3.5">
+            {eligibleUsers.length > 0 ? (
+              <form onSubmit={handleAddMember} className="space-y-3.5">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Select User from Organization
+                  </label>
+                  <select
+                    value={selectedUserId}
+                    onChange={(e) => setSelectedUserId(e.target.value)}
+                    required
+                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20"
+                  >
+                    <option value="">-- Choose a user --</option>
+                    {eligibleUsers.map((u) => (
+                      <option key={u._id} value={u._id}>
+                        {u.name} ({u.email}) - {u.jobTitle || u.role}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Project Role
+                  </label>
+                  <select
+                    value={selectedMemberRole}
+                    onChange={(e) => setSelectedMemberRole(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20"
+                  >
+                    <option value="project_member">Project Member (View, Create & Update Issues)</option>
+                    <option value="project_admin">Project Admin (Manage Members & Settings)</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddMemberOpen(false)}
+                    className="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={addingMember || !selectedUserId}
+                    className="px-4 py-2 text-xs font-semibold text-white bg-[#6257D9] hover:bg-[#5246c7] rounded-xl shadow-xs transition-all disabled:opacity-50"
+                  >
+                    {addingMember ? 'Adding...' : 'Add to Project'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="py-4 text-center space-y-3">
+                <p className="text-xs text-slate-700 font-medium">
+                  All registered members in your organization are already part of this project team!
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  To assign more teammates, add or invite them to the organization through the Team section first.
+                </p>
+                <div className="pt-2 flex justify-center gap-2">
+                  <Link
+                    to="/team"
+                    className="px-3.5 py-2 text-xs font-semibold text-[#6257D9] bg-[#F0EBFF] hover:bg-[#E4DCFF] rounded-xl transition-colors"
+                  >
+                    Go to Team Directory ➔
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddMemberOpen(false)}
+                    className="px-3.5 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Project Name & Details Modal */}
+      {isEditProjectOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setIsEditProjectOpen(false)}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-[#EAE5F7] space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-[#F0EBFF] text-[#6257D9] flex items-center justify-center">
+                  <Edit2 className="w-4 h-4 stroke-[2]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Edit Project Details</h3>
+                  <p className="text-[11px] text-slate-400">Update project name, description, and status</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsEditProjectOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSettings} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Select User from Organization
+                  Project Name <span className="text-rose-500">*</span>
                 </label>
-                <select
-                  value={selectedUserId}
-                  onChange={(e) => setSelectedUserId(e.target.value)}
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
                   required
-                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20"
-                >
-                  <option value="">-- Choose a user --</option>
-                  {eligibleUsers.map((u) => (
-                    <option key={u._id} value={u._id}>
-                      {u.name} ({u.email}) - {u.jobTitle || u.role}
-                    </option>
-                  ))}
-                </select>
+                  autoFocus
+                  maxLength={60}
+                  placeholder="e.g. Mobile App Redesign"
+                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
+                />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Project Role
+                  Project Key <span className="text-slate-400 font-normal">(Permanent Identifier)</span>
+                </label>
+                <input
+                  type="text"
+                  value={project.key}
+                  disabled
+                  className="w-full px-3.5 py-2.5 text-xs font-mono font-bold bg-slate-100 border border-slate-200 rounded-xl text-slate-400 cursor-not-allowed uppercase"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={3}
+                  value={editForm.description}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
+                  maxLength={500}
+                  placeholder="Briefly describe this project workspace and goals"
+                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Workspace Status
                 </label>
                 <select
-                  value={selectedMemberRole}
-                  onChange={(e) => setSelectedMemberRole(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20"
+                  value={editForm.status}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, status: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
                 >
-                  <option value="project_member">Project Member (View, Create & Update Issues)</option>
-                  <option value="project_admin">Project Admin (Manage Members & Settings)</option>
+                  <option value="Active">Active</option>
+                  <option value="On Hold">On Hold</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Archived">Archived</option>
                 </select>
               </div>
 
               <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => setIsAddMemberOpen(false)}
+                  onClick={() => setIsEditProjectOpen(false)}
                   className="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={addingMember || !selectedUserId}
+                  disabled={savingSettings || !editForm.name.trim()}
                   className="px-4 py-2 text-xs font-semibold text-white bg-[#6257D9] hover:bg-[#5246c7] rounded-xl shadow-xs transition-all disabled:opacity-50"
                 >
-                  {addingMember ? 'Adding...' : 'Add to Project'}
+                  {savingSettings ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>
