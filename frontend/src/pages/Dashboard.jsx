@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getDashboardStatsApi } from '../api/dashboard.api';
 import { StatCard } from '../components/ui/StatCard';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
+import { IssueHoverCard } from '../components/issues/IssueHoverCard';
 import { formatRelativeTime } from '../utils/formatters';
 import {
   Bug,
@@ -26,6 +27,53 @@ export const Dashboard = () => {
   const [error, setError] = useState('');
   const [barsAnimated, setBarsAnimated] = useState(false);
   const hasLoadedOnce = useRef(false);
+
+  const [hoveredIssue, setHoveredIssue] = useState(null);
+  const [hoverPosition, setHoverPosition] = useState(null);
+  const hoverTimeoutRef = useRef(null);
+
+  const handleRowMouseEnter = (e, issue) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    const targetEl = e.currentTarget;
+
+    hoverTimeoutRef.current = setTimeout(() => {
+      const rect = targetEl.getBoundingClientRect();
+      const popoverWidth = 380;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const placeAbove = spaceBelow < 280 && spaceAbove > 280;
+
+      const top = placeAbove ? 'auto' : `${rect.bottom + 6}px`;
+      const bottom = placeAbove ? `${window.innerHeight - rect.top + 6}px` : 'auto';
+      const left = Math.max(16, Math.min(rect.left + 60, window.innerWidth - popoverWidth - 20));
+
+      setHoverPosition({ top, bottom, left, placeAbove });
+      setHoveredIssue(issue);
+    }, 160);
+  };
+
+  const handleRowMouseLeave = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setHoveredIssue(null);
+    setHoverPosition(null);
+  };
+
+  useEffect(() => {
+    const handleScrollOrBlur = () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      setHoveredIssue(null);
+      setHoverPosition(null);
+    };
+
+    window.addEventListener('scroll', handleScrollOrBlur, { passive: true });
+    window.addEventListener('blur', handleScrollOrBlur);
+
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      window.removeEventListener('scroll', handleScrollOrBlur);
+      window.removeEventListener('blur', handleScrollOrBlur);
+    };
+  }, []);
 
   const fetchStats = async () => {
     setLoading(true);
@@ -327,6 +375,8 @@ export const Dashboard = () => {
                   return (
                     <div
                       key={issue._id}
+                      onMouseEnter={(e) => handleRowMouseEnter(e, issue)}
+                      onMouseLeave={handleRowMouseLeave}
                       className="relative pl-6 py-3 px-3 rounded-xl hover:bg-[#F7F3FF]/90 transition-all duration-200 group animate-fade-up border-l-2 border-transparent hover:border-[#6257D9]"
                       style={{ animationDelay: `${idx * 60}ms` }}
                     >
@@ -365,6 +415,7 @@ export const Dashboard = () => {
                       <div className="flex items-center justify-between gap-3 mt-1.5">
                         <Link
                           to={`/issues/${issue._id}`}
+                          state={{ from: '/dashboard' }}
                           className="text-xs sm:text-sm font-semibold text-[#272443] group-hover:text-[#6257D9] transition-colors duration-200 truncate block flex-1"
                           title={issue.title}
                         >
@@ -475,6 +526,9 @@ export const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Floating Hover Description Preview Card */}
+      <IssueHoverCard issue={hoveredIssue} position={hoverPosition} />
     </div>
   );
 };

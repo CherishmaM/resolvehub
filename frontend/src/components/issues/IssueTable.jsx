@@ -1,12 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { StatusBadge } from '../ui/StatusBadge';
 import { PriorityBadge } from '../ui/PriorityBadge';
 import { UserAvatar } from '../ui/UserAvatar';
+import { IssueHoverCard } from './IssueHoverCard';
 import { Image as ImageIcon, X } from 'lucide-react';
 
 export const IssueTable = ({ issues = [] }) => {
+  const location = useLocation();
   const [previewImage, setPreviewImage] = useState(null);
+  const [hoveredIssue, setHoveredIssue] = useState(null);
+  const [hoverPosition, setHoverPosition] = useState(null);
+  const hoverTimeoutRef = useRef(null);
+
+  const handleRowMouseEnter = (e, issue) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    const targetEl = e.currentTarget;
+
+    hoverTimeoutRef.current = setTimeout(() => {
+      const rect = targetEl.getBoundingClientRect();
+      const popoverWidth = 380;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const placeAbove = spaceBelow < 280 && spaceAbove > 280;
+
+      const top = placeAbove ? 'auto' : `${rect.bottom + 6}px`;
+      const bottom = placeAbove ? `${window.innerHeight - rect.top + 6}px` : 'auto';
+      // Intelligently align with title column area
+      const left = Math.max(16, Math.min(rect.left + 80, window.innerWidth - popoverWidth - 20));
+
+      setHoverPosition({ top, bottom, left, placeAbove });
+      setHoveredIssue(issue);
+    }, 160);
+  };
+
+  const handleRowMouseLeave = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setHoveredIssue(null);
+    setHoverPosition(null);
+  };
+
+  useEffect(() => {
+    const handleScrollOrBlur = () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      setHoveredIssue(null);
+      setHoverPosition(null);
+    };
+
+    window.addEventListener('scroll', handleScrollOrBlur, { passive: true });
+    window.addEventListener('blur', handleScrollOrBlur);
+
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      window.removeEventListener('scroll', handleScrollOrBlur);
+      window.removeEventListener('blur', handleScrollOrBlur);
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -41,6 +90,8 @@ export const IssueTable = ({ issues = [] }) => {
               return (
                 <tr
                   key={issue._id}
+                  onMouseEnter={(e) => handleRowMouseEnter(e, issue)}
+                  onMouseLeave={handleRowMouseLeave}
                   style={{ animationDelay: `${Math.min(idx * 25, 250)}ms` }}
                   className="hover:bg-slate-50/80 transition-all duration-150 group animate-fade-in"
                 >
@@ -57,12 +108,13 @@ export const IssueTable = ({ issues = [] }) => {
                       {issue.imageUrl && (
                         <button
                           type="button"
-                          onClick={() =>
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setPreviewImage({
                               url: issue.imageUrl,
                               title: issue.title,
-                            })
-                          }
+                            });
+                          }}
                           className="shrink-0 p-1 rounded-md text-slate-400 hover:text-[#6257D9] hover:bg-slate-100 transition-colors"
                           title="View screenshot attachment"
                         >
@@ -73,6 +125,7 @@ export const IssueTable = ({ issues = [] }) => {
                       <div className="min-w-0">
                         <Link
                           to={`/issues/${issue._id}`}
+                          state={{ from: location.pathname + location.search }}
                           className="font-semibold text-slate-900 group-hover:text-[#6257D9] transition-all duration-150 group-hover:translate-x-0.5 truncate block"
                           title={issue.title}
                         >
@@ -158,6 +211,8 @@ export const IssueTable = ({ issues = [] }) => {
           </div>
         </div>
       )}
+      {/* Floating Hover Description Preview Card */}
+      <IssueHoverCard issue={hoveredIssue} position={hoverPosition} />
     </>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import { getIssuesApi } from '../api/issues.api';
 import { IssueTable } from '../components/issues/IssueTable';
 import { IssueFilters } from '../components/issues/IssueFilters';
@@ -14,6 +14,7 @@ import { useProject } from '../context/ProjectContext';
 export const Issues = () => {
   const { user } = useAuth();
   const { projects } = useProject();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Parse filters from URL query parameters or default
@@ -24,6 +25,16 @@ export const Issues = () => {
   const categoryParam = searchParams.get('category') || '';
   const assignedToParam = searchParams.get('assignedTo') || '';
   const projectIdParam = searchParams.get('projectId') || '';
+
+  // Store current issues path with query parameters so clicking an issue and navigating back retains page
+  useEffect(() => {
+    if (location.pathname === '/issues') {
+      sessionStorage.setItem('resolvehub_issues_path', location.pathname + location.search);
+      if (location.search) {
+        sessionStorage.setItem('resolvehub_issues_query', location.search);
+      }
+    }
+  }, [location.pathname, location.search]);
 
   const [issues, setIssues] = useState([]);
   const [pagination, setPagination] = useState({
@@ -113,6 +124,8 @@ export const Issues = () => {
   };
 
   const handleResetFilters = () => {
+    sessionStorage.removeItem('resolvehub_issues_query');
+    sessionStorage.removeItem('resolvehub_issues_path');
     setSearchParams({});
   };
 

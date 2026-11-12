@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   getIssueByIdApi,
   updateIssueStatusApi,
@@ -42,7 +42,17 @@ import {
 export const IssueDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAdmin } = useAuth();
+
+  // Remember return URL (preserving pagination e.g. /issues?page=2 or /projects/:id)
+  const backDestination =
+    location.state?.from ||
+    sessionStorage.getItem('resolvehub_issues_path') ||
+    '/issues';
+
+  const isFromProject = backDestination.startsWith('/projects');
+  const backLabel = isFromProject ? 'Back to Project' : 'Back to Issues';
 
   const [issue, setIssue] = useState(null);
   const [comments, setComments] = useState([]);
@@ -183,7 +193,7 @@ export const IssueDetails = () => {
     setActionLoading(true);
     try {
       await deleteIssueApi(id);
-      navigate('/issues', { state: { message: 'Issue was successfully deleted.' } });
+      navigate(backDestination, { state: { message: 'Issue was successfully deleted.' } });
     } catch (err) {
       setError(err.message || 'Failed to delete issue.');
       setIsDeleteDialogOpen(false);
@@ -227,10 +237,10 @@ export const IssueDetails = () => {
             My Projects
           </Link>
           <Link
-            to="/issues"
+            to={backDestination}
             className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
           >
-            Return to Issues
+            {backLabel}
           </Link>
         </div>
       </div>
@@ -248,11 +258,11 @@ export const IssueDetails = () => {
       {/* Top Navigation & Actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <Link
-          to="/issues"
+          to={backDestination}
           className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
-          <span>Back to Issues</span>
+          <span>{backLabel}</span>
         </Link>
 
         <div className="flex items-center gap-2">
