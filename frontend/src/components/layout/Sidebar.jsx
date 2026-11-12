@@ -262,12 +262,12 @@ export const Sidebar = ({ isOpen, onClose }) => {
     <>
       {/* Desktop collapsible rail with hover-to-expand */}
       <div
-        className="hidden md:block w-[70px] shrink-0 h-screen relative z-30 select-none"
+        className="hidden md:block w-[70px] shrink-0 h-screen relative z-40 select-none"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <aside
-          className={`fixed left-0 top-0 h-screen flex flex-col transition-all duration-300 ease-in-out border-r border-[#D0C4EC] ${
+          className={`fixed left-0 top-0 h-screen flex flex-col transition-all duration-300 ease-in-out border-r border-[#D0C4EC] z-40 ${
             isHovered
               ? 'w-64 bg-[#EDE8FA]/85 backdrop-blur-md shadow-2xl shadow-[#6257D9]/15'
               : 'w-[70px] bg-[#EDE8FA]/40 backdrop-blur-[1px] shadow-xs'

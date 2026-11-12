@@ -75,7 +75,7 @@ export const Topbar = ({ onToggleSidebar }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-[#EDE8FA]/40 backdrop-blur-[1px] border-b border-[#D0C4EC] px-4 sm:px-6 py-3 flex items-center justify-between gap-3 sm:gap-4 transition-colors duration-200">
+    <header className="fixed top-0 right-0 left-0 md:left-[70px] z-30 h-[65px] bg-[#EDE8FA]/40 backdrop-blur-[1px] border-b border-[#D0C4EC] px-4 sm:px-6 py-3 flex items-center justify-between gap-3 sm:gap-4 transition-colors duration-200">
       {/* Left: Mobile Toggle & Project Switcher & Global Search */}
       <div className="flex items-center gap-2.5 sm:gap-3 flex-1 max-w-2xl">
         <button
