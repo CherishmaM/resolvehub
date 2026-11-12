@@ -284,11 +284,11 @@ export const Dashboard = () => {
       {/* 4. Two-Column Lower Section: Recent Activity (left) + Severity Breakdown (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start animate-fade-up [animation-delay:260ms]">
         {/* Left Column: Recent Activity (60-65% width) */}
-        <div className="lg:col-span-7 xl:col-span-8 relative overflow-hidden bg-gradient-to-br from-[#FAF8FF] via-white to-[#F7F3FF] rounded-2xl border border-[#E3D9FF] p-5 sm:p-6 shadow-[0_4px_20px_-4px_rgba(98,87,217,0.06)]">
+        <div className="lg:col-span-7 xl:col-span-8 relative overflow-hidden bg-gradient-to-br from-[#F5F0FD] via-[#EFE9FA] to-[#EAE3F7] rounded-2xl border border-[#D5C7EE] p-5 sm:p-6 shadow-[0_4px_24px_-4px_rgba(98,87,217,0.12)]">
           {/* Subtle Ambient Radial Glow & Watermark in Corner */}
-          <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-gradient-to-br from-[#6257D9]/10 via-[#3B82F6]/5 to-transparent blur-2xl pointer-events-none" />
+          <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-gradient-to-br from-[#6257D9]/15 via-[#8B5CF6]/10 to-transparent blur-2xl pointer-events-none" />
           <svg
-            className="absolute -bottom-8 -right-8 w-44 h-44 text-[#6257D9] opacity-[0.035] pointer-events-none"
+            className="absolute -bottom-8 -right-8 w-44 h-44 text-[#6257D9] opacity-[0.045] pointer-events-none"
             viewBox="0 0 120 120"
             fill="none"
             stroke="currentColor"
@@ -302,9 +302,9 @@ export const Dashboard = () => {
           </svg>
 
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-[#E3D9FF]/70 relative z-10">
+          <div className="flex items-center justify-between pb-4 border-b border-[#D8CCE8] relative z-10">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-[#EAE2FF] text-[#6257D9] flex items-center justify-center border border-[#DDD0FE] shadow-2xs">
+              <div className="w-7 h-7 rounded-lg bg-white text-[#6257D9] flex items-center justify-center border border-[#DDD0FE] shadow-2xs">
                 <Activity className="w-3.5 h-3.5 stroke-[2.2]" />
               </div>
               <h2 className="text-sm font-bold text-[#272443]">Recent Activity</h2>
@@ -321,7 +321,7 @@ export const Dashboard = () => {
           {loading ? (
             <div className="py-6 space-y-4 relative z-10">
               {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="py-3 border-b border-[#E3D9FF]/40 space-y-2.5">
+                <div key={i} className="py-3 border-b border-[#D8CCE8]/60 space-y-2.5">
                   <div className="flex items-center gap-2">
                     <div className="h-4 w-14 rounded-md animate-shimmer-lavender"></div>
                     <div className="h-4 w-20 rounded-full animate-shimmer-lavender"></div>
@@ -332,7 +332,7 @@ export const Dashboard = () => {
             </div>
           ) : recentIssues.length === 0 ? (
             <div className="py-12 px-4 text-center relative z-10 animate-fade-in">
-              <div className="w-12 h-12 rounded-2xl bg-[#F0EBFF] text-[#6257D9] border border-[#E3D9FF] mx-auto flex items-center justify-center mb-3 shadow-2xs">
+              <div className="w-12 h-12 rounded-2xl bg-white text-[#6257D9] border border-[#D5C7EE] mx-auto flex items-center justify-center mb-3 shadow-2xs">
                 <Inbox className="w-5 h-5 stroke-[1.8]" />
               </div>
               <p className="text-sm font-semibold text-[#272443]">No issues reported yet</p>
@@ -350,26 +350,27 @@ export const Dashboard = () => {
           ) : (
             <div className="relative z-10 pt-2">
               {/* Vertical Decorative Timeline Spine Line */}
-              <div className="absolute left-[8px] top-6 bottom-6 w-[1.5px] bg-gradient-to-b from-[#E3D9FF] via-[#DDD6FE] to-[#F0EBFF] opacity-80 pointer-events-none" />
+              <div className="absolute left-[8px] top-6 bottom-6 w-[1.5px] bg-gradient-to-b from-[#D5C7EE] via-[#C9B9E8] to-[#D5C7EE] opacity-80 pointer-events-none" />
 
-              <div className="space-y-1">
+              <div className="space-y-2">
                 {recentIssues.map((issue, idx) => {
                   const keyNumber = issue._id.slice(-3).toUpperCase();
                   const keyFormatted = `BUG-${keyNumber}`;
 
-                  // Distinct soft pastel status pills
+                  // Standard distinct status pills
                   const statusStyles = {
-                    Open: 'bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]',
-                    'In Progress': 'bg-[#F0EBFF] text-[#6257D9] border border-[#E3D9FF]',
-                    Resolved: 'bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]',
+                    Open: 'bg-[#EEF2FF] text-[#4338CA] border border-[#C7D2FE]',
+                    'In Progress': 'bg-[#FFF7ED] text-[#C2410C] border border-[#FED7AA]',
+                    Resolved: 'bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0]',
+                    Closed: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]',
                   };
 
-                  // Priority pill styles
+                  // Standard distinct priority pills
                   const priorityStyles = {
-                    Critical: 'bg-[#FFE4E6] text-[#E11D48] border border-[#FECDD3]',
-                    High: 'bg-[#FFEDD5] text-[#C2410C] border border-[#FED7AA]',
-                    Medium: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]',
-                    Low: 'bg-[#EDE9FE] text-[#5B42D6] border border-[#DDD6FE]',
+                    Critical: 'bg-[#FFF1F2] text-[#BE123C] border border-[#FECDD3]',
+                    High: 'bg-[#FFFBEB] text-[#B45309] border border-[#FDE68A]',
+                    Medium: 'bg-[#F0F9FF] text-[#0369A1] border border-[#BAE6FD]',
+                    Low: 'bg-[#F8FAFC] text-[#475569] border border-[#E2E8F0]',
                   };
 
                   return (
@@ -377,23 +378,23 @@ export const Dashboard = () => {
                       key={issue._id}
                       onMouseEnter={(e) => handleRowMouseEnter(e, issue)}
                       onMouseLeave={handleRowMouseLeave}
-                      className="relative pl-6 py-3 px-3 rounded-xl hover:bg-[#F7F3FF]/90 transition-all duration-200 group animate-fade-up border-l-2 border-transparent hover:border-[#6257D9]"
+                      className="relative pl-6 pr-3.5 py-3 rounded-xl bg-white/85 hover:bg-white border border-[#DDD3F2] hover:border-[#6257D9]/40 shadow-2xs hover:shadow-xs transition-all duration-200 group animate-fade-up"
                       style={{ animationDelay: `${idx * 60}ms` }}
                     >
                       {/* Left Edge Accent Bar */}
                       <div className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#6257D9] opacity-0 group-hover:opacity-100 transition-all duration-200" />
 
                       {/* Small circular activity timeline marker */}
-                      <div className="absolute left-[4px] top-[18px] w-2.5 h-2.5 rounded-full bg-[#6257D9] ring-4 ring-[#EDE9FE] shadow-2xs transition-all duration-200 group-hover:scale-125 group-hover:ring-[#DDD6FE]" />
+                      <div className="absolute left-[3px] top-[18px] w-2.5 h-2.5 rounded-full bg-[#6257D9] ring-4 ring-[#EDE7FA] shadow-2xs transition-all duration-200 group-hover:scale-125 group-hover:ring-[#DDD6FE]" />
 
                       {/* Top Row: Key + Status + Priority */}
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-[10px] font-semibold text-[#5E597B] bg-[#EAE2FF]/60 border border-[#DDD0FE]/70 px-1.5 py-0.5 rounded group-hover:bg-[#EAE2FF] transition-colors">
+                          <span className="font-mono text-[10px] font-bold text-[#6257D9] bg-[#EDE7F9] border border-[#DDD3F5] px-2 py-0.5 rounded shadow-2xs">
                             {keyFormatted}
                           </span>
                           <span
-                            className={`text-[11px] font-medium px-2 py-0.5 rounded-full inline-flex items-center gap-1 transition-all duration-200 ${
+                            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 transition-all duration-200 ${
                               statusStyles[issue.status] || 'bg-slate-100 text-slate-700'
                             }`}
                           >
@@ -403,7 +404,7 @@ export const Dashboard = () => {
                         </div>
 
                         <span
-                          className={`text-[11px] font-medium px-2 py-0.5 rounded-md transition-all duration-200 ${
+                          className={`text-[11px] font-semibold px-2 py-0.5 rounded-md transition-all duration-200 ${
                             priorityStyles[issue.priority] || 'bg-slate-100 text-slate-700'
                           }`}
                         >
@@ -431,7 +432,7 @@ export const Dashboard = () => {
 
                       {/* Bottom Row: Category / Component */}
                       <div className="mt-1">
-                        <span className="text-[11px] text-[#7C759A] font-medium">
+                        <span className="inline-flex items-center text-[10px] font-semibold text-[#6257D9] bg-[#EDE7F9] px-2 py-0.5 rounded border border-[#DDD3F5]">
                           {issue.category || 'General'}
                         </span>
                       </div>
@@ -444,11 +445,11 @@ export const Dashboard = () => {
         </div>
 
         {/* Right Column: Severity Breakdown (35-40% width) */}
-        <div className="lg:col-span-5 xl:col-span-4 relative overflow-hidden bg-gradient-to-br from-[#FAF8FF] via-[#F7F4FD] to-[#F3EEFE] rounded-2xl border border-[#E3D9FF] p-5 sm:p-6 shadow-[0_4px_20px_-4px_rgba(98,87,217,0.08)] flex flex-col justify-between">
+        <div className="lg:col-span-5 xl:col-span-4 relative overflow-hidden bg-gradient-to-br from-[#F5F0FD] via-[#EFE9FA] to-[#EAE3F7] rounded-2xl border border-[#D5C7EE] p-5 sm:p-6 shadow-[0_4px_24px_-4px_rgba(98,87,217,0.12)] flex flex-col justify-between">
           {/* Subtle Ambient Radial Glow in Top-Left & Watermark */}
-          <div className="absolute -top-12 -left-12 w-48 h-48 rounded-full bg-gradient-to-br from-[#6257D9]/10 via-[#3B82F6]/5 to-transparent blur-2xl pointer-events-none" />
+          <div className="absolute -top-12 -left-12 w-48 h-48 rounded-full bg-gradient-to-br from-[#6257D9]/15 via-[#8B5CF6]/10 to-transparent blur-2xl pointer-events-none" />
           <svg
-            className="absolute -bottom-8 -right-8 w-44 h-44 text-[#6257D9] opacity-[0.035] pointer-events-none"
+            className="absolute -bottom-8 -right-8 w-44 h-44 text-[#6257D9] opacity-[0.045] pointer-events-none"
             viewBox="0 0 120 120"
             fill="none"
             stroke="currentColor"
@@ -461,15 +462,15 @@ export const Dashboard = () => {
 
           <div className="relative z-10">
             {/* Header */}
-            <div className="flex items-center gap-2.5 pb-4 border-b border-[#E3D9FF]/70">
-              <div className="w-8 h-8 rounded-xl bg-[#EAE2FF] text-[#6257D9] flex items-center justify-center border border-[#DDD0FE] shadow-2xs shrink-0">
+            <div className="flex items-center gap-2.5 pb-4 border-b border-[#D8CCE8]">
+              <div className="w-8 h-8 rounded-xl bg-white text-[#6257D9] flex items-center justify-center border border-[#DDD0FE] shadow-2xs shrink-0">
                 <BarChart2 className="w-4 h-4 stroke-[2]" />
               </div>
               <h2 className="text-sm font-bold text-[#272443]">Severity Breakdown</h2>
             </div>
 
             {/* Horizontal progress bars with smooth staggered sweep & hover glows */}
-            <div className="py-4 space-y-4">
+            <div className="py-4 space-y-3">
               {severityConfig.map((item) => {
                 const percentage =
                   totals.total > 0
@@ -479,14 +480,14 @@ export const Dashboard = () => {
                 return (
                   <div
                     key={item.id}
-                    className="group p-2.5 -mx-2.5 rounded-xl hover:bg-white/80 transition-all duration-200 cursor-default"
+                    className="group p-2.5 rounded-xl bg-white/85 hover:bg-white border border-[#DDD3F2] shadow-2xs transition-all duration-200 cursor-default"
                   >
                     <div className="flex items-center justify-between text-xs mb-1.5">
                       <span className="font-semibold text-[#4A4568] group-hover:text-[#272443] transition-colors duration-200">
                         {item.label}
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-medium text-[#7C759A] group-hover:text-[#4A4568] transition-colors duration-200">
+                        <span className="text-[11px] font-semibold text-[#6257D9] group-hover:text-[#4A4568] transition-colors duration-200">
                           {percentage}%
                         </span>
                         <span
@@ -497,7 +498,7 @@ export const Dashboard = () => {
                       </div>
                     </div>
                     <div
-                      className={`w-full ${item.track} rounded-full h-2.5 group-hover:h-3 transition-all duration-300 ease-out overflow-hidden`}
+                      className={`w-full ${item.track} rounded-full h-2.5 group-hover:h-3 transition-all duration-300 ease-out overflow-hidden border border-black/[0.04]`}
                     >
                       <div
                         className={`h-full rounded-full ${item.color} ${item.glow} group-hover:brightness-110 transition-all duration-700 ease-out`}
@@ -514,13 +515,13 @@ export const Dashboard = () => {
           </div>
 
           {/* Bottom Resolution Rate Metric */}
-          <div className="relative z-10 border-t border-[#E3D9FF]/70 pt-4 mt-2 flex items-center justify-between text-xs">
+          <div className="relative z-10 border-t border-[#D8CCE8] pt-4 mt-2 flex items-center justify-between text-xs">
             <div className="flex items-center gap-1.5 text-[#4A4568]">
               <TrendingUp className="w-4 h-4 text-[#6257D9]" />
               <span className="font-medium">Resolution rate:</span>
               <span className="font-bold text-[#272443]">{resolutionRate}%</span>
             </div>
-            <span className="text-[11px] text-[#7C759A] font-medium">
+            <span className="text-[11px] text-[#7C759A] font-semibold">
               {totals.resolved}/{totals.total} resolved
             </span>
           </div>
