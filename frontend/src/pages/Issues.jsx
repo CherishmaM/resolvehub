@@ -167,8 +167,8 @@ export const Issues = () => {
 
       {error && <ErrorMessage message={error} onRetry={fetchIssues} />}
 
-      {/* Issue Table Card */}
-      <div className="bg-white rounded-2xl border border-[#E2DBF7] shadow-sm overflow-hidden">
+      {/* Issue Table Card - Frosted Glass to reveal 3D background animation */}
+      <div className="bg-white/80 backdrop-blur-md rounded-2xl border border-[#D5C7EE]/80 shadow-[0_4px_24px_-4px_rgba(98,87,217,0.08)] overflow-hidden transition-all">
         {loading ? (
           <div className="py-16">
             <LoadingSpinner size="md" text="Loading issues..." />

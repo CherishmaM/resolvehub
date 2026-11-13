@@ -24,19 +24,19 @@ export const AppLayout = () => {
   const title = getPageTitle(location.pathname);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-[#FAF9FF] via-[#F6F4FD] to-[#F1EEFA] text-[#302D46] font-sans selection:bg-[#6257D9] selection:text-white relative overflow-x-hidden">
-      {/* Subtle enterprise 3D wireframe background & ambient lighting */}
+    <div className="flex min-h-screen bg-gradient-to-br from-[#F7F5FE] via-[#F1ECFB] to-[#E9E1F7] text-[#302D46] font-sans selection:bg-[#6257D9] selection:text-white relative overflow-x-hidden">
+      {/* Dynamic 3D wireframe background & ambient lighting */}
       <WireframeBackground variant="app" />
 
       {/* Top-left subtle ambient glow to unify canvas behind sidebar */}
       <div
-        className="fixed -top-32 -left-32 pointer-events-none select-none z-0 overflow-hidden w-[480px] h-[480px] rounded-full bg-gradient-to-br from-[#e0e7ff]/70 to-[#ddd6fe]/30 blur-3xl opacity-75 animate-ambient-drift"
+        className="fixed -top-32 -left-32 pointer-events-none select-none z-0 overflow-hidden w-[480px] h-[480px] rounded-full bg-gradient-to-br from-[#e0e7ff]/40 to-[#ddd6fe]/20 blur-3xl opacity-40 animate-ambient-drift"
         aria-hidden="true"
       />
 
-      {/* Decorative ambient bottom-right organic waves matching Reference Design Image 1 */}
+      {/* Subtle organic accent on bottom-right - lowered opacity so 3D background stays clearly visible */}
       <div
-        className="fixed bottom-0 right-0 pointer-events-none select-none z-0 overflow-hidden w-[420px] h-[420px] sm:w-[600px] sm:h-[600px] lg:w-[760px] lg:h-[760px] opacity-85"
+        className="fixed bottom-0 right-0 pointer-events-none select-none z-0 overflow-hidden w-[420px] h-[420px] sm:w-[600px] sm:h-[600px] lg:w-[760px] lg:h-[760px] opacity-20"
         aria-hidden="true"
       >
         <svg

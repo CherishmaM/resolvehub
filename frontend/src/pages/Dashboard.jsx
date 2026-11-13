@@ -284,8 +284,8 @@ export const Dashboard = () => {
 
       {/* 4. Two-Column Lower Section: Recent Activity (left) + Severity Breakdown (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start animate-fade-up [animation-delay:260ms]">
-        {/* Left Column: Recent Activity (60-65% width) */}
-        <div className="lg:col-span-7 xl:col-span-8 relative overflow-hidden bg-gradient-to-br from-[#FAF8FF] via-white to-[#F7F3FF] rounded-2xl border border-[#E3D9FF] p-5 sm:p-6 shadow-[0_4px_20px_-4px_rgba(98,87,217,0.06)]">
+        {/* Left Column: Recent Activity (60-65% width) - Frosted Glass to reveal 3D background */}
+        <div className="lg:col-span-7 xl:col-span-8 relative overflow-hidden bg-white/80 backdrop-blur-md rounded-2xl border border-[#D5C7EE]/80 p-5 sm:p-6 shadow-[0_4px_24px_-4px_rgba(98,87,217,0.08)]">
           {/* Subtle Ambient Radial Glow & Watermark in Corner */}
           <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-gradient-to-br from-[#6257D9]/10 via-[#3B82F6]/5 to-transparent blur-2xl pointer-events-none" />
           <svg
@@ -452,8 +452,8 @@ export const Dashboard = () => {
           )}
         </div>
 
-        {/* Right Column: Severity Breakdown (35-40% width) */}
-        <div className="lg:col-span-5 xl:col-span-4 relative overflow-hidden bg-gradient-to-br from-[#FAF8FF] via-[#F7F4FD] to-[#F3EEFE] rounded-2xl border border-[#E3D9FF] p-5 sm:p-6 shadow-[0_4px_20px_-4px_rgba(98,87,217,0.08)] flex flex-col justify-between">
+        {/* Right Column: Severity Breakdown (35-40% width) - Frosted Glass */}
+        <div className="lg:col-span-5 xl:col-span-4 relative overflow-hidden bg-white/80 backdrop-blur-md rounded-2xl border border-[#D5C7EE]/80 p-5 sm:p-6 shadow-[0_4px_24px_-4px_rgba(98,87,217,0.08)] flex flex-col justify-between">
           {/* Subtle Ambient Radial Glow in Top-Left & Watermark */}
           <div className="absolute -top-12 -left-12 w-48 h-48 rounded-full bg-gradient-to-br from-[#6257D9]/10 via-[#3B82F6]/5 to-transparent blur-2xl pointer-events-none" />
           <svg

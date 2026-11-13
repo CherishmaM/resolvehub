@@ -14,7 +14,7 @@ export const Pagination = ({
   const endItem = Math.min(currentPage * limit, totalItems);
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3 px-4 bg-white border-t border-slate-200">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-3.5 px-5 bg-white/60 backdrop-blur-xs border-t border-[#EAE4F7]/80">
       <div className="text-xs text-slate-500">
         Showing <span className="font-semibold text-slate-700">{startItem}</span> to{' '}
         <span className="font-semibold text-slate-700">{endItem}</span> of{' '}

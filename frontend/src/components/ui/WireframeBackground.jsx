@@ -7,6 +7,7 @@ import {
   IcosahedronGeometry,
   TorusGeometry,
   OctahedronGeometry,
+  DodecahedronGeometry,
   WireframeGeometry,
   LineSegments,
   LineBasicMaterial,
@@ -52,7 +53,6 @@ export const WireframeBackground = ({
     }
 
     if (!isWebGLAvailable) {
-      // Graceful fallback: CSS grid & ambient lighting will still render via HTML/CSS
       return;
     }
 
@@ -67,17 +67,18 @@ export const WireframeBackground = ({
     const renderer = new WebGLRenderer({
       alpha: true,
       antialias: true,
-      powerPreference: 'low-power',
+      powerPreference: 'high-performance',
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(width, height);
     renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
 
-    // ResolveHub design system color constants
+    // ResolveHub design system color constants - high vibrancy for clear visibility
     const COLOR_IRIS = 0x6257D9;   // #6257D9 primary brand purple
     const COLOR_BLUE = 0x3B82F6;   // #3B82F6 sapphire accent
     const COLOR_VIOLET = 0x8B5CF6; // #8B5CF6 light violet accent
+    const COLOR_CYAN = 0x06B6D4;   // #06B6D4 tech cyan highlight
 
     const isAuth = variant === 'auth';
 
@@ -88,22 +89,22 @@ export const WireframeBackground = ({
     // 4. Object A: Dual Geodesic Icosphere (Upper Right Perimeter)
     const icosphereGroup = new Group();
 
-    const outerIcoGeom = new IcosahedronGeometry(7, 1);
+    const outerIcoGeom = new IcosahedronGeometry(7.2, 1);
     const outerIcoWire = new WireframeGeometry(outerIcoGeom);
     const outerIcoMat = new LineBasicMaterial({
       color: COLOR_IRIS,
       transparent: true,
-      opacity: isAuth ? 0.45 : 0.40,
+      opacity: isAuth ? 0.75 : 0.65,
     });
     const outerIcoMesh = new LineSegments(outerIcoWire, outerIcoMat);
     icosphereGroup.add(outerIcoMesh);
 
-    const innerIcoGeom = new IcosahedronGeometry(4.2, 0);
+    const innerIcoGeom = new IcosahedronGeometry(4.4, 0);
     const innerIcoWire = new WireframeGeometry(innerIcoGeom);
     const innerIcoMat = new LineBasicMaterial({
       color: COLOR_BLUE,
       transparent: true,
-      opacity: isAuth ? 0.50 : 0.45,
+      opacity: isAuth ? 0.80 : 0.70,
     });
     const innerIcoMesh = new LineSegments(innerIcoWire, innerIcoMat);
     icosphereGroup.add(innerIcoMesh);
@@ -111,43 +112,54 @@ export const WireframeBackground = ({
     sceneGroup.add(icosphereGroup);
 
     // 5. Object B: Wireframe Torus Ring (Upper Left Corner - Behind Sidebar Header & Topbar Left)
-    const torusGeom = new TorusGeometry(5.8, 1.6, 12, 28);
+    const torusGeom = new TorusGeometry(6.0, 1.8, 14, 30);
     const torusWire = new WireframeGeometry(torusGeom);
     const torusMat = new LineBasicMaterial({
       color: COLOR_BLUE,
       transparent: true,
-      opacity: isAuth ? 0.45 : 0.40,
+      opacity: isAuth ? 0.70 : 0.60,
     });
     const torusMesh = new LineSegments(torusWire, torusMat);
     sceneGroup.add(torusMesh);
 
-    // 6. Object C: Floating Wireframe Octahedron (Lower Left - Behind Sidebar Lower Rail)
-    const octaGeom = new OctahedronGeometry(5.0, 0);
+    // 6. Object C: Floating Wireframe Octahedron (Lower Left - Behind Lower Sidebar)
+    const octaGeom = new OctahedronGeometry(5.2, 0);
     const octaWire = new WireframeGeometry(octaGeom);
     const octaMat = new LineBasicMaterial({
       color: COLOR_VIOLET,
       transparent: true,
-      opacity: isAuth ? 0.48 : 0.42,
+      opacity: isAuth ? 0.72 : 0.62,
     });
     const octaMesh = new LineSegments(octaWire, octaMat);
     sceneGroup.add(octaMesh);
 
-    // 7. Connected Technical Network (Issues / Graph Connections)
-    const NODE_COUNT = width < 768 ? 24 : 44;
-    const MAX_DISTANCE = 13;
+    // 7. Object D: Floating Wireframe Dodecahedron (Mid / Lower Right)
+    const dodecaGeom = new DodecahedronGeometry(5.4, 0);
+    const dodecaWire = new WireframeGeometry(dodecaGeom);
+    const dodecaMat = new LineBasicMaterial({
+      color: COLOR_IRIS,
+      transparent: true,
+      opacity: isAuth ? 0.70 : 0.60,
+    });
+    const dodecaMesh = new LineSegments(dodecaWire, dodecaMat);
+    sceneGroup.add(dodecaMesh);
+
+    // 8. Connected Technical Network (Issues / Graph Constellation)
+    const NODE_COUNT = width < 768 ? 32 : 62;
+    const MAX_DISTANCE = 14.5;
     const nodePositions = [];
     const nodeVelocities = [];
 
     for (let i = 0; i < NODE_COUNT; i++) {
       nodePositions.push(
-        (Math.random() - 0.5) * 68,
-        (Math.random() - 0.5) * 42,
-        (Math.random() - 0.5) * 14
+        (Math.random() - 0.5) * 80,
+        (Math.random() - 0.5) * 50,
+        (Math.random() - 0.5) * 16
       );
       nodeVelocities.push({
-        x: (Math.random() - 0.5) * 0.018,
-        y: (Math.random() - 0.5) * 0.018,
-        z: (Math.random() - 0.5) * 0.009,
+        x: (Math.random() - 0.5) * 0.048,
+        y: (Math.random() - 0.5) * 0.048,
+        z: (Math.random() - 0.5) * 0.022,
       });
     }
 
@@ -157,15 +169,15 @@ export const WireframeBackground = ({
 
     const nodesMat = new PointsMaterial({
       color: COLOR_IRIS,
-      size: 4.2,
+      size: 6.0,
       transparent: true,
-      opacity: isAuth ? 0.70 : 0.65,
+      opacity: isAuth ? 0.95 : 0.88,
     });
     const nodesMesh = new Points(nodesGeom, nodesMat);
     sceneGroup.add(nodesMesh);
 
     // Pre-allocated line segment buffer for 60fps connectivity
-    const MAX_CONNECTIONS = NODE_COUNT * 4;
+    const MAX_CONNECTIONS = NODE_COUNT * 5;
     const linePositions = new Float32Array(MAX_CONNECTIONS * 2 * 3);
     const linesGeom = new BufferGeometry();
     linesGeom.setAttribute(
@@ -176,72 +188,147 @@ export const WireframeBackground = ({
     const linesMat = new LineBasicMaterial({
       color: COLOR_IRIS,
       transparent: true,
-      opacity: isAuth ? 0.35 : 0.30,
+      opacity: isAuth ? 0.60 : 0.50,
     });
     const linesMesh = new LineSegments(linesGeom, linesMat);
     sceneGroup.add(linesMesh);
 
-    // Dynamic responsive positioning along the perimeter of the screen
+    // 9. Floating Ambient Star Dust Sparkles
+    const SPARKLE_COUNT = 75;
+    const sparklePositions = new Float32Array(SPARKLE_COUNT * 3);
+    for (let s = 0; s < SPARKLE_COUNT; s++) {
+      sparklePositions[s * 3] = (Math.random() - 0.5) * 85;
+      sparklePositions[s * 3 + 1] = (Math.random() - 0.5) * 55;
+      sparklePositions[s * 3 + 2] = (Math.random() - 0.5) * 24;
+    }
+    const sparklesGeom = new BufferGeometry();
+    sparklesGeom.setAttribute('position', new Float32BufferAttribute(sparklePositions, 3));
+    const sparklesMat = new PointsMaterial({
+      color: COLOR_VIOLET,
+      size: 3.5,
+      transparent: true,
+      opacity: 0.75,
+    });
+    const sparklesMesh = new Points(sparklesGeom, sparklesMat);
+    sceneGroup.add(sparklesMesh);
+
+    // Store base positions for jitter-free sinusoidal floating
+    const basePositions = {
+      icoY: 0,
+      torusY: 0,
+      octaY: 0,
+      dodecaY: 0,
+    };
+
+    // Dynamic responsive positioning along the perimeter and layout of the screen
     const updatePositions = () => {
       const curW = container.clientWidth || window.innerWidth;
       const curH = container.clientHeight || window.innerHeight;
       const aspect = curW / curH;
 
-      // Approximate visible dimensions at z=0 (camera at z=50, FOV 45)
       const vHeight = 2 * Math.tan((camera.fov * Math.PI) / 360) * 50;
       const vWidth = vHeight * aspect;
 
       if (curW < 768) {
-        // Mobile layout: scale down and push to corners
+        // Mobile layout
         icosphereGroup.position.set(vWidth * 0.36, vHeight * 0.36, 0);
-        icosphereGroup.scale.setScalar(0.65);
+        basePositions.icoY = vHeight * 0.36;
+        icosphereGroup.scale.setScalar(0.7);
 
         torusMesh.position.set(-vWidth * 0.36, vHeight * 0.32, -2);
-        torusMesh.scale.setScalar(0.55);
+        basePositions.torusY = vHeight * 0.32;
+        torusMesh.scale.setScalar(0.6);
 
         octaMesh.position.set(-vWidth * 0.34, -vHeight * 0.28, -2);
-        octaMesh.scale.setScalar(0.55);
+        basePositions.octaY = -vHeight * 0.28;
+        octaMesh.scale.setScalar(0.6);
+
+        dodecaMesh.position.set(vWidth * 0.34, -vHeight * 0.26, -2);
+        basePositions.dodecaY = -vHeight * 0.26;
+        dodecaMesh.scale.setScalar(0.6);
       } else {
-        // Desktop layout: position directly behind Topbar and Sidebar
-        // 1. Icosphere at Topbar Right (behind user profile & search)
+        // Desktop layout: strategically positioned to be visible behind Topbar, Sidebar, and Table
         icosphereGroup.position.set(vWidth * 0.35, vHeight * 0.34, 0);
-        icosphereGroup.scale.setScalar(1.05);
+        basePositions.icoY = vHeight * 0.34;
+        icosphereGroup.scale.setScalar(1.1);
 
-        // 2. Torus at Upper-Left Junction (directly behind Topbar Left & Sidebar Header/Logo)
-        torusMesh.position.set(-vWidth * 0.40, vHeight * 0.32, -1);
-        torusMesh.scale.setScalar(1.0);
+        torusMesh.position.set(-vWidth * 0.39, vHeight * 0.32, -1);
+        basePositions.torusY = vHeight * 0.32;
+        torusMesh.scale.setScalar(1.05);
 
-        // 3. Octahedron at Lower-Left (directly behind Sidebar Projects & Lower Links)
-        octaMesh.position.set(-vWidth * 0.41, -vHeight * 0.18, -1);
-        octaMesh.scale.setScalar(1.0);
+        octaMesh.position.set(-vWidth * 0.40, -vHeight * 0.22, -1);
+        basePositions.octaY = -vHeight * 0.22;
+        octaMesh.scale.setScalar(1.05);
+
+        dodecaMesh.position.set(vWidth * 0.38, -vHeight * 0.22, -1);
+        basePositions.dodecaY = -vHeight * 0.22;
+        dodecaMesh.scale.setScalar(1.05);
       }
     };
 
     updatePositions();
 
-    // 8. Animation Loop
+    // Mouse parallax variables
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+
+    const handleMouseMove = (event) => {
+      const windowHalfX = window.innerWidth / 2;
+      const windowHalfY = window.innerHeight / 2;
+      targetMouseX = ((event.clientX - windowHalfX) / windowHalfX) * 0.09;
+      targetMouseY = ((event.clientY - windowHalfY) / windowHalfY) * 0.09;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+
+    // 10. Active 60fps Animation Loop with dynamic floating & rotations
     let animationFrameId = null;
     let clock = 0;
 
     const animate = () => {
-      clock += 0.01;
+      clock += 0.016;
 
-      // 3D Wireframe Rotations & Floats
-      icosphereGroup.rotation.y += 0.0022;
-      icosphereGroup.rotation.x += 0.0014;
-      innerIcoMesh.rotation.y -= 0.0035;
-      innerIcoMesh.rotation.z += 0.0025;
-      icosphereGroup.position.y += Math.sin(clock * 0.8) * 0.018;
+      // Mouse parallax smooth interpolation
+      mouseX += (targetMouseX - mouseX) * 0.04;
+      mouseY += (targetMouseY - mouseY) * 0.04;
+      sceneGroup.rotation.y = mouseX;
+      sceneGroup.rotation.x = -mouseY;
 
-      torusMesh.rotation.x += 0.002;
-      torusMesh.rotation.y += 0.0024;
-      torusMesh.position.y += Math.cos(clock * 0.7) * 0.014;
+      // 3D Wireframe Rotations (visible, elegant, continuous)
+      icosphereGroup.rotation.y += 0.0055;
+      icosphereGroup.rotation.x += 0.0035;
+      innerIcoMesh.rotation.y -= 0.008;
+      innerIcoMesh.rotation.z += 0.006;
 
-      octaMesh.rotation.y += 0.003;
-      octaMesh.rotation.z += 0.0018;
-      octaMesh.position.y += Math.sin(clock * 0.9) * 0.016;
+      torusMesh.rotation.x += 0.005;
+      torusMesh.rotation.y += 0.006;
 
-      // Network graph node updates
+      octaMesh.rotation.y += 0.007;
+      octaMesh.rotation.z += 0.0045;
+
+      dodecaMesh.rotation.x += 0.0055;
+      dodecaMesh.rotation.y -= 0.0065;
+
+      // Noticeable floating sinusoidal bobbing (~35-45px range)
+      icosphereGroup.position.y = basePositions.icoY + Math.sin(clock * 1.2) * 1.6;
+      torusMesh.position.y = basePositions.torusY + Math.cos(clock * 1.0) * 1.4;
+      octaMesh.position.y = basePositions.octaY + Math.sin(clock * 1.3) * 1.5;
+      dodecaMesh.position.y = basePositions.dodecaY + Math.cos(clock * 1.1) * 1.5;
+
+      // Floating ambient sparkles drift
+      const sPos = sparklesGeom.attributes.position.array;
+      for (let s = 0; s < SPARKLE_COUNT; s++) {
+        const s3 = s * 3;
+        sPos[s3 + 1] += 0.025;
+        if (sPos[s3 + 1] > 28) {
+          sPos[s3 + 1] = -28;
+        }
+      }
+      sparklesGeom.attributes.position.needsUpdate = true;
+
+      // Network graph node updates with visible continuous drift
       const posArray = posAttr.array;
       let lineIndex = 0;
 
@@ -252,11 +339,11 @@ export const WireframeBackground = ({
         posArray[i3 + 2] += nodeVelocities[i].z;
 
         // Soft bounce within boundary limits
-        if (Math.abs(posArray[i3]) > 32) nodeVelocities[i].x *= -1;
-        if (Math.abs(posArray[i3 + 1]) > 18) nodeVelocities[i].y *= -1;
-        if (Math.abs(posArray[i3 + 2]) > 6) nodeVelocities[i].z *= -1;
+        if (Math.abs(posArray[i3]) > 42) nodeVelocities[i].x *= -1;
+        if (Math.abs(posArray[i3 + 1]) > 26) nodeVelocities[i].y *= -1;
+        if (Math.abs(posArray[i3 + 2]) > 8) nodeVelocities[i].z *= -1;
 
-        // Connect nearby nodes with subtle wireframe lines
+        // Connect nearby nodes with crisp wireframe lines
         for (let j = i + 1; j < NODE_COUNT; j++) {
           if (lineIndex >= MAX_CONNECTIONS) break;
           const j3 = j * 3;
@@ -292,13 +379,12 @@ export const WireframeBackground = ({
     };
 
     if (prefersReducedMotion) {
-      // Render static frame once for accessibility
       renderer.render(scene, camera);
     } else {
       animationFrameId = requestAnimationFrame(animate);
     }
 
-    // 9. Window Resize Handling
+    // 11. Window Resize Handling
     const handleResize = () => {
       if (!container) return;
       const newWidth = container.clientWidth || window.innerWidth;
@@ -317,14 +403,14 @@ export const WireframeBackground = ({
 
     window.addEventListener('resize', handleResize);
 
-    // 10. Complete Resource Cleanup
+    // 12. Complete Resource Cleanup
     return () => {
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
       }
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousemove', handleMouseMove);
 
-      // Dispose geometries
       [
         outerIcoGeom,
         outerIcoWire,
@@ -334,18 +420,22 @@ export const WireframeBackground = ({
         torusWire,
         octaGeom,
         octaWire,
+        dodecaGeom,
+        dodecaWire,
         nodesGeom,
         linesGeom,
+        sparklesGeom,
       ].forEach((geom) => geom?.dispose?.());
 
-      // Dispose materials
       [
         outerIcoMat,
         innerIcoMat,
         torusMat,
         octaMat,
+        dodecaMat,
         nodesMat,
         linesMat,
+        sparklesMat,
       ].forEach((mat) => mat?.dispose?.());
 
       renderer.dispose();
@@ -367,11 +457,11 @@ export const WireframeBackground = ({
       {/* B. Ambient Soft Radial Gradient Lighting */}
       {showAmbient && (
         <>
-          <div className="wireframe-ambient-glow-1 absolute -top-24 -right-24 w-[520px] h-[520px] rounded-full pointer-events-none" />
-          <div className="wireframe-ambient-glow-2 absolute -bottom-28 -left-28 w-[560px] h-[560px] rounded-full pointer-events-none" />
-          {/* Dedicated animated glows specifically bathing the topbar and sidebar areas */}
-          <div className="wireframe-ambient-topbar-glow absolute -top-8 left-0 right-0 h-44 pointer-events-none" />
-          <div className="wireframe-ambient-sidebar-glow absolute top-0 bottom-0 left-0 w-48 pointer-events-none" />
+          <div className="wireframe-ambient-glow-1 absolute -top-20 -right-20 w-[560px] h-[560px] rounded-full pointer-events-none" />
+          <div className="wireframe-ambient-glow-2 absolute -bottom-24 -left-24 w-[600px] h-[600px] rounded-full pointer-events-none" />
+          {/* Dedicated animated glows bathing topbar and sidebar areas */}
+          <div className="wireframe-ambient-topbar-glow absolute -top-6 left-0 right-0 h-48 pointer-events-none" />
+          <div className="wireframe-ambient-sidebar-glow absolute top-0 bottom-0 left-0 w-52 pointer-events-none" />
         </>
       )}
 
@@ -380,3 +470,4 @@ export const WireframeBackground = ({
     </div>
   );
 };
+export default WireframeBackground;

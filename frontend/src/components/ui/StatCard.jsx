@@ -70,8 +70,8 @@ export const StatCard = ({
 }) => {
   const themeMap = {
     purple: {
-      bg: 'bg-gradient-to-br from-[#F7F3FF] via-[#F0EBFF] to-[#FAF8FF]',
-      border: 'border-[#E3D9FF]',
+      bg: 'bg-white/80 backdrop-blur-md',
+      border: 'border-[#D5C7EE]/80',
       hoverBorder: 'hover:border-[#6257D9]/50',
       badge: 'bg-[#EAE2FF] text-[#6257D9] border border-[#DDD0FE]',
       dot: 'bg-[#6257D9]',
@@ -81,8 +81,8 @@ export const StatCard = ({
       hoverValue: 'group-hover:text-[#6257D9]',
     },
     lavender: {
-      bg: 'bg-gradient-to-br from-[#F7F3FF] via-[#F0EBFF] to-[#FAF8FF]',
-      border: 'border-[#E3D9FF]',
+      bg: 'bg-white/80 backdrop-blur-md',
+      border: 'border-[#D5C7EE]/80',
       hoverBorder: 'hover:border-[#6257D9]/50',
       badge: 'bg-[#EAE2FF] text-[#6257D9] border border-[#DDD0FE]',
       dot: 'bg-[#6257D9]',
@@ -92,7 +92,7 @@ export const StatCard = ({
       hoverValue: 'group-hover:text-[#6257D9]',
     },
     amber: {
-      bg: 'bg-gradient-to-br from-[#FFF9F5] via-[#FDF3EA] to-[#FAF5FF]',
+      bg: 'bg-white/80 backdrop-blur-md',
       border: 'border-[#FDE2D0]',
       hoverBorder: 'hover:border-[#EA580C]/50',
       badge: 'bg-[#FFE8D6] text-[#EA580C] border border-[#FED7AA]',
@@ -103,7 +103,7 @@ export const StatCard = ({
       hoverValue: 'group-hover:text-[#EA580C]',
     },
     blue: {
-      bg: 'bg-gradient-to-br from-[#F0F6FF] via-[#EEF4FF] to-[#F7F3FF]',
+      bg: 'bg-white/80 backdrop-blur-md',
       border: 'border-[#D6E4FF]',
       hoverBorder: 'hover:border-[#3B82F6]/50',
       badge: 'bg-[#DFEDFE] text-[#0284C7] border border-[#BAE6FD]',
@@ -114,7 +114,7 @@ export const StatCard = ({
       hoverValue: 'group-hover:text-[#0284C7]',
     },
     sky: {
-      bg: 'bg-gradient-to-br from-[#F0F6FF] via-[#EEF4FF] to-[#F7F3FF]',
+      bg: 'bg-white/80 backdrop-blur-md',
       border: 'border-[#D6E4FF]',
       hoverBorder: 'hover:border-[#3B82F6]/50',
       badge: 'bg-[#DFEDFE] text-[#0284C7] border border-[#BAE6FD]',
@@ -125,7 +125,7 @@ export const StatCard = ({
       hoverValue: 'group-hover:text-[#0284C7]',
     },
     green: {
-      bg: 'bg-gradient-to-br from-[#F2FBF6] via-[#EBF9F0] to-[#F5F2FE]',
+      bg: 'bg-white/80 backdrop-blur-md',
       border: 'border-[#CFEEDC]',
       hoverBorder: 'hover:border-[#16A34A]/50',
       badge: 'bg-[#D6F7E2] text-[#16A34A] border border-[#BBF7D0]',
@@ -136,7 +136,7 @@ export const StatCard = ({
       hoverValue: 'group-hover:text-[#16A34A]',
     },
     emerald: {
-      bg: 'bg-gradient-to-br from-[#F2FBF6] via-[#EBF9F0] to-[#F5F2FE]',
+      bg: 'bg-white/80 backdrop-blur-md',
       border: 'border-[#CFEEDC]',
       hoverBorder: 'hover:border-[#16A34A]/50',
       badge: 'bg-[#D6F7E2] text-[#16A34A] border border-[#BBF7D0]',
@@ -147,7 +147,7 @@ export const StatCard = ({
       hoverValue: 'group-hover:text-[#16A34A]',
     },
     brand: {
-      bg: 'bg-gradient-to-br from-[#F5F2FF] via-[#EDE8FF] to-[#F0F4FF]',
+      bg: 'bg-white/80 backdrop-blur-md',
       border: 'border-[#DDD6FE]',
       hoverBorder: 'hover:border-[#6257D9]/50',
       badge: 'bg-[#E4DBFE] text-[#6257D9] border border-[#DDD6FE]',
@@ -158,7 +158,7 @@ export const StatCard = ({
       hoverValue: 'group-hover:text-[#6257D9]',
     },
     indigo: {
-      bg: 'bg-gradient-to-br from-[#F5F2FF] via-[#EDE8FF] to-[#F0F4FF]',
+      bg: 'bg-white/80 backdrop-blur-md',
       border: 'border-[#DDD6FE]',
       hoverBorder: 'hover:border-[#6257D9]/50',
       badge: 'bg-[#E4DBFE] text-[#6257D9] border border-[#DDD6FE]',
