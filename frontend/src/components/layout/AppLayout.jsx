@@ -24,7 +24,7 @@ export const AppLayout = () => {
   const title = getPageTitle(location.pathname);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-[#F7F5FE] via-[#F1ECFB] to-[#E9E1F7] text-[#302D46] font-sans selection:bg-[#6257D9] selection:text-white relative overflow-x-hidden">
+    <div className="flex min-h-screen bg-white text-[#302D46] font-sans selection:bg-[#6257D9] selection:text-white relative overflow-x-hidden">
       {/* Dynamic 3D wireframe background & ambient lighting */}
       <WireframeBackground variant="app" />
 

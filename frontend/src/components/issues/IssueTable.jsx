@@ -78,7 +78,7 @@ export const IssueTable = ({
       <div className="overflow-x-auto min-h-[340px]">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[#DCD3F2]/60 bg-[#E5DEF5]/50 text-[11px] font-bold uppercase tracking-wider text-[#544D75]">
+            <tr className="border-b border-[#EAE4F7] bg-[#F8F7FD] text-[11px] font-bold uppercase tracking-wider text-[#544D75]">
               <th className="py-3.5 px-5">Key</th>
               <th className="py-3.5 px-5">Title</th>
               <th className="py-3.5 px-5">Status</th>
@@ -86,7 +86,7 @@ export const IssueTable = ({
               <th className="py-3.5 px-5">Assignee</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#E6DEF5]/50 text-xs">
+          <tbody className="divide-y divide-[#F0ECF9] text-xs">
             {issues.map((issue, idx) => {
               const projectKey = issue.projectId?.key || 'TF';
               const keyFormatted = `${projectKey}-${issue._id.slice(-4).toUpperCase()}`;
@@ -97,7 +97,7 @@ export const IssueTable = ({
                   onMouseEnter={(e) => handleRowMouseEnter(e, issue)}
                   onMouseLeave={handleRowMouseLeave}
                   style={{ animationDelay: `${Math.min(idx * 25, 250)}ms` }}
-                  className="even:bg-[#EDE8FA]/25 odd:bg-transparent hover:bg-[#DDD3F8]/40 transition-all duration-150 group animate-fade-in"
+                  className="even:bg-[#FAF9FE]/60 odd:bg-white hover:bg-[#F3EEFD] transition-all duration-150 group animate-fade-in"
                 >
                   {/* Key */}
                   <td className="py-3.5 px-5 font-mono whitespace-nowrap">
