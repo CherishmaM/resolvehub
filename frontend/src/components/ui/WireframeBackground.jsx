@@ -74,11 +74,11 @@ export const WireframeBackground = ({
     renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
 
-    // ResolveHub design system color constants - high vibrancy for clear visibility
-    const COLOR_IRIS = 0x6257D9;   // #6257D9 primary brand purple
-    const COLOR_BLUE = 0x3B82F6;   // #3B82F6 sapphire accent
-    const COLOR_VIOLET = 0x8B5CF6; // #8B5CF6 light violet accent
-    const COLOR_CYAN = 0x06B6D4;   // #06B6D4 tech cyan highlight
+    // ResolveHub design system color constants - soft, light pastel tones for airy elegance
+    const COLOR_LIGHT_LAVENDER = 0xB4A9E8;   // #B4A9E8 soft light lavender
+    const COLOR_LIGHT_PERIWINKLE = 0xA5B4FC; // #A5B4FC airy light periwinkle
+    const COLOR_LIGHT_LILAC = 0xC4B5FD;      // #C4B5FD gentle pastel lilac
+    const COLOR_LIGHT_SKY = 0xBAE6FD;        // #BAE6FD soft light sky blue
 
     const isAuth = variant === 'auth';
 
@@ -92,9 +92,9 @@ export const WireframeBackground = ({
     const outerIcoGeom = new IcosahedronGeometry(7.2, 1);
     const outerIcoWire = new WireframeGeometry(outerIcoGeom);
     const outerIcoMat = new LineBasicMaterial({
-      color: COLOR_IRIS,
+      color: COLOR_LIGHT_LAVENDER,
       transparent: true,
-      opacity: isAuth ? 0.75 : 0.65,
+      opacity: isAuth ? 0.40 : 0.32,
     });
     const outerIcoMesh = new LineSegments(outerIcoWire, outerIcoMat);
     icosphereGroup.add(outerIcoMesh);
@@ -102,9 +102,9 @@ export const WireframeBackground = ({
     const innerIcoGeom = new IcosahedronGeometry(4.4, 0);
     const innerIcoWire = new WireframeGeometry(innerIcoGeom);
     const innerIcoMat = new LineBasicMaterial({
-      color: COLOR_BLUE,
+      color: COLOR_LIGHT_PERIWINKLE,
       transparent: true,
-      opacity: isAuth ? 0.80 : 0.70,
+      opacity: isAuth ? 0.45 : 0.36,
     });
     const innerIcoMesh = new LineSegments(innerIcoWire, innerIcoMat);
     icosphereGroup.add(innerIcoMesh);
@@ -115,9 +115,9 @@ export const WireframeBackground = ({
     const torusGeom = new TorusGeometry(6.0, 1.8, 14, 30);
     const torusWire = new WireframeGeometry(torusGeom);
     const torusMat = new LineBasicMaterial({
-      color: COLOR_BLUE,
+      color: COLOR_LIGHT_PERIWINKLE,
       transparent: true,
-      opacity: isAuth ? 0.70 : 0.60,
+      opacity: isAuth ? 0.38 : 0.30,
     });
     const torusMesh = new LineSegments(torusWire, torusMat);
     sceneGroup.add(torusMesh);
@@ -126,9 +126,9 @@ export const WireframeBackground = ({
     const octaGeom = new OctahedronGeometry(5.2, 0);
     const octaWire = new WireframeGeometry(octaGeom);
     const octaMat = new LineBasicMaterial({
-      color: COLOR_VIOLET,
+      color: COLOR_LIGHT_LILAC,
       transparent: true,
-      opacity: isAuth ? 0.72 : 0.62,
+      opacity: isAuth ? 0.40 : 0.32,
     });
     const octaMesh = new LineSegments(octaWire, octaMat);
     sceneGroup.add(octaMesh);
@@ -137,9 +137,9 @@ export const WireframeBackground = ({
     const dodecaGeom = new DodecahedronGeometry(5.4, 0);
     const dodecaWire = new WireframeGeometry(dodecaGeom);
     const dodecaMat = new LineBasicMaterial({
-      color: COLOR_IRIS,
+      color: COLOR_LIGHT_LAVENDER,
       transparent: true,
-      opacity: isAuth ? 0.70 : 0.60,
+      opacity: isAuth ? 0.38 : 0.30,
     });
     const dodecaMesh = new LineSegments(dodecaWire, dodecaMat);
     sceneGroup.add(dodecaMesh);
@@ -148,9 +148,9 @@ export const WireframeBackground = ({
     const centerGeom = new IcosahedronGeometry(6.2, 0);
     const centerWire = new WireframeGeometry(centerGeom);
     const centerMat = new LineBasicMaterial({
-      color: COLOR_IRIS,
+      color: COLOR_LIGHT_LAVENDER,
       transparent: true,
-      opacity: isAuth ? 0.72 : 0.62,
+      opacity: isAuth ? 0.38 : 0.28,
     });
     const centerMesh = new LineSegments(centerWire, centerMat);
     sceneGroup.add(centerMesh);
@@ -179,10 +179,10 @@ export const WireframeBackground = ({
     nodesGeom.setAttribute('position', posAttr);
 
     const nodesMat = new PointsMaterial({
-      color: COLOR_IRIS,
-      size: 6.5,
+      color: COLOR_LIGHT_LAVENDER,
+      size: 4.2,
       transparent: true,
-      opacity: isAuth ? 0.95 : 0.90,
+      opacity: isAuth ? 0.60 : 0.48,
     });
     const nodesMesh = new Points(nodesGeom, nodesMat);
     sceneGroup.add(nodesMesh);
@@ -197,9 +197,9 @@ export const WireframeBackground = ({
     );
 
     const linesMat = new LineBasicMaterial({
-      color: COLOR_IRIS,
+      color: COLOR_LIGHT_LAVENDER,
       transparent: true,
-      opacity: isAuth ? 0.65 : 0.55,
+      opacity: isAuth ? 0.30 : 0.22,
     });
     const linesMesh = new LineSegments(linesGeom, linesMat);
     sceneGroup.add(linesMesh);
@@ -215,10 +215,10 @@ export const WireframeBackground = ({
     const sparklesGeom = new BufferGeometry();
     sparklesGeom.setAttribute('position', new Float32BufferAttribute(sparklePositions, 3));
     const sparklesMat = new PointsMaterial({
-      color: COLOR_VIOLET,
-      size: 3.5,
+      color: COLOR_LIGHT_LILAC,
+      size: 2.4,
       transparent: true,
-      opacity: 0.75,
+      opacity: 0.38,
     });
     const sparklesMesh = new Points(sparklesGeom, sparklesMat);
     sceneGroup.add(sparklesMesh);
