@@ -78,7 +78,7 @@ export const IssueTable = ({
       <div className="overflow-x-auto min-h-[340px]">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-[#EAE4F7]/80 bg-[#F8F7FD]/70 backdrop-blur-xs text-[11px] font-bold uppercase tracking-wider text-[#544D75]">
+            <tr className="border-b border-[#EAE4F7]/40 bg-white/30 text-[11px] font-bold uppercase tracking-wider text-[#544D75]">
               <th className="py-3.5 px-5">Key</th>
               <th className="py-3.5 px-5">Title</th>
               <th className="py-3.5 px-5">Status</th>
@@ -86,7 +86,7 @@ export const IssueTable = ({
               <th className="py-3.5 px-5">Assignee</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#F0ECF9]/80 text-xs">
+          <tbody className="divide-y divide-[#F0ECF9]/40 text-xs">
             {issues.map((issue, idx) => {
               const projectKey = issue.projectId?.key || 'TF';
               const keyFormatted = `${projectKey}-${issue._id.slice(-4).toUpperCase()}`;
@@ -97,7 +97,7 @@ export const IssueTable = ({
                   onMouseEnter={(e) => handleRowMouseEnter(e, issue)}
                   onMouseLeave={handleRowMouseLeave}
                   style={{ animationDelay: `${Math.min(idx * 25, 250)}ms` }}
-                  className="even:bg-[#FAF9FE]/30 odd:bg-white/40 hover:bg-[#F3EEFD]/80 backdrop-blur-xs transition-all duration-150 group animate-fade-in"
+                  className="even:bg-white/15 odd:bg-transparent hover:bg-[#6257D9]/10 transition-all duration-150 group animate-fade-in"
                 >
                   {/* Key */}
                   <td className="py-3.5 px-5 font-mono whitespace-nowrap">

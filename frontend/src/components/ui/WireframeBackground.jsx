@@ -144,22 +144,33 @@ export const WireframeBackground = ({
     const dodecaMesh = new LineSegments(dodecaWire, dodecaMat);
     sceneGroup.add(dodecaMesh);
 
-    // 8. Connected Technical Network (Issues / Graph Constellation)
-    const NODE_COUNT = width < 768 ? 32 : 62;
-    const MAX_DISTANCE = 14.5;
+    // 8. Object E: Center Floating Wireframe Icosahedron (Directly Behind Workspace Table)
+    const centerGeom = new IcosahedronGeometry(6.2, 0);
+    const centerWire = new WireframeGeometry(centerGeom);
+    const centerMat = new LineBasicMaterial({
+      color: COLOR_IRIS,
+      transparent: true,
+      opacity: isAuth ? 0.72 : 0.62,
+    });
+    const centerMesh = new LineSegments(centerWire, centerMat);
+    sceneGroup.add(centerMesh);
+
+    // 9. Connected Technical Network (Issues / Graph Constellation)
+    const NODE_COUNT = width < 768 ? 40 : 88;
+    const MAX_DISTANCE = 16.0;
     const nodePositions = [];
     const nodeVelocities = [];
 
     for (let i = 0; i < NODE_COUNT; i++) {
       nodePositions.push(
-        (Math.random() - 0.5) * 80,
-        (Math.random() - 0.5) * 50,
+        (Math.random() - 0.5) * 85,
+        (Math.random() - 0.5) * 52,
         (Math.random() - 0.5) * 16
       );
       nodeVelocities.push({
-        x: (Math.random() - 0.5) * 0.048,
-        y: (Math.random() - 0.5) * 0.048,
-        z: (Math.random() - 0.5) * 0.022,
+        x: (Math.random() - 0.5) * 0.052,
+        y: (Math.random() - 0.5) * 0.052,
+        z: (Math.random() - 0.5) * 0.024,
       });
     }
 
@@ -169,9 +180,9 @@ export const WireframeBackground = ({
 
     const nodesMat = new PointsMaterial({
       color: COLOR_IRIS,
-      size: 6.0,
+      size: 6.5,
       transparent: true,
-      opacity: isAuth ? 0.95 : 0.88,
+      opacity: isAuth ? 0.95 : 0.90,
     });
     const nodesMesh = new Points(nodesGeom, nodesMat);
     sceneGroup.add(nodesMesh);
@@ -188,13 +199,13 @@ export const WireframeBackground = ({
     const linesMat = new LineBasicMaterial({
       color: COLOR_IRIS,
       transparent: true,
-      opacity: isAuth ? 0.60 : 0.50,
+      opacity: isAuth ? 0.65 : 0.55,
     });
     const linesMesh = new LineSegments(linesGeom, linesMat);
     sceneGroup.add(linesMesh);
 
-    // 9. Floating Ambient Star Dust Sparkles
-    const SPARKLE_COUNT = 75;
+    // 10. Floating Ambient Star Dust Sparkles
+    const SPARKLE_COUNT = 85;
     const sparklePositions = new Float32Array(SPARKLE_COUNT * 3);
     for (let s = 0; s < SPARKLE_COUNT; s++) {
       sparklePositions[s * 3] = (Math.random() - 0.5) * 85;
@@ -218,6 +229,7 @@ export const WireframeBackground = ({
       torusY: 0,
       octaY: 0,
       dodecaY: 0,
+      centerY: 0,
     };
 
     // Dynamic responsive positioning along the perimeter and layout of the screen
@@ -231,38 +243,46 @@ export const WireframeBackground = ({
 
       if (curW < 768) {
         // Mobile layout
-        icosphereGroup.position.set(vWidth * 0.36, vHeight * 0.36, 0);
-        basePositions.icoY = vHeight * 0.36;
+        icosphereGroup.position.set(vWidth * 0.32, vHeight * 0.32, 0);
+        basePositions.icoY = vHeight * 0.32;
         icosphereGroup.scale.setScalar(0.7);
 
-        torusMesh.position.set(-vWidth * 0.36, vHeight * 0.32, -2);
-        basePositions.torusY = vHeight * 0.32;
+        torusMesh.position.set(-vWidth * 0.32, vHeight * 0.28, -2);
+        basePositions.torusY = vHeight * 0.28;
         torusMesh.scale.setScalar(0.6);
 
-        octaMesh.position.set(-vWidth * 0.34, -vHeight * 0.28, -2);
-        basePositions.octaY = -vHeight * 0.28;
+        octaMesh.position.set(-vWidth * 0.30, -vHeight * 0.24, -2);
+        basePositions.octaY = -vHeight * 0.24;
         octaMesh.scale.setScalar(0.6);
 
-        dodecaMesh.position.set(vWidth * 0.34, -vHeight * 0.26, -2);
-        basePositions.dodecaY = -vHeight * 0.26;
+        dodecaMesh.position.set(vWidth * 0.30, -vHeight * 0.22, -2);
+        basePositions.dodecaY = -vHeight * 0.22;
         dodecaMesh.scale.setScalar(0.6);
+
+        centerMesh.position.set(0, -vHeight * 0.05, -3);
+        basePositions.centerY = -vHeight * 0.05;
+        centerMesh.scale.setScalar(0.6);
       } else {
         // Desktop layout: strategically positioned to be visible behind Topbar, Sidebar, and Table
-        icosphereGroup.position.set(vWidth * 0.35, vHeight * 0.34, 0);
-        basePositions.icoY = vHeight * 0.34;
+        icosphereGroup.position.set(vWidth * 0.28, vHeight * 0.26, 0);
+        basePositions.icoY = vHeight * 0.26;
         icosphereGroup.scale.setScalar(1.1);
 
-        torusMesh.position.set(-vWidth * 0.39, vHeight * 0.32, -1);
-        basePositions.torusY = vHeight * 0.32;
+        torusMesh.position.set(-vWidth * 0.30, vHeight * 0.24, -1);
+        basePositions.torusY = vHeight * 0.24;
         torusMesh.scale.setScalar(1.05);
 
-        octaMesh.position.set(-vWidth * 0.40, -vHeight * 0.22, -1);
-        basePositions.octaY = -vHeight * 0.22;
+        octaMesh.position.set(-vWidth * 0.26, -vHeight * 0.16, -1);
+        basePositions.octaY = -vHeight * 0.16;
         octaMesh.scale.setScalar(1.05);
 
-        dodecaMesh.position.set(vWidth * 0.38, -vHeight * 0.22, -1);
-        basePositions.dodecaY = -vHeight * 0.22;
+        dodecaMesh.position.set(vWidth * 0.25, -vHeight * 0.15, -1);
+        basePositions.dodecaY = -vHeight * 0.15;
         dodecaMesh.scale.setScalar(1.05);
+
+        centerMesh.position.set(-vWidth * 0.05, -vHeight * 0.05, -2);
+        basePositions.centerY = -vHeight * 0.05;
+        centerMesh.scale.setScalar(1.15);
       }
     };
 
@@ -311,11 +331,15 @@ export const WireframeBackground = ({
       dodecaMesh.rotation.x += 0.0055;
       dodecaMesh.rotation.y -= 0.0065;
 
+      centerMesh.rotation.y += 0.006;
+      centerMesh.rotation.x -= 0.0045;
+
       // Noticeable floating sinusoidal bobbing (~35-45px range)
       icosphereGroup.position.y = basePositions.icoY + Math.sin(clock * 1.2) * 1.6;
       torusMesh.position.y = basePositions.torusY + Math.cos(clock * 1.0) * 1.4;
       octaMesh.position.y = basePositions.octaY + Math.sin(clock * 1.3) * 1.5;
       dodecaMesh.position.y = basePositions.dodecaY + Math.cos(clock * 1.1) * 1.5;
+      centerMesh.position.y = basePositions.centerY + Math.sin(clock * 1.15) * 1.8;
 
       // Floating ambient sparkles drift
       const sPos = sparklesGeom.attributes.position.array;
@@ -422,6 +446,8 @@ export const WireframeBackground = ({
         octaWire,
         dodecaGeom,
         dodecaWire,
+        centerGeom,
+        centerWire,
         nodesGeom,
         linesGeom,
         sparklesGeom,
@@ -433,6 +459,7 @@ export const WireframeBackground = ({
         torusMat,
         octaMat,
         dodecaMat,
+        centerMat,
         nodesMat,
         linesMat,
         sparklesMat,

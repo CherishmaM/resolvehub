@@ -18,7 +18,7 @@ export const IssueFilters = ({
   const hasActiveFilters = search || status || priority || category || projectId;
 
   return (
-    <div className="bg-white/80 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-[#D5C7EE]/80 shadow-[0_4px_20px_-4px_rgba(98,87,217,0.06)] space-y-3">
+    <div className="bg-white/35 backdrop-blur-sm p-3.5 sm:p-4 rounded-2xl border border-white/60 shadow-[0_4px_20px_-4px_rgba(98,87,217,0.06)] space-y-3">
       <div className={`grid grid-cols-1 sm:grid-cols-2 ${projects.length > 0 ? 'lg:grid-cols-6' : 'lg:grid-cols-5'} gap-3`}>
         {/* Search Input */}
         <div className="lg:col-span-2 relative group">
@@ -28,7 +28,7 @@ export const IssueFilters = ({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search issues by title or keyword..."
-            className="w-full pl-9 pr-8 py-2 text-xs bg-[#FAF9FF]/80 border border-[#E2DBF7] rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200"
+            className="w-full pl-9 pr-8 py-2 text-xs bg-white/50 border border-[#E2DBF7]/60 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white/90 focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200"
           />
           {search && (
             <button
@@ -51,7 +51,7 @@ export const IssueFilters = ({
               className={`w-full py-2 px-3 text-xs rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200 ${
                 projectId
                   ? 'bg-[#F0EBFF] border border-[#6257D9] text-[#6257D9] font-bold'
-                  : 'bg-[#FAF9FF]/80 border border-[#E2DBF7] text-slate-700'
+                  : 'bg-white/50 border border-[#E2DBF7]/60 text-slate-700'
               }`}
             >
               <option value="">All Projects</option>
@@ -72,7 +72,7 @@ export const IssueFilters = ({
             className={`w-full py-2 px-3 text-xs rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200 ${
               status
                 ? 'bg-[#F0EBFF] border border-[#6257D9] text-[#6257D9] font-bold'
-                : 'bg-[#FAF9FF]/80 border border-[#E2DBF7] text-slate-700'
+                : 'bg-white/50 border border-[#E2DBF7]/60 text-slate-700'
             }`}
           >
             <option value="">All Statuses</option>
@@ -91,7 +91,7 @@ export const IssueFilters = ({
             className={`w-full py-2 px-3 text-xs rounded-xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200 ${
               priority
                 ? 'bg-[#F0EBFF] border border-[#6257D9] text-[#6257D9] font-bold'
-                : 'bg-[#FAF9FF]/80 border border-[#E2DBF7] text-slate-700'
+                : 'bg-white/50 border border-[#E2DBF7]/60 text-slate-700'
             }`}
           >
             <option value="">All Priorities</option>
