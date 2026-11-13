@@ -133,6 +133,12 @@ export const Issues = () => {
     updateParams({ page: newPage });
   };
 
+  const handleIssueStatusChange = (issueId, newStatus) => {
+    setIssues((prev) =>
+      prev.map((i) => (i._id === issueId ? { ...i, status: newStatus } : i))
+    );
+  };
+
   return (
     <div className="space-y-5 animate-fade-up">
       {/* Header with Title matching Reference Design Image 2 */}
@@ -185,7 +191,7 @@ export const Issues = () => {
           </div>
         ) : (
           <>
-            <IssueTable issues={issues} />
+            <IssueTable issues={issues} onStatusChange={handleIssueStatusChange} />
             <Pagination
               currentPage={pagination.page}
               totalPages={pagination.totalPages}

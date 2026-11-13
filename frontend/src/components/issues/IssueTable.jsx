@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { StatusBadge } from '../ui/StatusBadge';
+import { StatusDropdown } from '../ui/StatusDropdown';
 import { PriorityBadge } from '../ui/PriorityBadge';
 import { UserAvatar } from '../ui/UserAvatar';
 import { IssueHoverCard } from './IssueHoverCard';
 import { Image as ImageIcon, X, FolderKanban } from 'lucide-react';
 
-export const IssueTable = ({ issues = [] }) => {
+export const IssueTable = ({
+  issues = [],
+  onStatusChange,
+  onIssueUpdated,
+}) => {
   const location = useLocation();
   const [previewImage, setPreviewImage] = useState(null);
   const [hoveredIssue, setHoveredIssue] = useState(null);
@@ -70,7 +75,7 @@ export const IssueTable = ({ issues = [] }) => {
 
   return (
     <>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto min-h-[340px]">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-[#EAE4F7] bg-[#F8F7FD] text-[11px] font-bold uppercase tracking-wider text-[#544D75]">
@@ -147,9 +152,17 @@ export const IssueTable = ({ issues = [] }) => {
                     </div>
                   </td>
 
-                  {/* Status Pill with distinct colors per state */}
-                  <td className="py-3.5 px-5 whitespace-nowrap">
-                    <StatusBadge status={issue.status} />
+                  {/* Status Dropdown to mark issue status (e.g. Resolved) directly in the table */}
+                  <td className="py-3.5 px-5 whitespace-nowrap overflow-visible relative">
+                    <StatusDropdown
+                      issueId={issue._id}
+                      currentStatus={issue.status}
+                      onStatusChange={(newStatus, updatedData) => {
+                        issue.status = newStatus;
+                        if (onStatusChange) onStatusChange(issue._id, newStatus, updatedData);
+                        if (onIssueUpdated) onIssueUpdated(issue._id, newStatus, updatedData);
+                      }}
+                    />
                   </td>
 
                   {/* Priority Pill with distinct colors per state */}

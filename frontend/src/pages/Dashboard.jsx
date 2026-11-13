@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getDashboardStatsApi } from '../api/dashboard.api';
 import { StatCard } from '../components/ui/StatCard';
+import { StatusDropdown } from '../components/ui/StatusDropdown';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { IssueHoverCard } from '../components/issues/IssueHoverCard';
 import { formatRelativeTime } from '../utils/formatters';
@@ -393,14 +394,21 @@ export const Dashboard = () => {
                           <span className="font-mono text-[10px] font-semibold text-[#5E597B] bg-[#EAE2FF]/60 border border-[#DDD0FE]/70 px-1.5 py-0.5 rounded group-hover:bg-[#EAE2FF] transition-colors">
                             {keyFormatted}
                           </span>
-                          <span
-                            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1 transition-all duration-200 ${
-                              statusStyles[issue.status] || 'bg-slate-100 text-slate-700'
-                            }`}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
-                            <span>{issue.status}</span>
-                          </span>
+                          <StatusDropdown
+                            issueId={issue._id}
+                            currentStatus={issue.status}
+                            onStatusChange={(newStatus) => {
+                              setStats((prev) => {
+                                if (!prev) return prev;
+                                return {
+                                  ...prev,
+                                  recentIssues: prev.recentIssues?.map((i) =>
+                                    i._id === issue._id ? { ...i, status: newStatus } : i
+                                  ),
+                                };
+                              });
+                            }}
+                          />
                         </div>
 
                         <span
