@@ -30,7 +30,7 @@ export const IssueHoverCard = ({ issue, position }) => {
         zIndex: 9999,
         pointerEvents: 'none',
       }}
-      className="hidden md:block bg-white/85 backdrop-blur-md rounded-2xl border border-[#D5C7EE]/80 shadow-2xl shadow-[#6257D9]/20 p-4 space-y-3 animate-fade-in transition-all duration-150"
+      className="hidden md:block bg-[#F2EDFC]/90 backdrop-blur-md rounded-2xl border border-[#D4C8EE] shadow-2xl shadow-[#6257D9]/20 p-4 space-y-3 animate-fade-in transition-all duration-150"
     >
       {/* Top Header: Key, Project, Priority, Status */}
       <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
