@@ -13,7 +13,7 @@ export const AppLayout = () => {
   const location = useLocation();
 
   const getPageTitle = (pathname) => {
-    if (pathname === '/dashboard') return 'Dashboard';
+    if (pathname === '/' || pathname === '/dashboard') return 'Dashboard';
     if (pathname === '/projects') return 'Projects & Workspaces';
     if (pathname.startsWith('/projects/')) return 'Project Workspace';
     if (pathname === '/issues') return 'Bug Tracker';

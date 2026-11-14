@@ -23,8 +23,21 @@ import {
 
 export const Dashboard = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(() => {
+    try {
+      const cached = localStorage.getItem('resolvehub_cached_dashboard_stats');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    try {
+      return !localStorage.getItem('resolvehub_cached_dashboard_stats');
+    } catch {
+      return true;
+    }
+  });
   const [error, setError] = useState('');
   const [barsAnimated, setBarsAnimated] = useState(false);
   const hasLoadedOnce = useRef(false);
@@ -77,11 +90,17 @@ export const Dashboard = () => {
   }, []);
 
   const fetchStats = async () => {
-    setLoading(true);
+    if (!stats) {
+      setLoading(true);
+    }
     setError('');
     try {
       const response = await getDashboardStatsApi();
-      setStats(response.data);
+      const data = response.data;
+      setStats(data);
+      try {
+        localStorage.setItem('resolvehub_cached_dashboard_stats', JSON.stringify(data));
+      } catch {}
 
       // Trigger smooth bar sweep after real data lands
       setTimeout(() => {
