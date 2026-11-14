@@ -32,47 +32,53 @@ export const WireframeBackground = ({
     const container = mountRef.current;
     if (!container) return;
 
-    // 1. Accessibility: Check for prefers-reduced-motion
-    let prefersReducedMotion = false;
-    try {
-      prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    } catch {
-      prefersReducedMotion = false;
-    }
+    let cleanup = null;
+    let timerId = null;
 
-    // 2. WebGL Availability Check
-    let isWebGLAvailable = false;
-    try {
-      const testCanvas = document.createElement('canvas');
-      isWebGLAvailable = !!(
-        window.WebGLRenderingContext &&
-        (testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl'))
-      );
-    } catch {
-      isWebGLAvailable = false;
-    }
+    const initWebGL = () => {
+      if (!mountRef.current) return;
 
-    if (!isWebGLAvailable) {
-      return;
-    }
+      // 1. Accessibility: Check for prefers-reduced-motion
+      let prefersReducedMotion = false;
+      try {
+        prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      } catch {
+        prefersReducedMotion = false;
+      }
 
-    // 3. Scene, Camera, and WebGL Renderer
-    const scene = new Scene();
-    const width = container.clientWidth || window.innerWidth;
-    const height = container.clientHeight || window.innerHeight;
+      // 2. WebGL Availability Check
+      let isWebGLAvailable = false;
+      try {
+        const testCanvas = document.createElement('canvas');
+        isWebGLAvailable = !!(
+          window.WebGLRenderingContext &&
+          (testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl'))
+        );
+      } catch {
+        isWebGLAvailable = false;
+      }
 
-    const camera = new PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 50;
+      if (!isWebGLAvailable) {
+        return;
+      }
 
-    const renderer = new WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance',
-    });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(width, height);
-    renderer.setClearColor(0x000000, 0);
-    container.appendChild(renderer.domElement);
+      // 3. Scene, Camera, and WebGL Renderer
+      const scene = new Scene();
+      const width = container.clientWidth || window.innerWidth;
+      const height = container.clientHeight || window.innerHeight;
+
+      const camera = new PerspectiveCamera(45, width / height, 0.1, 1000);
+      camera.position.z = 50;
+
+      const renderer = new WebGLRenderer({
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance',
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(width, height);
+      renderer.setClearColor(0x000000, 0);
+      container.appendChild(renderer.domElement);
 
     // ResolveHub design system color constants - soft, light pastel tones for airy elegance
     const COLOR_LIGHT_LAVENDER = 0xB4A9E8;   // #B4A9E8 soft light lavender
@@ -455,8 +461,8 @@ export const WireframeBackground = ({
     window.addEventListener('resize', handleResize);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // 12. Complete Resource Cleanup
-    return () => {
+    // 12. Complete Resource Cleanup Assignment
+    cleanup = () => {
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
       }
@@ -500,7 +506,22 @@ export const WireframeBackground = ({
         container.removeChild(renderer.domElement);
       }
     };
-  }, [variant]);
+  };
+
+  if (window.requestIdleCallback) {
+    const idleId = window.requestIdleCallback(initWebGL, { timeout: 150 });
+    return () => {
+      if (window.cancelIdleCallback) window.cancelIdleCallback(idleId);
+      cleanup?.();
+    };
+  } else {
+    timerId = setTimeout(initWebGL, 60);
+    return () => {
+      clearTimeout(timerId);
+      cleanup?.();
+    };
+  }
+}, [variant]);
 
   return (
     <div

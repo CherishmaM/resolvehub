@@ -11,6 +11,45 @@ import { CheckSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useProject } from '../context/ProjectContext';
 
+// High-performance Table Skeleton matching exact columns and rows
+const TableSkeleton = () => (
+  <div className="overflow-x-auto min-h-[340px]">
+    <table className="w-full text-left border-collapse">
+      <thead>
+        <tr className="border-b border-[#EAE4F7] bg-[#F8F7FD] text-[11px] font-bold uppercase tracking-wider text-[#544D75]">
+          <th className="py-3.5 px-5">Key</th>
+          <th className="py-3.5 px-5">Title</th>
+          <th className="py-3.5 px-5">Status</th>
+          <th className="py-3.5 px-5">Priority</th>
+          <th className="py-3.5 px-5">Assignee</th>
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-[#F0ECF9]">
+        {[...Array(6)].map((_, i) => (
+          <tr key={i} className="animate-pulse">
+            <td className="py-4 px-5">
+              <div className="w-20 h-5 bg-[#F0EBFF] rounded-md" />
+            </td>
+            <td className="py-4 px-5">
+              <div className="w-56 h-4 bg-slate-100 rounded mb-1.5" />
+              <div className="w-28 h-3 bg-slate-50 rounded" />
+            </td>
+            <td className="py-4 px-5">
+              <div className="w-24 h-6 bg-[#FFF7ED] border border-[#FED7AA] rounded-full" />
+            </td>
+            <td className="py-4 px-5">
+              <div className="w-16 h-5 bg-slate-100 rounded-md" />
+            </td>
+            <td className="py-4 px-5">
+              <div className="w-24 h-5 bg-slate-100 rounded-md" />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
 export const Issues = () => {
   const { user } = useAuth();
   const { projects } = useProject();
@@ -48,7 +87,7 @@ export const Issues = () => {
   const [issues, setIssues] = useState(() => {
     try {
       if (hasNoFilters) {
-        const cached = sessionStorage.getItem('resolvehub_cached_issues');
+        const cached = localStorage.getItem('resolvehub_cached_issues') || sessionStorage.getItem('resolvehub_cached_issues');
         return cached ? JSON.parse(cached) : [];
       }
       return [];
@@ -60,7 +99,7 @@ export const Issues = () => {
   const [pagination, setPagination] = useState(() => {
     try {
       if (hasNoFilters) {
-        const cached = sessionStorage.getItem('resolvehub_cached_issues_pagination');
+        const cached = localStorage.getItem('resolvehub_cached_issues_pagination') || sessionStorage.getItem('resolvehub_cached_issues_pagination');
         return cached ? JSON.parse(cached) : { total: 0, page: 1, limit: 10, totalPages: 1 };
       }
       return { total: 0, page: 1, limit: 10, totalPages: 1 };
@@ -72,20 +111,18 @@ export const Issues = () => {
   const [loading, setLoading] = useState(() => {
     try {
       if (hasNoFilters) {
-        return !sessionStorage.getItem('resolvehub_cached_issues');
+        return !localStorage.getItem('resolvehub_cached_issues') && !sessionStorage.getItem('resolvehub_cached_issues');
       }
       return true;
     } catch {
       return true;
     }
   });
+  const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState('');
 
   const fetchIssues = useCallback(async () => {
-    // Only show full loading spinner if we don't already have issues in state
-    if (issues.length === 0) {
-      setLoading(true);
-    }
+    setIsFetching(true);
     setError('');
 
     try {
@@ -110,11 +147,13 @@ export const Issues = () => {
         setPagination(res.pagination);
       }
 
-      // Cache default view for instantaneous subsequent loads
+      // Cache default view across sessions for 0ms instantaneous loads
       if (hasNoFilters) {
         try {
+          localStorage.setItem('resolvehub_cached_issues', JSON.stringify(data));
           sessionStorage.setItem('resolvehub_cached_issues', JSON.stringify(data));
           if (res.pagination) {
+            localStorage.setItem('resolvehub_cached_issues_pagination', JSON.stringify(res.pagination));
             sessionStorage.setItem('resolvehub_cached_issues_pagination', JSON.stringify(res.pagination));
           }
         } catch {}
@@ -123,6 +162,7 @@ export const Issues = () => {
       setError(err.message || 'Failed to load issues list.');
     } finally {
       setLoading(false);
+      setIsFetching(false);
     }
   }, [
     pageParam,
@@ -188,6 +228,7 @@ export const Issues = () => {
       const next = prev.map((i) => (i._id === issueId ? { ...i, status: newStatus } : i));
       if (hasNoFilters) {
         try {
+          localStorage.setItem('resolvehub_cached_issues', JSON.stringify(next));
           sessionStorage.setItem('resolvehub_cached_issues', JSON.stringify(next));
         } catch {}
       }
@@ -224,11 +265,16 @@ export const Issues = () => {
       {error && <ErrorMessage message={error} onRetry={fetchIssues} />}
 
       {/* Issue Table Card - Clean White Background */}
-      <div className="bg-white rounded-2xl border border-[#E2DBF7] shadow-sm overflow-hidden transition-all">
-        {loading ? (
-          <div className="py-16">
-            <LoadingSpinner size="md" text="Loading issues..." />
+      <div className="bg-white rounded-2xl border border-[#E2DBF7] shadow-sm overflow-hidden transition-all relative">
+        {/* Top edge subtle loading bar when revalidating in background */}
+        {isFetching && issues.length > 0 && (
+          <div className="absolute top-0 left-0 right-0 h-0.5 bg-[#6257D9]/20 overflow-hidden z-20">
+            <div className="h-full bg-gradient-to-r from-transparent via-[#6257D9] to-transparent animate-shimmer w-1/2" />
           </div>
+        )}
+
+        {loading && issues.length === 0 ? (
+          <TableSkeleton />
         ) : issues.length === 0 ? (
           <div className="p-8">
             <EmptyState
@@ -246,7 +292,7 @@ export const Issues = () => {
             />
           </div>
         ) : (
-          <>
+          <div className={`transition-opacity duration-150 ${isFetching ? 'opacity-85' : 'opacity-100'}`}>
             <IssueTable issues={issues} onStatusChange={handleIssueStatusChange} />
             <Pagination
               currentPage={pagination.page}
@@ -255,7 +301,7 @@ export const Issues = () => {
               limit={pagination.limit}
               onPageChange={handlePageChange}
             />
-          </>
+          </div>
         )}
       </div>
     </div>

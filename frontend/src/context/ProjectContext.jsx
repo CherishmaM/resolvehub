@@ -8,7 +8,7 @@ export const ProjectProvider = ({ children }) => {
   const { user, isAuthenticated, isAdmin } = useAuth();
   const [projects, setProjects] = useState(() => {
     try {
-      const cached = sessionStorage.getItem('resolvehub_cached_projects');
+      const cached = localStorage.getItem('resolvehub_cached_projects') || sessionStorage.getItem('resolvehub_cached_projects');
       return cached ? JSON.parse(cached) : [];
     } catch {
       return [];
@@ -16,7 +16,7 @@ export const ProjectProvider = ({ children }) => {
   });
   const [currentProject, setCurrentProjectState] = useState(() => {
     try {
-      const cached = sessionStorage.getItem('resolvehub_cached_projects');
+      const cached = localStorage.getItem('resolvehub_cached_projects') || sessionStorage.getItem('resolvehub_cached_projects');
       const list = cached ? JSON.parse(cached) : [];
       const savedId = localStorage.getItem('fixflow_current_project_id');
       return list.find((p) => p._id === savedId) || list[0] || null;
@@ -26,7 +26,7 @@ export const ProjectProvider = ({ children }) => {
   });
   const [loadingProjects, setLoadingProjects] = useState(() => {
     try {
-      return !sessionStorage.getItem('resolvehub_cached_projects');
+      return !localStorage.getItem('resolvehub_cached_projects') && !sessionStorage.getItem('resolvehub_cached_projects');
     } catch {
       return true;
     }
@@ -38,6 +38,7 @@ export const ProjectProvider = ({ children }) => {
       setCurrentProjectState(null);
       setLoadingProjects(false);
       try {
+        localStorage.removeItem('resolvehub_cached_projects');
         sessionStorage.removeItem('resolvehub_cached_projects');
       } catch {}
       return;
@@ -48,6 +49,7 @@ export const ProjectProvider = ({ children }) => {
       const projectList = res.data || [];
       setProjects(projectList);
       try {
+        localStorage.setItem('resolvehub_cached_projects', JSON.stringify(projectList));
         sessionStorage.setItem('resolvehub_cached_projects', JSON.stringify(projectList));
       } catch {}
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, X, RotateCcw, Filter } from 'lucide-react';
 
 export const IssueFilters = ({
@@ -17,6 +17,27 @@ export const IssueFilters = ({
 }) => {
   const hasActiveFilters = search || status || priority || category || projectId;
 
+  // Local state for debounced instant search
+  const [localSearch, setLocalSearch] = useState(search || '');
+
+  useEffect(() => {
+    setLocalSearch(search || '');
+  }, [search]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearch !== (search || '')) {
+        onSearchChange(localSearch);
+      }
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [localSearch, search, onSearchChange]);
+
+  const handleClearSearch = () => {
+    setLocalSearch('');
+    onSearchChange('');
+  };
+
   return (
     <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-[#E2DBF7] shadow-xs space-y-3">
       <div className={`grid grid-cols-1 sm:grid-cols-2 ${projects.length > 0 ? 'lg:grid-cols-6' : 'lg:grid-cols-5'} gap-3`}>
@@ -25,14 +46,14 @@ export const IssueFilters = ({
           <Search className="w-4 h-4 text-slate-400 group-focus-within:text-[#6257D9] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200" />
           <input
             type="text"
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
             placeholder="Search issues by title or keyword..."
             className="w-full pl-9 pr-8 py-2 text-xs bg-[#FAF9FF] border border-[#E2DBF7] rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#6257D9]/15 focus:border-[#6257D9] transition-all duration-200"
           />
-          {search && (
+          {localSearch && (
             <button
-              onClick={() => onSearchChange('')}
+              onClick={handleClearSearch}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-100 transition-all duration-150 animate-scale-in"
               title="Clear search"
               aria-label="Clear search"
