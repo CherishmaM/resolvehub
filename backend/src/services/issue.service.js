@@ -155,7 +155,8 @@ export const getIssues = async ({
       .limit(limit)
       .populate('projectId', POPULATE_PROJECT)
       .populate('createdBy', POPULATE_FIELDS)
-      .populate('assignedTo', POPULATE_FIELDS),
+      .populate('assignedTo', POPULATE_FIELDS)
+      .lean(),
     Issue.countDocuments(filter),
   ]);
 

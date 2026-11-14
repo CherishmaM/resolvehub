@@ -36,18 +36,56 @@ export const Issues = () => {
     }
   }, [location.pathname, location.search]);
 
-  const [issues, setIssues] = useState([]);
-  const [pagination, setPagination] = useState({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 1,
+  const hasNoFilters =
+    !searchParam &&
+    !statusParam &&
+    !priorityParam &&
+    !categoryParam &&
+    !assignedToParam &&
+    !projectIdParam &&
+    pageParam === 1;
+
+  const [issues, setIssues] = useState(() => {
+    try {
+      if (hasNoFilters) {
+        const cached = sessionStorage.getItem('resolvehub_cached_issues');
+        return cached ? JSON.parse(cached) : [];
+      }
+      return [];
+    } catch {
+      return [];
+    }
   });
-  const [loading, setLoading] = useState(true);
+
+  const [pagination, setPagination] = useState(() => {
+    try {
+      if (hasNoFilters) {
+        const cached = sessionStorage.getItem('resolvehub_cached_issues_pagination');
+        return cached ? JSON.parse(cached) : { total: 0, page: 1, limit: 10, totalPages: 1 };
+      }
+      return { total: 0, page: 1, limit: 10, totalPages: 1 };
+    } catch {
+      return { total: 0, page: 1, limit: 10, totalPages: 1 };
+    }
+  });
+
+  const [loading, setLoading] = useState(() => {
+    try {
+      if (hasNoFilters) {
+        return !sessionStorage.getItem('resolvehub_cached_issues');
+      }
+      return true;
+    } catch {
+      return true;
+    }
+  });
   const [error, setError] = useState('');
 
   const fetchIssues = useCallback(async () => {
-    setLoading(true);
+    // Only show full loading spinner if we don't already have issues in state
+    if (issues.length === 0) {
+      setLoading(true);
+    }
     setError('');
 
     try {
@@ -66,9 +104,20 @@ export const Issues = () => {
       };
 
       const res = await getIssuesApi(queryParams);
-      setIssues(res.data || []);
+      const data = res.data || [];
+      setIssues(data);
       if (res.pagination) {
         setPagination(res.pagination);
+      }
+
+      // Cache default view for instantaneous subsequent loads
+      if (hasNoFilters) {
+        try {
+          sessionStorage.setItem('resolvehub_cached_issues', JSON.stringify(data));
+          if (res.pagination) {
+            sessionStorage.setItem('resolvehub_cached_issues_pagination', JSON.stringify(res.pagination));
+          }
+        } catch {}
       }
     } catch (err) {
       setError(err.message || 'Failed to load issues list.');
@@ -84,6 +133,7 @@ export const Issues = () => {
     assignedToParam,
     projectIdParam,
     user?._id,
+    hasNoFilters,
   ]);
 
   useEffect(() => {
@@ -134,9 +184,15 @@ export const Issues = () => {
   };
 
   const handleIssueStatusChange = (issueId, newStatus) => {
-    setIssues((prev) =>
-      prev.map((i) => (i._id === issueId ? { ...i, status: newStatus } : i))
-    );
+    setIssues((prev) => {
+      const next = prev.map((i) => (i._id === issueId ? { ...i, status: newStatus } : i));
+      if (hasNoFilters) {
+        try {
+          sessionStorage.setItem('resolvehub_cached_issues', JSON.stringify(next));
+        } catch {}
+      }
+      return next;
+    });
   };
 
   return (

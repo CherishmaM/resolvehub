@@ -156,8 +156,9 @@ export const WireframeBackground = ({
     sceneGroup.add(centerMesh);
 
     // 9. Connected Technical Network (Issues / Graph Constellation)
-    const NODE_COUNT = width < 768 ? 40 : 88;
+    const NODE_COUNT = width < 768 ? 24 : 48;
     const MAX_DISTANCE = 16.0;
+    const MAX_DISTANCE_SQ = MAX_DISTANCE * MAX_DISTANCE; // Precomputed squared distance to skip Math.sqrt in hot loop
     const nodePositions = [];
     const nodeVelocities = [];
 
@@ -204,8 +205,8 @@ export const WireframeBackground = ({
     const linesMesh = new LineSegments(linesGeom, linesMat);
     sceneGroup.add(linesMesh);
 
-    // 10. Floating Ambient Star Dust Sparkles
-    const SPARKLE_COUNT = 85;
+    // 10. Floating Ambient Star Dust Sparkles (optimized count for lightweight performance)
+    const SPARKLE_COUNT = 40;
     const sparklePositions = new Float32Array(SPARKLE_COUNT * 3);
     for (let s = 0; s < SPARKLE_COUNT; s++) {
       sparklePositions[s * 3] = (Math.random() - 0.5) * 85;
@@ -303,11 +304,16 @@ export const WireframeBackground = ({
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
-    // 10. Active 60fps Animation Loop with dynamic floating & rotations
+    // 10. Optimized 60fps Animation Loop with dynamic floating & rotations
     let animationFrameId = null;
     let clock = 0;
+    let frameCount = 0;
+    let isPageVisible = true;
 
     const animate = () => {
+      if (!isPageVisible) return;
+
+      frameCount++;
       clock += 0.016;
 
       // Mouse parallax smooth interpolation
@@ -341,20 +347,21 @@ export const WireframeBackground = ({
       dodecaMesh.position.y = basePositions.dodecaY + Math.cos(clock * 1.1) * 1.5;
       centerMesh.position.y = basePositions.centerY + Math.sin(clock * 1.15) * 1.8;
 
-      // Floating ambient sparkles drift
-      const sPos = sparklesGeom.attributes.position.array;
-      for (let s = 0; s < SPARKLE_COUNT; s++) {
-        const s3 = s * 3;
-        sPos[s3 + 1] += 0.025;
-        if (sPos[s3 + 1] > 28) {
-          sPos[s3 + 1] = -28;
+      // Floating ambient sparkles drift (updated every 2nd frame)
+      if (frameCount % 2 === 0) {
+        const sPos = sparklesGeom.attributes.position.array;
+        for (let s = 0; s < SPARKLE_COUNT; s++) {
+          const s3 = s * 3;
+          sPos[s3 + 1] += 0.035;
+          if (sPos[s3 + 1] > 28) {
+            sPos[s3 + 1] = -28;
+          }
         }
+        sparklesGeom.attributes.position.needsUpdate = true;
       }
-      sparklesGeom.attributes.position.needsUpdate = true;
 
-      // Network graph node updates with visible continuous drift
+      // Network graph node position updates
       const posArray = posAttr.array;
-      let lineIndex = 0;
 
       for (let i = 0; i < NODE_COUNT; i++) {
         const i3 = i * 3;
@@ -366,34 +373,39 @@ export const WireframeBackground = ({
         if (Math.abs(posArray[i3]) > 42) nodeVelocities[i].x *= -1;
         if (Math.abs(posArray[i3 + 1]) > 26) nodeVelocities[i].y *= -1;
         if (Math.abs(posArray[i3 + 2]) > 8) nodeVelocities[i].z *= -1;
+      }
+      posAttr.needsUpdate = true;
 
-        // Connect nearby nodes with crisp wireframe lines
-        for (let j = i + 1; j < NODE_COUNT; j++) {
-          if (lineIndex >= MAX_CONNECTIONS) break;
-          const j3 = j * 3;
-          const dx = posArray[i3] - posArray[j3];
-          const dy = posArray[i3 + 1] - posArray[j3 + 1];
-          const dz = posArray[i3 + 2] - posArray[j3 + 2];
-          const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      // Hot path optimization: Calculate lines using squared distance every 2nd frame
+      if (frameCount % 2 === 0) {
+        let lineIndex = 0;
+        for (let i = 0; i < NODE_COUNT; i++) {
+          const i3 = i * 3;
+          for (let j = i + 1; j < NODE_COUNT; j++) {
+            if (lineIndex >= MAX_CONNECTIONS) break;
+            const j3 = j * 3;
+            const dx = posArray[i3] - posArray[j3];
+            const dy = posArray[i3 + 1] - posArray[j3 + 1];
+            const dz = posArray[i3 + 2] - posArray[j3 + 2];
+            const distSq = dx * dx + dy * dy + dz * dz;
 
-          if (dist < MAX_DISTANCE) {
-            const lIdx = lineIndex * 6;
-            linePositions[lIdx] = posArray[i3];
-            linePositions[lIdx + 1] = posArray[i3 + 1];
-            linePositions[lIdx + 2] = posArray[i3 + 2];
+            if (distSq < MAX_DISTANCE_SQ) {
+              const lIdx = lineIndex * 6;
+              linePositions[lIdx] = posArray[i3];
+              linePositions[lIdx + 1] = posArray[i3 + 1];
+              linePositions[lIdx + 2] = posArray[i3 + 2];
 
-            linePositions[lIdx + 3] = posArray[j3];
-            linePositions[lIdx + 4] = posArray[j3 + 1];
-            linePositions[lIdx + 5] = posArray[j3 + 2];
+              linePositions[lIdx + 3] = posArray[j3];
+              linePositions[lIdx + 4] = posArray[j3 + 1];
+              linePositions[lIdx + 5] = posArray[j3 + 2];
 
-            lineIndex++;
+              lineIndex++;
+            }
           }
         }
+        linesGeom.attributes.position.needsUpdate = true;
+        linesGeom.setDrawRange(0, lineIndex * 2);
       }
-
-      posAttr.needsUpdate = true;
-      linesGeom.attributes.position.needsUpdate = true;
-      linesGeom.setDrawRange(0, lineIndex * 2);
 
       renderer.render(scene, camera);
 
@@ -408,7 +420,7 @@ export const WireframeBackground = ({
       animationFrameId = requestAnimationFrame(animate);
     }
 
-    // 11. Window Resize Handling
+    // 11. Window Resize & Tab Visibility Handling
     const handleResize = () => {
       if (!container) return;
       const newWidth = container.clientWidth || window.innerWidth;
@@ -425,7 +437,23 @@ export const WireframeBackground = ({
       }
     };
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        isPageVisible = false;
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+      } else {
+        isPageVisible = true;
+        if (!prefersReducedMotion && !animationFrameId) {
+          animationFrameId = requestAnimationFrame(animate);
+        }
+      }
+    };
+
     window.addEventListener('resize', handleResize);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // 12. Complete Resource Cleanup
     return () => {
@@ -433,6 +461,7 @@ export const WireframeBackground = ({
         cancelAnimationFrame(animationFrameId);
       }
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('mousemove', handleMouseMove);
 
       [

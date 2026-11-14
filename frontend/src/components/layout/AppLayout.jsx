@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import { WireframeBackground } from '../ui/WireframeBackground';
+
+// Code-split 3D Three.js canvas so critical layout and tables paint instantly
+const WireframeBackground = lazy(() =>
+  import('../ui/WireframeBackground').then((mod) => ({ default: mod.WireframeBackground }))
+);
 
 export const AppLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -25,8 +29,17 @@ export const AppLayout = () => {
 
   return (
     <div className="flex min-h-screen bg-white text-[#302D46] font-sans selection:bg-[#6257D9] selection:text-white relative overflow-x-hidden">
-      {/* Dynamic 3D wireframe background & ambient lighting */}
-      <WireframeBackground variant="app" />
+      {/* Dynamic 3D wireframe background & ambient lighting (Lazy-loaded for instant paint) */}
+      <Suspense
+        fallback={
+          <div
+            className="wireframe-grid-layer absolute inset-0 pointer-events-none z-0 opacity-40"
+            aria-hidden="true"
+          />
+        }
+      >
+        <WireframeBackground variant="app" />
+      </Suspense>
 
       {/* Top-left subtle ambient glow to unify canvas behind sidebar */}
       <div

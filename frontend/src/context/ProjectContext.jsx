@@ -6,23 +6,50 @@ const ProjectContext = createContext(null);
 
 export const ProjectProvider = ({ children }) => {
   const { user, isAuthenticated, isAdmin } = useAuth();
-  const [projects, setProjects] = useState([]);
-  const [currentProject, setCurrentProjectState] = useState(null);
-  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [projects, setProjects] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('resolvehub_cached_projects');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [currentProject, setCurrentProjectState] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem('resolvehub_cached_projects');
+      const list = cached ? JSON.parse(cached) : [];
+      const savedId = localStorage.getItem('fixflow_current_project_id');
+      return list.find((p) => p._id === savedId) || list[0] || null;
+    } catch {
+      return null;
+    }
+  });
+  const [loadingProjects, setLoadingProjects] = useState(() => {
+    try {
+      return !sessionStorage.getItem('resolvehub_cached_projects');
+    } catch {
+      return true;
+    }
+  });
 
   const fetchProjects = useCallback(async () => {
     if (!isAuthenticated) {
       setProjects([]);
       setCurrentProjectState(null);
       setLoadingProjects(false);
+      try {
+        sessionStorage.removeItem('resolvehub_cached_projects');
+      } catch {}
       return;
     }
 
-    setLoadingProjects(true);
     try {
       const res = await getProjectsApi();
       const projectList = res.data || [];
       setProjects(projectList);
+      try {
+        sessionStorage.setItem('resolvehub_cached_projects', JSON.stringify(projectList));
+      } catch {}
 
       if (projectList.length > 0) {
         // Check saved project preference from localStorage

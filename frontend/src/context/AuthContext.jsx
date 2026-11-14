@@ -12,11 +12,31 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    try {
+      const token = localStorage.getItem('fixflow_token');
+      const cached = localStorage.getItem('fixflow_user');
+      // Instant render: if we have both token and cached user, render UI immediately
+      if (token && cached) return false;
+      // If no token exists at all, user is definitely unauthenticated; no need to block
+      if (!token) return false;
+      // Only block UI if token exists but user profile is not yet in cache
+      return true;
+    } catch {
+      return false;
+    }
+  });
 
-  // Check current session on application mount
+  // Check current session on application mount (background revalidation)
   const checkAuth = useCallback(async () => {
     try {
+      const token = localStorage.getItem('fixflow_token');
+      if (!token) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
       const response = await getMeApi();
       if (response?.data) {
         setUser(response.data);
@@ -31,11 +51,13 @@ export const AuthProvider = ({ children }) => {
         } catch {}
       }
     } catch (error) {
-      setUser(null);
-      try {
-        localStorage.removeItem('fixflow_token');
-        localStorage.removeItem('fixflow_user');
-      } catch {}
+      if (error?.statusCode === 401 || error?.status === 401) {
+        setUser(null);
+        try {
+          localStorage.removeItem('fixflow_token');
+          localStorage.removeItem('fixflow_user');
+        } catch {}
+      }
     } finally {
       setLoading(false);
     }
