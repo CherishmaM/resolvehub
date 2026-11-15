@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   Edit2,
@@ -10,12 +10,15 @@ import {
   Check,
   AlertCircle,
   HelpCircle,
+  Upload,
+  Trash2,
 } from 'lucide-react';
 import {
   ProjectLogo,
   PROJECT_ICON_OPTIONS,
   PROJECT_COLOR_PRESETS,
   PROJECT_EMOJI_PRESETS,
+  processDeviceImage,
 } from '../ui/ProjectLogo';
 import { updateProjectApi } from '../../api/projects.api';
 import { useProject } from '../../context/ProjectContext';
@@ -27,6 +30,7 @@ export const EditProjectModal = ({
   onSuccess,
 }) => {
   const { currentProject, setCurrentProject, refreshProjects } = useProject();
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -40,6 +44,8 @@ export const EditProjectModal = ({
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [uploadError, setUploadError] = useState('');
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
 
   // Sync form when project changes
   useEffect(() => {
@@ -54,10 +60,35 @@ export const EditProjectModal = ({
         logoColor: project.logoColor || '#6257D9',
       });
       setError('');
+      setUploadError('');
     }
   }, [project, isOpen]);
 
   if (!isOpen || !project) return null;
+
+  const handleDeviceFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadError('');
+    setIsProcessingImage(true);
+
+    try {
+      const dataUrl = await processDeviceImage(file);
+      setFormData((prev) => ({
+        ...prev,
+        logoType: 'image',
+        logo: dataUrl,
+      }));
+    } catch (err) {
+      setUploadError(err.message || 'Failed to read image from device.');
+    } finally {
+      setIsProcessingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -227,7 +258,7 @@ export const EditProjectModal = ({
                 { type: 'icon', label: 'Preset Icon', icon: Sparkles },
                 { type: 'emoji', label: 'Emoji', icon: Smile },
                 { type: 'initials', label: 'Initials', icon: Type },
-                { type: 'image', label: 'Image URL', icon: ImageIcon },
+                { type: 'image', label: 'Device / Image', icon: Upload },
               ].map((tab) => {
                 const TabIcon = tab.icon;
                 const active = formData.logoType === tab.type;
@@ -323,20 +354,108 @@ export const EditProjectModal = ({
           )}
 
           {formData.logoType === 'image' && (
-            <div>
-              <label className="block text-[11px] font-semibold text-slate-600 mb-1">
-                Image or SVG URL
-              </label>
+            <div className="space-y-3">
               <input
-                type="url"
-                value={formData.logo}
-                onChange={(e) => setFormData((prev) => ({ ...prev, logo: e.target.value }))}
-                placeholder="https://example.com/logo.png"
-                className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20"
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml,image/gif"
+                onChange={handleDeviceFileUpload}
+                className="hidden"
               />
-              <p className="text-[10px] text-slate-400 mt-1">
-                Enter an external PNG, JPG, or SVG image link.
-              </p>
+
+              {uploadError && (
+                <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{uploadError}</span>
+                </div>
+              )}
+
+              {/* Upload from Device Dropzone / Button */}
+              {formData.logo && formData.logo.startsWith('data:') ? (
+                <div className="p-3 bg-white rounded-2xl border-2 border-[#6257D9]/30 flex items-center justify-between gap-3 shadow-2xs">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-12 h-12 rounded-xl border border-slate-200 overflow-hidden shrink-0 bg-slate-50 flex items-center justify-center">
+                      <img
+                        src={formData.logo}
+                        alt="Uploaded icon"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-slate-800 truncate">Image Loaded from Device</span>
+                        <span className="text-[9px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.2 rounded-md">
+                          Ready
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 truncate">
+                        Custom icon image from your device
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isProcessingImage}
+                      className="px-2.5 py-1.5 text-xs font-semibold text-[#6257D9] bg-[#F0EBFF] hover:bg-[#E4DCFF] rounded-xl transition-colors flex items-center gap-1"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Change</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, logo: '' }))}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                      title="Remove image"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) {
+                      handleDeviceFileUpload({ target: { files: [file] } });
+                    }
+                  }}
+                  className="p-5 border-2 border-dashed border-[#D5C7EE] hover:border-[#6257D9] bg-[#FAF8FE] hover:bg-[#F3EEFD] rounded-2xl cursor-pointer text-center transition-all group select-none"
+                >
+                  <div className="w-10 h-10 rounded-2xl bg-white shadow-xs border border-[#DDD3FA] text-[#6257D9] group-hover:scale-110 flex items-center justify-center mx-auto mb-2 transition-transform">
+                    {isProcessingImage ? (
+                      <div className="w-4 h-4 border-2 border-[#6257D9] border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Upload className="w-5 h-5 stroke-[2.2]" />
+                    )}
+                  </div>
+                  <p className="text-xs font-bold text-slate-800">
+                    {isProcessingImage ? 'Optimizing Image...' : 'Click or Drag to Upload from Your Device'}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Supports PNG, JPG, WebP, GIF, or SVG (Up to 8MB)
+                  </p>
+                </div>
+              )}
+
+              {/* Alternative: Enter URL */}
+              <div className="pt-1">
+                <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                  Or enter an external Image/SVG URL
+                </label>
+                <input
+                  type="url"
+                  value={formData.logo?.startsWith('data:') ? '' : formData.logo}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, logo: e.target.value }))}
+                  placeholder="https://example.com/logo.svg"
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20"
+                />
+              </div>
             </div>
           )}
 

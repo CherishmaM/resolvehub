@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FolderKanban,
   Sparkles,
@@ -20,6 +20,65 @@ import {
   Database,
   Bug,
 } from 'lucide-react';
+
+export const processDeviceImage = (file) => {
+  return new Promise((resolve, reject) => {
+    if (!file) return reject(new Error('No file selected'));
+
+    const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml', 'image/gif'];
+    if (!allowed.includes(file.type)) {
+      return reject(new Error('Please select a valid image file (PNG, JPG, SVG, WebP, or GIF).'));
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      return reject(new Error('File exceeds 8MB size limit. Please select a smaller image.'));
+    }
+
+    // For SVG vector files, read directly
+    if (file.type === 'image/svg+xml') {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Failed to read SVG file.'));
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // For raster images, optimize to sharp icon resolution (max 320x320)
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxDim = 320;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.92);
+        resolve(dataUrl);
+      };
+      img.onerror = () => {
+        resolve(e.target.result);
+      };
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Failed to read image file from device.'));
+    reader.readAsDataURL(file);
+  });
+};
 
 export const PROJECT_ICON_OPTIONS = [
   { name: 'FolderKanban', label: 'Workspace Folder', icon: FolderKanban },
@@ -86,6 +145,10 @@ export const ProjectLogo = ({
   showBackground = true,
 }) => {
   const [imgError, setImgError] = useState(false);
+
+  useEffect(() => {
+    setImgError(false);
+  }, [project?.logo, project?.logoType]);
 
   const logoType = project?.logoType || 'icon';
   const logoValue = project?.logo || 'FolderKanban';

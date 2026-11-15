@@ -22,7 +22,7 @@ export const createProjectSchema = z.object({
     .default(''),
   status: z.enum(PROJECT_STATUSES).optional().default('Active'),
   logoType: z.enum(['icon', 'emoji', 'image', 'initials']).optional().default('icon'),
-  logo: z.string().trim().max(1000).optional().default('FolderKanban'),
+  logo: z.string().trim().max(5 * 1024 * 1024).optional().default('FolderKanban'),
   logoColor: z.string().trim().max(50).optional().default('#6257D9'),
   initialMemberIds: z
     .array(z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid user ID format'))
@@ -52,7 +52,7 @@ export const updateProjectSchema = z.object({
     .optional(),
   status: z.enum(PROJECT_STATUSES).optional(),
   logoType: z.enum(['icon', 'emoji', 'image', 'initials']).optional(),
-  logo: z.string().trim().max(1000).optional(),
+  logo: z.string().trim().max(5 * 1024 * 1024).optional(),
   logoColor: z.string().trim().max(50).optional(),
 });
 

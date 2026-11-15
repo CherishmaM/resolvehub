@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useProject } from '../context/ProjectContext';
@@ -23,6 +23,7 @@ import {
   PROJECT_ICON_OPTIONS,
   PROJECT_COLOR_PRESETS,
   PROJECT_EMOJI_PRESETS,
+  processDeviceImage,
 } from '../components/ui/ProjectLogo';
 import { EditProjectModal } from '../components/projects/EditProjectModal';
 import { formatRelativeTime } from '../utils/formatters';
@@ -42,6 +43,7 @@ import {
   UserPlus,
   Sparkles,
   Edit2,
+  Upload,
 } from 'lucide-react';
 
 export const ProjectDetails = () => {
@@ -79,6 +81,29 @@ export const ProjectDetails = () => {
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [isEditProjectOpen, setIsEditProjectOpen] = useState(false);
+  const settingsFileInputRef = useRef(null);
+  const [settingsImageError, setSettingsImageError] = useState('');
+  const [settingsImageProcessing, setSettingsImageProcessing] = useState(false);
+
+  const handleSettingsDeviceImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSettingsImageError('');
+    setSettingsImageProcessing(true);
+    try {
+      const dataUrl = await processDeviceImage(file);
+      setEditForm((prev) => ({
+        ...prev,
+        logoType: 'image',
+        logo: dataUrl,
+      }));
+    } catch (err) {
+      setSettingsImageError(err.message || 'Failed to read image');
+    } finally {
+      setSettingsImageProcessing(false);
+      if (settingsFileInputRef.current) settingsFileInputRef.current.value = '';
+    }
+  };
 
   // Member Action State
   const [pendingRemoveMember, setPendingRemoveMember] = useState(null);
@@ -743,15 +768,69 @@ export const ProjectDetails = () => {
                 </div>
               )}
 
-              {/* Image URL input */}
+              {/* Device Image Upload & URL input */}
               {editForm.logoType === 'image' && (
-                <input
-                  type="url"
-                  value={editForm.logo}
-                  onChange={(e) => setEditForm((prev) => ({ ...prev, logo: e.target.value }))}
-                  placeholder="https://example.com/logo.png"
-                  className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200/80 rounded-xl"
-                />
+                <div className="space-y-2">
+                  <input
+                    ref={settingsFileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml,image/gif"
+                    onChange={handleSettingsDeviceImage}
+                    className="hidden"
+                  />
+
+                  {settingsImageError && (
+                    <p className="text-[10px] text-rose-500 font-medium">{settingsImageError}</p>
+                  )}
+
+                  {editForm.logo && editForm.logo.startsWith('data:') ? (
+                    <div className="p-2 bg-white rounded-xl border border-slate-200 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <img
+                          src={editForm.logo}
+                          alt="Preview"
+                          className="w-8 h-8 rounded-lg object-cover border border-slate-200"
+                        />
+                        <span className="text-[11px] font-bold text-slate-800 truncate">Image loaded from device</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => settingsFileInputRef.current?.click()}
+                          className="px-2 py-1 text-[10px] font-semibold text-[#6257D9] bg-[#F0EBFF] hover:bg-[#E4DCFF] rounded-lg"
+                        >
+                          Change
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditForm((prev) => ({ ...prev, logo: '' }))}
+                          className="p-1 text-slate-400 hover:text-rose-600 rounded-lg"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() => settingsFileInputRef.current?.click()}
+                      className="p-3 border-2 border-dashed border-[#D5C7EE] hover:border-[#6257D9] bg-white rounded-xl cursor-pointer text-center group"
+                    >
+                      <Upload className="w-4 h-4 mx-auto text-[#6257D9] group-hover:scale-110 transition-transform mb-1" />
+                      <p className="text-[11px] font-bold text-slate-800">
+                        {settingsImageProcessing ? 'Processing image...' : 'Click to Upload Icon from Device'}
+                      </p>
+                      <p className="text-[9px] text-slate-400">PNG, JPG, SVG, WebP, GIF (Up to 8MB)</p>
+                    </div>
+                  )}
+
+                  <input
+                    type="url"
+                    value={editForm.logo?.startsWith('data:') ? '' : editForm.logo}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, logo: e.target.value }))}
+                    placeholder="Or enter Image URL (https://...)"
+                    className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200/80 rounded-xl"
+                  />
+                </div>
               )}
 
               {/* Color presets */}
