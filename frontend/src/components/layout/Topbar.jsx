@@ -8,7 +8,6 @@ import {
   LogOut,
   CheckCircle2,
   X,
-  FolderKanban,
   Check,
   Plus,
   Edit2,
@@ -268,15 +267,6 @@ export const Topbar = ({ onToggleSidebar }) => {
               </div>
 
               <div className="p-1.5 space-y-0.5 text-xs text-[#302D46]">
-                <Link
-                  to="/projects"
-                  onClick={() => setShowProfileMenu(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/70 hover:text-[#5446C9] transition-colors"
-                >
-                  <FolderKanban className="w-4 h-4 text-[#7A7398]" />
-                  <span>Projects & Workspaces</span>
-                </Link>
-
                 <Link
                   to="/issues?assignedTo=me"
                   onClick={() => setShowProfileMenu(false)}
