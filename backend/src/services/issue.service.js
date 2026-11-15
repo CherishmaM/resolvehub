@@ -10,7 +10,7 @@ import { notifyIssueCreated, notifyTaskAssigned } from './notification.service.j
 import { hasProjectAccess, hasProjectAdminAccess } from './project.service.js';
 
 const POPULATE_FIELDS = 'name email avatar role jobTitle';
-const POPULATE_PROJECT = 'name key status';
+const POPULATE_PROJECT = 'name key status logoType logo logoColor';
 
 export const createIssue = async ({
   title,
@@ -25,11 +25,21 @@ export const createIssue = async ({
   // 1. Resolve target project
   let targetProjectId = projectId;
   if (!targetProjectId) {
-    const defaultProject =
+    let defaultProject =
       (await Project.findOne(user.role === 'admin' ? {} : { 'members.user': user._id })) ||
       (await Project.findOne());
     if (!defaultProject) {
-      throw ApiError.badRequest('No project available to assign this issue to.');
+      defaultProject = await Project.create({
+        name: 'Core Platform',
+        key: 'CORE',
+        description: 'Default project workspace',
+        status: 'Active',
+        logoType: 'icon',
+        logo: 'FolderKanban',
+        logoColor: '#6257D9',
+        createdBy: user._id,
+        members: [{ user: user._id, role: user.role === 'admin' ? 'project_admin' : 'project_member', joinedAt: new Date() }],
+      });
     }
     targetProjectId = defaultProject._id;
   }

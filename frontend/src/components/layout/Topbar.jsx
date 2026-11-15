@@ -11,10 +11,13 @@ import {
   FolderKanban,
   Check,
   Plus,
+  Edit2,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useProject } from '../../context/ProjectContext';
 import { UserAvatar } from '../ui/UserAvatar';
+import { ProjectLogo } from '../ui/ProjectLogo';
+import { EditProjectModal } from '../projects/EditProjectModal';
 
 export const Topbar = ({ onToggleSidebar }) => {
   const { user, logout, isAdmin } = useAuth();
@@ -24,6 +27,7 @@ export const Topbar = ({ onToggleSidebar }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showProjectMenu, setShowProjectMenu] = useState(false);
+  const [isEditProjectOpen, setIsEditProjectOpen] = useState(false);
 
   const profileRef = useRef(null);
   const projectRef = useRef(null);
@@ -94,7 +98,7 @@ export const Topbar = ({ onToggleSidebar }) => {
             className="flex items-center gap-2 px-2.5 py-1.5 bg-white/90 hover:bg-white border border-[#D9D0F2] hover:border-[#6257D9]/50 rounded-2xl shadow-2xs text-xs transition-all active:scale-[0.98]"
             title="Switch Workspace Project"
           >
-            <FolderKanban className="w-3.5 h-3.5 text-[#6257D9]" />
+            <ProjectLogo project={currentProject} size="xs" />
             <div className="flex items-center gap-1.5 text-left max-w-[140px] sm:max-w-[180px] truncate">
               {currentProject ? (
                 <>
@@ -114,19 +118,35 @@ export const Topbar = ({ onToggleSidebar }) => {
 
           {/* Project Switcher Dropdown */}
           {showProjectMenu && (
-            <div className="absolute left-0 mt-2 w-64 bg-[#F2EDFC] rounded-2xl border border-[#D9D0F2] shadow-xl z-50 overflow-hidden animate-dropdown select-none">
+            <div className="absolute left-0 mt-2 w-72 bg-[#F2EDFC] rounded-2xl border border-[#D9D0F2] shadow-xl z-50 overflow-hidden animate-dropdown select-none">
               <div className="p-3 border-b border-[#DCD4F2] bg-[#EDE8FA] flex items-center justify-between">
                 <div>
                   <p className="text-xs font-bold text-slate-800">Workspace Projects</p>
                   <p className="text-[10px] text-[#7A7398]">Switch active context</p>
                 </div>
-                <Link
-                  to="/projects"
-                  onClick={() => setShowProjectMenu(false)}
-                  className="text-[10px] font-bold text-[#6257D9] hover:underline"
-                >
-                  All
-                </Link>
+                <div className="flex items-center gap-2">
+                  {currentProject && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowProjectMenu(false);
+                        setIsEditProjectOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white border border-[#D9CEF3] text-[10px] font-bold text-[#6257D9] hover:bg-[#F2EDFC] transition-colors shadow-2xs"
+                      title="Edit project key and logo"
+                    >
+                      <Edit2 className="w-3 h-3" />
+                      <span>Edit Core/Key</span>
+                    </button>
+                  )}
+                  <Link
+                    to="/projects"
+                    onClick={() => setShowProjectMenu(false)}
+                    className="text-[10px] font-bold text-[#6257D9] hover:underline"
+                  >
+                    All
+                  </Link>
+                </div>
               </div>
 
               <div className="p-1.5 max-h-56 overflow-y-auto space-y-0.5">
@@ -147,6 +167,7 @@ export const Topbar = ({ onToggleSidebar }) => {
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
+                        <ProjectLogo project={p} size="xs" />
                         <span className="font-mono text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#EDE7F9] text-[#6257D9] border border-[#DDD3F5] shadow-2xs shrink-0">
                           {p.key}
                         </span>
@@ -289,6 +310,15 @@ export const Topbar = ({ onToggleSidebar }) => {
           )}
         </div>
       </div>
+
+      {/* Edit Current Active Project & Logo Modal */}
+      {currentProject && (
+        <EditProjectModal
+          isOpen={isEditProjectOpen}
+          onClose={() => setIsEditProjectOpen(false)}
+          project={currentProject}
+        />
+      )}
     </header>
   );
 };

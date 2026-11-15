@@ -2,6 +2,7 @@ import React from 'react';
 import { StatusBadge } from '../ui/StatusBadge';
 import { PriorityBadge } from '../ui/PriorityBadge';
 import { UserAvatar } from '../ui/UserAvatar';
+import { ProjectLogo } from '../ui/ProjectLogo';
 import { 
   FolderKanban, 
   FileText, 
@@ -38,8 +39,8 @@ export const IssueHoverCard = ({ issue, position }) => {
           <span className="font-mono text-[10px] font-bold text-[#6257D9] bg-[#EDE9FE] border border-[#DDD6FE] px-2 py-0.5 rounded-md">
             {keyFormatted}
           </span>
-          <span className="text-[11px] font-medium text-slate-500 truncate flex items-center gap-1">
-            <FolderKanban className="w-3 h-3 text-slate-400 shrink-0" />
+          <span className="text-[11px] font-medium text-slate-500 truncate flex items-center gap-1.5">
+            <ProjectLogo project={issue.projectId} size="xs" showBackground={false} />
             <span className="truncate">{projectName}</span>
           </span>
         </div>

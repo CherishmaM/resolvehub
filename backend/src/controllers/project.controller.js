@@ -21,9 +21,9 @@ export const getProjectById = async (req, res, next) => {
 
 export const createProject = async (req, res, next) => {
   try {
-    const { name, key, description, status, initialMemberIds } = req.body;
+    const { name, key, description, status, logoType, logo, logoColor, initialMemberIds } = req.body;
     const project = await projectService.createProject(
-      { name, key, description, status, initialMemberIds },
+      { name, key, description, status, logoType, logo, logoColor, initialMemberIds },
       req.user
     );
     res.status(201).json(ApiResponse.created(project, 'Project created successfully'));

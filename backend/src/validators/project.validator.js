@@ -21,6 +21,9 @@ export const createProjectSchema = z.object({
     .optional()
     .default(''),
   status: z.enum(PROJECT_STATUSES).optional().default('Active'),
+  logoType: z.enum(['icon', 'emoji', 'image', 'initials']).optional().default('icon'),
+  logo: z.string().trim().max(1000).optional().default('FolderKanban'),
+  logoColor: z.string().trim().max(50).optional().default('#6257D9'),
   initialMemberIds: z
     .array(z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid user ID format'))
     .optional()
@@ -34,12 +37,23 @@ export const updateProjectSchema = z.object({
     .min(2, 'Project name must be at least 2 characters long')
     .max(60, 'Project name cannot exceed 60 characters')
     .optional(),
+  key: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .min(2, 'Project key must be at least 2 characters long')
+    .max(10, 'Project key cannot exceed 10 characters')
+    .regex(/^[A-Z0-9_-]+$/, 'Project key must contain only uppercase letters, numbers, hyphens, or underscores')
+    .optional(),
   description: z
     .string()
     .trim()
     .max(500, 'Description cannot exceed 500 characters')
     .optional(),
   status: z.enum(PROJECT_STATUSES).optional(),
+  logoType: z.enum(['icon', 'emoji', 'image', 'initials']).optional(),
+  logo: z.string().trim().max(1000).optional(),
+  logoColor: z.string().trim().max(50).optional(),
 });
 
 export const addMemberSchema = z.object({

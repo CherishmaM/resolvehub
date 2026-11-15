@@ -18,6 +18,13 @@ import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { UserAvatar } from '../components/ui/UserAvatar';
+import {
+  ProjectLogo,
+  PROJECT_ICON_OPTIONS,
+  PROJECT_COLOR_PRESETS,
+  PROJECT_EMOJI_PRESETS,
+} from '../components/ui/ProjectLogo';
+import { EditProjectModal } from '../components/projects/EditProjectModal';
 import { formatRelativeTime } from '../utils/formatters';
 import {
   FolderKanban,
@@ -63,8 +70,12 @@ export const ProjectDetails = () => {
   // Settings & Edit Project State
   const [editForm, setEditForm] = useState({
     name: '',
+    key: '',
     description: '',
     status: 'Active',
+    logoType: 'icon',
+    logo: 'FolderKanban',
+    logoColor: '#6257D9',
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [isEditProjectOpen, setIsEditProjectOpen] = useState(false);
@@ -89,8 +100,12 @@ export const ProjectDetails = () => {
       setProject(projRes.data);
       setEditForm({
         name: projRes.data.name,
+        key: projRes.data.key,
         description: projRes.data.description || '',
         status: projRes.data.status || 'Active',
+        logoType: projRes.data.logoType || 'icon',
+        logo: projRes.data.logo || 'FolderKanban',
+        logoColor: projRes.data.logoColor || '#6257D9',
       });
       if (statsRes.data) setStats(statsRes.data);
       setIssues(issuesRes.data || []);
@@ -180,16 +195,29 @@ export const ProjectDetails = () => {
       return;
     }
 
+    const trimmedKey = editForm.key?.trim().toUpperCase();
+    if (trimmedKey && (trimmedKey.length < 2 || trimmedKey.length > 10)) {
+      setError('Project key must be between 2 and 10 uppercase alphanumeric characters.');
+      return;
+    }
+
     setSavingSettings(true);
     setError('');
     try {
       const res = await updateProjectApi(id, {
         name: editForm.name.trim(),
+        key: trimmedKey || undefined,
         description: editForm.description.trim(),
         status: editForm.status,
+        logoType: editForm.logoType,
+        logo: editForm.logo,
+        logoColor: editForm.logoColor,
       });
       setProject(res.data);
-      setSuccessMessage(`Project "${res.data.name}" updated successfully.`);
+      if (currentProjectId === res.data._id) {
+        setCurrentProject(res.data);
+      }
+      setSuccessMessage(`Project "${res.data.name}" (${res.data.key}) updated successfully.`);
       setTimeout(() => setSuccessMessage(''), 4000);
       setIsEditProjectOpen(false);
       await fetchProjectData();
@@ -300,6 +328,7 @@ export const ProjectDetails = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5 flex-wrap">
+              <ProjectLogo project={project} size="md" />
               <span className="font-mono text-xs font-bold px-3 py-1 rounded-xl bg-[#F0EBFF] text-[#6257D9] border border-[#E3D9FF]">
                 {project.key}
               </span>
@@ -313,19 +342,12 @@ export const ProjectDetails = () => {
               {canManage && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setEditForm({
-                      name: project.name,
-                      description: project.description || '',
-                      status: project.status || 'Active',
-                    });
-                    setIsEditProjectOpen(true);
-                  }}
+                  onClick={() => setIsEditProjectOpen(true)}
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-[#6257D9] hover:text-[#5246c7] bg-[#F0EBFF] hover:bg-[#E4DCFF] rounded-xl transition-all shadow-2xs"
-                  title="Edit project name and parameters"
+                  title="Edit project key, logo, and parameters"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
-                  <span>Edit Name</span>
+                  <span>Edit Project & Logo</span>
                 </button>
               )}
             </div>
@@ -615,15 +637,140 @@ export const ProjectDetails = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Project Key (Fixed)
+              <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                <span>Project Key (Unique Identifier)</span>
+                <span className="text-[10px] text-slate-400">Prefix for all issue references (e.g. {editForm.key || project.key}-101)</span>
               </label>
               <input
                 type="text"
-                value={project.key}
-                disabled
-                className="w-full px-3.5 py-2.5 text-xs font-mono font-bold bg-slate-100 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed uppercase"
+                value={editForm.key || ''}
+                onChange={(e) =>
+                  setEditForm((prev) => ({
+                    ...prev,
+                    key: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, ''),
+                  }))
+                }
+                required
+                maxLength={10}
+                placeholder="e.g. CORE"
+                className="w-full px-3.5 py-2.5 text-xs font-mono font-bold bg-slate-50 border border-slate-200/80 rounded-xl text-[#6257D9] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all uppercase"
               />
+            </div>
+
+            {/* Logo Branding Settings */}
+            <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-700">Project Logo Branding</span>
+                <div className="flex items-center gap-2">
+                  <ProjectLogo
+                    project={{
+                      name: editForm.name || project.name,
+                      key: editForm.key || project.key,
+                      logoType: editForm.logoType,
+                      logo: editForm.logo,
+                      logoColor: editForm.logoColor,
+                    }}
+                    size="sm"
+                  />
+                  <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-white text-[#6257D9] border border-[#DDD3F5]">
+                    {editForm.key || project.key}
+                  </span>
+                </div>
+              </div>
+
+              {/* Tabs */}
+              <div className="grid grid-cols-4 gap-1 p-0.5 bg-slate-200/60 rounded-xl text-[11px] font-semibold">
+                {['icon', 'emoji', 'initials', 'image'].map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        logoType: t,
+                        logo: t === 'icon' ? 'FolderKanban' : t === 'emoji' ? '🚀' : prev.logo,
+                      }))
+                    }
+                    className={`py-1 rounded-lg capitalize transition-all ${
+                      editForm.logoType === t
+                        ? 'bg-white text-[#6257D9] shadow-2xs font-bold'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+
+              {/* Icon grid */}
+              {editForm.logoType === 'icon' && (
+                <div className="grid grid-cols-6 sm:grid-cols-9 gap-1 max-h-24 overflow-y-auto p-1 bg-white rounded-xl border border-slate-200/70">
+                  {PROJECT_ICON_OPTIONS.map((opt) => {
+                    const Icon = opt.icon;
+                    const isSel = editForm.logo === opt.name;
+                    return (
+                      <button
+                        key={opt.name}
+                        type="button"
+                        onClick={() => setEditForm((prev) => ({ ...prev, logo: opt.name }))}
+                        title={opt.label}
+                        className={`h-7 rounded-lg flex items-center justify-center transition-all ${
+                          isSel ? 'bg-[#6257D9] text-white shadow-2xs' : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Emoji grid */}
+              {editForm.logoType === 'emoji' && (
+                <div className="flex flex-wrap gap-1 p-1 bg-white rounded-xl border border-slate-200/70">
+                  {PROJECT_EMOJI_PRESETS.map((em) => (
+                    <button
+                      key={em}
+                      type="button"
+                      onClick={() => setEditForm((prev) => ({ ...prev, logo: em }))}
+                      className={`w-7 h-7 rounded-lg text-xs flex items-center justify-center transition-all ${
+                        editForm.logo === em ? 'bg-slate-200 shadow-2xs scale-110' : 'hover:bg-slate-100'
+                      }`}
+                    >
+                      {em}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Image URL input */}
+              {editForm.logoType === 'image' && (
+                <input
+                  type="url"
+                  value={editForm.logo}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, logo: e.target.value }))}
+                  placeholder="https://example.com/logo.png"
+                  className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200/80 rounded-xl"
+                />
+              )}
+
+              {/* Color presets */}
+              <div className="flex items-center gap-1.5 pt-1">
+                <span className="text-[10px] text-slate-500 font-medium">Color:</span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {PROJECT_COLOR_PRESETS.map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      onClick={() => setEditForm((prev) => ({ ...prev, logoColor: c.value }))}
+                      style={{ backgroundColor: c.value }}
+                      className={`w-4 h-4 rounded-full transition-transform ${
+                        editForm.logoColor === c.value ? 'ring-2 ring-offset-1 ring-[#6257D9] scale-110' : ''
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div>
@@ -773,114 +920,13 @@ export const ProjectDetails = () => {
         </div>
       )}
 
-      {/* Edit Project Name & Details Modal */}
-      {isEditProjectOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setIsEditProjectOpen(false)}
-        >
-          <div
-            className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-[#EAE5F7] space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-[#F0EBFF] text-[#6257D9] flex items-center justify-center">
-                  <Edit2 className="w-4 h-4 stroke-[2]" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Edit Project Details</h3>
-                  <p className="text-[11px] text-slate-400">Update project name, description, and status</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsEditProjectOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveSettings} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Project Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={editForm.name}
-                  onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
-                  required
-                  autoFocus
-                  maxLength={60}
-                  placeholder="e.g. Mobile App Redesign"
-                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Project Key <span className="text-slate-400 font-normal">(Permanent Identifier)</span>
-                </label>
-                <input
-                  type="text"
-                  value={project.key}
-                  disabled
-                  className="w-full px-3.5 py-2.5 text-xs font-mono font-bold bg-slate-100 border border-slate-200 rounded-xl text-slate-400 cursor-not-allowed uppercase"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Description
-                </label>
-                <textarea
-                  rows={3}
-                  value={editForm.description}
-                  onChange={(e) => setEditForm((prev) => ({ ...prev, description: e.target.value }))}
-                  maxLength={500}
-                  placeholder="Briefly describe this project workspace and goals"
-                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Workspace Status
-                </label>
-                <select
-                  value={editForm.status}
-                  onChange={(e) => setEditForm((prev) => ({ ...prev, status: e.target.value }))}
-                  className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#6257D9]/20 focus:border-[#6257D9] transition-all"
-                >
-                  <option value="Active">Active</option>
-                  <option value="On Hold">On Hold</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Archived">Archived</option>
-                </select>
-              </div>
-
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsEditProjectOpen(false)}
-                  className="px-3.5 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={savingSettings || !editForm.name.trim()}
-                  className="px-4 py-2 text-xs font-semibold text-white bg-[#6257D9] hover:bg-[#5246c7] rounded-xl shadow-xs transition-all disabled:opacity-50"
-                >
-                  {savingSettings ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Edit Project Modal */}
+      <EditProjectModal
+        isOpen={isEditProjectOpen}
+        onClose={() => setIsEditProjectOpen(false)}
+        project={project}
+        onSuccess={fetchProjectData}
+      />
 
       {/* Remove Member Confirmation */}
       <ConfirmDialog

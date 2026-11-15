@@ -16,6 +16,7 @@ import { PriorityBadge } from '../components/ui/PriorityBadge';
 import { LoadingSpinner } from '../components/ui/LoadingSpinner';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { ProjectLogo } from '../components/ui/ProjectLogo';
 import { CommentList } from '../components/comments/CommentList';
 import { CommentForm } from '../components/comments/CommentForm';
 import { ActivityTimeline } from '../components/issues/ActivityTimeline';
@@ -345,7 +346,7 @@ export const IssueDetails = () => {
                       className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-[#6257D9]/10 text-[#6257D9] hover:bg-[#6257D9]/20 border border-[#6257D9]/20 transition-colors"
                       title={`Project: ${issue.projectId.name}`}
                     >
-                      <FolderKanban className="w-3.5 h-3.5" />
+                      <ProjectLogo project={issue.projectId} size="xs" showBackground={false} />
                       <span>{issue.projectId.name}</span>
                       <span className="text-[10px] opacity-75 font-mono">({issue.projectId.key})</span>
                     </Link>

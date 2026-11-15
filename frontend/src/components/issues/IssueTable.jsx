@@ -4,6 +4,7 @@ import { StatusBadge } from '../ui/StatusBadge';
 import { StatusDropdown } from '../ui/StatusDropdown';
 import { PriorityBadge } from '../ui/PriorityBadge';
 import { UserAvatar } from '../ui/UserAvatar';
+import { ProjectLogo } from '../ui/ProjectLogo';
 import { IssueHoverCard } from './IssueHoverCard';
 import { Image as ImageIcon, X, FolderKanban } from 'lucide-react';
 
@@ -137,8 +138,8 @@ export const IssueTable = ({
                         </Link>
                         {issue.projectId?.name && (
                           <div className="flex items-center gap-1.5 mt-1">
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#5B42D6] bg-[#F5F2FE] px-2 py-0.5 rounded-md border border-[#E8E1FB]">
-                              <FolderKanban className="w-3 h-3 text-[#6257D9]" />
+                            <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-[#5B42D6] bg-[#F5F2FE] px-2 py-0.5 rounded-md border border-[#E8E1FB]">
+                              <ProjectLogo project={issue.projectId} size="xs" showBackground={false} />
                               <span>{issue.projectId.name}</span>
                             </span>
                             {issue.category && (

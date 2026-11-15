@@ -58,6 +58,21 @@ const projectSchema = new mongoose.Schema(
       },
       default: 'Active',
     },
+    logoType: {
+      type: String,
+      enum: ['icon', 'emoji', 'image', 'initials'],
+      default: 'icon',
+    },
+    logo: {
+      type: String,
+      trim: true,
+      default: 'FolderKanban',
+    },
+    logoColor: {
+      type: String,
+      trim: true,
+      default: '#6257D9',
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

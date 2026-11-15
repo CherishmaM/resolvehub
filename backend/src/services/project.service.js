@@ -115,7 +115,10 @@ export const getProjectById = async (id, user) => {
   };
 };
 
-export const createProject = async ({ name, key, description, status = 'Active', initialMemberIds = [] }, user) => {
+export const createProject = async (
+  { name, key, description, status = 'Active', logoType = 'icon', logo = 'FolderKanban', logoColor = '#6257D9', initialMemberIds = [] },
+  user
+) => {
   // Only organization admin can create new projects
   if (user.role !== 'admin') {
     throw ApiError.forbidden('Only organization administrators can create new projects.');
@@ -153,6 +156,9 @@ export const createProject = async ({ name, key, description, status = 'Active',
     key: normalizedKey,
     description: description ? description.trim() : '',
     status,
+    logoType: logoType || 'icon',
+    logo: logo !== undefined ? logo.trim() : 'FolderKanban',
+    logoColor: logoColor ? logoColor.trim() : '#6257D9',
     createdBy: user._id,
     members,
   });
@@ -171,8 +177,23 @@ export const updateProject = async (id, updates, user) => {
   }
 
   if (updates.name) project.name = updates.name.trim();
+
+  if (updates.key) {
+    const normalizedKey = updates.key.trim().toUpperCase();
+    if (normalizedKey !== project.key) {
+      const existing = await Project.findOne({ key: normalizedKey, _id: { $ne: project._id } });
+      if (existing) {
+        throw ApiError.conflict(`A project with key '${normalizedKey}' already exists.`);
+      }
+      project.key = normalizedKey;
+    }
+  }
+
   if (updates.description !== undefined) project.description = updates.description.trim();
   if (updates.status) project.status = updates.status;
+  if (updates.logoType) project.logoType = updates.logoType;
+  if (updates.logo !== undefined) project.logo = updates.logo.trim();
+  if (updates.logoColor) project.logoColor = updates.logoColor.trim();
 
   await project.save();
   return getProjectById(project._id, user);
