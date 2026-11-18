@@ -3,7 +3,15 @@ import { ApiResponse } from '../utils/apiResponse.js';
 
 export const getStats = async (req, res, next) => {
   try {
-    const stats = await dashboardService.getDashboardStats(req.user, req.query.projectId);
+    const rawProjectId = req.query.projectId;
+    const projectId =
+      rawProjectId &&
+      rawProjectId !== 'all' &&
+      rawProjectId !== 'null' &&
+      rawProjectId !== 'undefined'
+        ? rawProjectId
+        : null;
+    const stats = await dashboardService.getDashboardStats(req.user, projectId);
     return res
       .status(200)
       .json(ApiResponse.success(stats, 'Dashboard statistics retrieved'));

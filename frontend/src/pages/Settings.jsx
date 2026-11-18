@@ -111,7 +111,7 @@ export const Settings = () => {
     `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || 'User')}`;
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <div>
         <h2 className="text-xl font-bold text-slate-900 tracking-tight">Account & Settings</h2>
         <p className="text-xs text-slate-500 mt-0.5">

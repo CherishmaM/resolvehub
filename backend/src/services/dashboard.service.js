@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Issue, ISSUE_STATUSES, ISSUE_PRIORITIES } from '../models/Issue.js';
 import { Project } from '../models/Project.js';
 import { ApiError } from '../utils/apiError.js';
@@ -14,12 +15,16 @@ export const getDashboardStats = async (currentUser, projectId = null) => {
       if (!isMember) {
         throw ApiError.forbidden('Access denied. You are not a member of this project.');
       }
-      matchFilter.projectId = projectId;
+      matchFilter.projectId = mongoose.Types.ObjectId.isValid(projectId)
+        ? new mongoose.Types.ObjectId(projectId)
+        : projectId;
     } else {
       matchFilter.projectId = { $in: userProjectIds };
     }
   } else if (projectId) {
-    matchFilter.projectId = projectId;
+    matchFilter.projectId = mongoose.Types.ObjectId.isValid(projectId)
+      ? new mongoose.Types.ObjectId(projectId)
+      : projectId;
   }
 
   const [
@@ -47,7 +52,7 @@ export const getDashboardStats = async (currentUser, projectId = null) => {
     Issue.find(matchFilter)
       .sort({ createdAt: -1 })
       .limit(5)
-      .populate('projectId', 'name key status')
+      .populate('projectId', 'name key status logoType logo logoColor')
       .populate('createdBy', 'name email avatar role jobTitle')
       .populate('assignedTo', 'name email avatar role jobTitle'),
     currentUser

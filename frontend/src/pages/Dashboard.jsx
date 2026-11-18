@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useProject } from '../context/ProjectContext';
 import { getDashboardStatsApi } from '../api/dashboard.api';
 import { StatCard } from '../components/ui/StatCard';
 import { StatusDropdown } from '../components/ui/StatusDropdown';
 import { ErrorMessage } from '../components/ui/ErrorMessage';
 import { IssueHoverCard } from '../components/issues/IssueHoverCard';
+import { ProjectLogo } from '../components/ui/ProjectLogo';
 import { formatRelativeTime } from '../utils/formatters';
 import {
   Bug,
@@ -23,21 +25,18 @@ import {
 
 export const Dashboard = () => {
   const { user } = useAuth();
+  const { currentProject, currentProjectId } = useProject();
+
   const [stats, setStats] = useState(() => {
     try {
-      const cached = localStorage.getItem('resolvehub_cached_dashboard_stats');
+      const savedId = localStorage.getItem('fixflow_current_project_id');
+      const cached = localStorage.getItem(`resolvehub_cached_dashboard_stats_${savedId || 'all'}`);
       return cached ? JSON.parse(cached) : null;
     } catch {
       return null;
     }
   });
-  const [loading, setLoading] = useState(() => {
-    try {
-      return !localStorage.getItem('resolvehub_cached_dashboard_stats');
-    } catch {
-      return true;
-    }
-  });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [barsAnimated, setBarsAnimated] = useState(false);
   const hasLoadedOnce = useRef(false);
@@ -90,16 +89,26 @@ export const Dashboard = () => {
   }, []);
 
   const fetchStats = async () => {
-    if (!stats) {
+    const activeCacheKey = `resolvehub_cached_dashboard_stats_${currentProjectId || 'all'}`;
+    try {
+      const cached = localStorage.getItem(activeCacheKey);
+      if (cached) {
+        setStats(JSON.parse(cached));
+      } else {
+        setLoading(true);
+      }
+    } catch {
       setLoading(true);
     }
+
     setError('');
     try {
-      const response = await getDashboardStatsApi();
+      const params = currentProjectId ? { projectId: currentProjectId } : {};
+      const response = await getDashboardStatsApi(params);
       const data = response.data;
       setStats(data);
       try {
-        localStorage.setItem('resolvehub_cached_dashboard_stats', JSON.stringify(data));
+        localStorage.setItem(activeCacheKey, JSON.stringify(data));
       } catch {}
 
       // Trigger smooth bar sweep after real data lands
@@ -117,7 +126,7 @@ export const Dashboard = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchStats();
-  }, []);
+  }, [currentProjectId]);
 
   const totals = stats?.totals || { total: 0, open: 0, inProgress: 0, resolved: 0, assignedToMe: 0 };
   const recentIssues = stats?.recentIssues || [];
@@ -145,8 +154,11 @@ export const Dashboard = () => {
 
   const criticalIssueKeys =
     criticalIssues.length > 0
-      ? criticalIssues.map((i) => `BUG-${i._id.slice(-3).toUpperCase()}`)
-      : ['BUG-001', 'BUG-005'];
+      ? criticalIssues.map((i) => {
+          const pKey = i.projectId?.key || currentProject?.key || 'BUG';
+          return `${pKey}-${i._id.slice(-4).toUpperCase()}`;
+        })
+      : [`${currentProject?.key || 'BUG'}-001`, `${currentProject?.key || 'BUG'}-005`];
 
   // Resolution rate percentage
   const resolutionRate = totals.total > 0
@@ -206,11 +218,24 @@ export const Dashboard = () => {
       {/* 1. Header: Title & Subtitle with Enterprise SaaS Polish */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#272443] tracking-tight">
-            Dashboard
-          </h1>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#272443] tracking-tight">
+              Dashboard
+            </h1>
+            {currentProject && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white border border-[#DDD3F5] text-xs font-semibold text-[#6257D9] shadow-2xs">
+                <ProjectLogo project={currentProject} size="xs" />
+                <span className="font-mono text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#EDE7F9]">
+                  {currentProject.key}
+                </span>
+                <span>{currentProject.name}</span>
+              </span>
+            )}
+          </div>
           <p className="text-xs sm:text-sm text-[#5E597B] mt-1 font-medium">
-            Overview of your project's bug health, activity, and team progress
+            {currentProject
+              ? `Real-time issue telemetry and sprint health for ${currentProject.name}`
+              : `Overview of your project's bug health, activity, and team progress`}
           </p>
         </div>
         <div className="flex items-center gap-2.5">
@@ -330,7 +355,7 @@ export const Dashboard = () => {
               <h2 className="text-sm font-bold text-[#272443]">Recent Activity</h2>
             </div>
             <Link
-              to="/issues"
+              to={currentProjectId ? `/issues?projectId=${currentProjectId}` : '/issues'}
               className="text-xs font-semibold text-[#6257D9] hover:text-[#5246c7] flex items-center gap-1 transition-colors group"
             >
               <span>View all</span>
@@ -374,8 +399,9 @@ export const Dashboard = () => {
 
               <div className="space-y-1">
                 {recentIssues.map((issue, idx) => {
-                  const keyNumber = issue._id.slice(-3).toUpperCase();
-                  const keyFormatted = `BUG-${keyNumber}`;
+                  const pKey = issue.projectId?.key || currentProject?.key || 'BUG';
+                  const keyNumber = issue._id.slice(-4).toUpperCase();
+                  const keyFormatted = `${pKey}-${keyNumber}`;
 
                   // Standard distinct status pills
                   const statusStyles = {

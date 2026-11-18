@@ -1,3 +1,3 @@
 import api from './axios';
 
-export const getDashboardStatsApi = () => api.get('/dashboard/stats');
+export const getDashboardStatsApi = (params = {}) => api.get('/dashboard/stats', { params });
